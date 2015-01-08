@@ -70,7 +70,7 @@ class Product {
      * 
      * @ORM\Column(name="shown", type="boolean")
      */
-    private $shown = false;
+    private $shown = true;
 
     /**
      * @ORM\OneToOne(targetEntity="ProductDetail", mappedBy="product")

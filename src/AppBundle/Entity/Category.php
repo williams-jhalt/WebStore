@@ -46,9 +46,9 @@ class Category {
     /**
      * @var boolean
      * 
-     * @ORM\Column(name="show_in_menu", type="boolean", options={"default" = 0})
+     * @ORM\Column(name="show_in_menu", type="boolean", options={"default" = 1})
      */
-    private $showInMenu;
+    private $showInMenu = true;
 
     /**
      * @ORM\OneToMany(targetEntity="Category", mappedBy="parent", cascade={"persist", "remove"})
