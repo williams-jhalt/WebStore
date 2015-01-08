@@ -24,7 +24,7 @@ class ImportCategoriesCommand extends ContainerAwareCommand {
 
         $file = new SplFileObject($filename, "r");
 
-        $service = $this->getContainer()->get('app.product_service');
+        $service = $this->getContainer()->get('app.category_service');
 
 
         $service->importFromCSV($file, array(

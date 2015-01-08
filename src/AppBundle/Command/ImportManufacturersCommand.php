@@ -24,7 +24,7 @@ class ImportManufacturersCommand extends ContainerAwareCommand {
 
         $file = new SplFileObject($filename, "r");
 
-        $service = $this->getContainer()->get('app.product_service');
+        $service = $this->getContainer()->get('app.manufacturer_service');
 
         $service->importFromCSV($file, array(
             'code' => 0,

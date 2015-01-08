@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c6d3089b406fdede04dbf9b4507af8c8",
+    "hash": "c3974318031b4839fdb3f16e6a66499c",
     "packages": [
         {
             "name": "braincrafted/bootstrap-bundle",
@@ -1586,48 +1586,6 @@
             "time": "2014-12-12 05:04:05"
         },
         {
-            "name": "mledoze/countries",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mledoze/countries.git",
-                "reference": "6d65afb38a48545ec0a6c35043b541c1fa285657"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://github.com/mledoze/countries/archive/master.zip",
-                "reference": null,
-                "shasum": null
-            },
-            "require": {
-                "php": ">=5.4",
-                "symfony/yaml": "2.6.1"
-            },
-            "type": "library",
-            "license": [
-                "Open Database License"
-            ],
-            "authors": [
-                {
-                    "name": "Mohammed Le Doze"
-                }
-            ],
-            "description": "World countries in JSON, CSV and XML.",
-            "homepage": "https://mledoze.github.io/countries/",
-            "keywords": [
-                "countries",
-                "csv",
-                "json",
-                "world",
-                "xml"
-            ],
-            "support": {
-                "source": "https://github.com/mledoze/countries/tree/master",
-                "issues": "https://github.com/mledoze/countries/issues"
-            },
-            "time": "2015-01-07 10:43:52"
-        },
-        {
             "name": "monolog/monolog",
             "version": "1.12.0",
             "source": {
@@ -2144,23 +2102,23 @@
         },
         {
             "name": "symfony/symfony",
-            "version": "v2.6.1",
+            "version": "v2.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/symfony.git",
-                "reference": "d805dfd67950848ec0338b4acd75777b340977b7"
+                "reference": "c34ef418015793a4653f2670afb69dd167ebf578"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/symfony/zipball/d805dfd67950848ec0338b4acd75777b340977b7",
-                "reference": "d805dfd67950848ec0338b4acd75777b340977b7",
+                "url": "https://api.github.com/repos/symfony/symfony/zipball/c34ef418015793a4653f2670afb69dd167ebf578",
+                "reference": "c34ef418015793a4653f2670afb69dd167ebf578",
                 "shasum": ""
             },
             "require": {
-                "doctrine/common": "~2.2",
+                "doctrine/common": "~2.3",
                 "php": ">=5.3.3",
                 "psr/log": "~1.0",
-                "twig/twig": "~1.12"
+                "twig/twig": "~1.12,>=1.12.3"
             },
             "replace": {
                 "symfony/browser-kit": "self.version",
@@ -2216,7 +2174,7 @@
                 "egulias/email-validator": "~1.2",
                 "ircmaxell/password-compat": "~1.0",
                 "monolog/monolog": "~1.11",
-                "ocramius/proxy-manager": ">=0.3.1,<0.6-dev",
+                "ocramius/proxy-manager": "~0.4|~1.0",
                 "propel/propel1": "~1.6"
             },
             "type": "library",
@@ -2256,7 +2214,7 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2014-12-03 16:40:43"
+            "time": "2015-01-07 14:47:29"
         },
         {
             "name": "twbs/bootstrap",
@@ -2512,8 +2470,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "gregwar/image-bundle": 20,
-        "mledoze/countries": 20
+        "gregwar/image-bundle": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

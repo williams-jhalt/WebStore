@@ -20,10 +20,6 @@
                     "type": "file"
                 }
             }
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/mledoze/countries"
         }
     ],
     "require": {
@@ -47,8 +43,7 @@
         "oyejorge/less.php": "~1.5",
         "braincrafted/bootstrap-bundle": "~2.0",
         "gregwar/image-bundle": "dev-master",
-        "friendsofsymfony/jsrouting-bundle": "~1.5",
-        "mledoze/countries": "dev-master"
+        "friendsofsymfony/jsrouting-bundle": "~1.5"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"
