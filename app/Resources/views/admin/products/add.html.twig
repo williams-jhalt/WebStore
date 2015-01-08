@@ -1,0 +1,19 @@
+{% extends 'admin.html.twig' %}
+
+{% block admin_body %}
+
+    {{ include('admin/products/nav.html.twig') }}
+
+    <div class="col-md-6">
+
+        {{ form(form) }}
+
+    </div>
+
+    <div class="col-md-6 well">
+
+        You will be able to add categories later.
+
+    </div>
+
+{% endblock %}

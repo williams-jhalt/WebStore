@@ -1,0 +1,75 @@
+{% for product in pagination %}
+
+    <div class="panel panel-default">
+
+        <div class="panel-heading">
+
+            <a class="text-capitalize ajax-link hide-overflow" href="{{ path('catalog_view', app.request.query.all|merge({id: product.id})) }}">{{ product.name }}</a>
+
+        </div>
+
+        <div class="panel-body">
+
+            <div class="col-sm-2">
+
+                <a class="ajax-link" href="{{ path('catalog_view', {id: product.id}) }}">
+                    <img src="{{ image('test.jpeg').resize(100,100) }}" alt="image">
+                </a>
+
+            </div>
+
+            <div class="col-sm-5">
+            </div>
+
+            <div class="col-sm-5">
+
+                <dl class="dl-horizontal">
+
+                    <dt>Price</dt>
+                    <dd>${{ product.price|number_format(2) }}</dd>
+
+                    <dt>Stock Quantity</dt>
+                    <dd>{{ product.stockQuantity }}</dd>
+
+                    <dt>Manufacturer</dt>
+                    <dd>{{ product.manufacturer.name }}</dd>
+
+                    <dt>Product Type</dt>
+                    <dd>{{ product.productType.name }}</dd>
+
+                </dl>
+
+                {% if is_granted('ROLE_CUSTOMER') %}
+
+                    <div class="text-right">
+
+                        {% if not cartCheck(product) %}
+
+                            <form class="form-inline ajax-form" action="{{ path('catalog_add_to_cart', app.request.query.all|merge({id: product.id})) }}" method="post">
+                                <input class="form-control" type="text" name="quantity" value="1" size="3">
+                                <button class="btn btn-default" type="submit">Add to Cart</button>
+                            </form>
+
+                        {% else %}
+
+                            <p>Item is in cart</p>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endfor %}
+
+<div class="text-right">
+
+    {{ knp_pagination_render(pagination) }}
+
+</div>

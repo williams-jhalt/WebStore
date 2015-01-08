@@ -1,0 +1,11 @@
+{% extends 'admin.html.twig' %}
+
+{% block admin_body %}
+    
+    {{ include('admin/products/nav.html.twig') }}
+    
+    <h1>Import Products</h1>
+    
+    {{ form(form) }}
+    
+{% endblock %}

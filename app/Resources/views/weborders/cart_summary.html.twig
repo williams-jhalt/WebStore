@@ -1,0 +1,18 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>Name</th>
+            <th>Quantity</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cartItem in cartItems %}
+            <tr>
+                <td>{{ cartItem.product.sku }}</td>
+                <td>{{ cartItem.product.name }}</td>
+                <td>{{ cartItem.quantity }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

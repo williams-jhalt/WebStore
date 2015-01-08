@@ -1,0 +1,54 @@
+{% extends 'admin.html.twig' %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        require(['jquery'], function($) {
+            function toggleShowInMenu(id) {
+                $.post(Routing.generate('admin_product_types_toggle_show_in_menu'),
+                    {id: id},
+                    function (response) {
+                        if (response.code == 100 && response.success) {
+                            console.log("Product Type Updated");
+                        }
+                    },
+                    "json"
+                );
+            }
+
+            $(document).ready(function() {
+                $('.toggleShowInMenu').on('click', function() { toggleShowInMenu(this.value); });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block admin_body %}
+    
+    {{ include('admin/product_types/nav.html.twig') }}
+        
+    <table class="table table-condensed table-striped">
+        <thead>
+            <tr>
+                <th style="width:10%;">Code</th>
+                <th style="width:80%;">Name</th>
+                <th style="width:10%;">In Menu</th>
+                <th>Action</th>                
+            </tr>
+        </thead>
+        <tbody>
+            {% for productType in pagination %}
+                <tr>
+                    <td><a href="{{ path('admin_edit_product_type', app.request.query.all|merge({id: productType.id})) }}">{{ productType.code }}</a></td>
+                    <td>{{ productType.name }}</td>
+                    <td class="text-center"><input class="toggleShowInMenu" type="checkbox" value="{{ productType.id }}" {% if productType.showInMenu %}checked{% endif %}></td>                    
+                    <td>
+                        <a href="{{ path('admin_remove_product_type', app.request.query.all|merge({id: productType.id})) }}">delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+        
+    {{ knp_pagination_render(pagination) }}
+    
+{% endblock %}

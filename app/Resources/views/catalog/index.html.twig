@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
+    <style type="text/css">
+        .hide-overflow {
+            overflow: hidden;
+            -ms-text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            display: block;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('bundles/app/js/jstree/jstree.min.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('#categoryTree').jstree({
+                "plugins": ["wholerow"],
+                'core': {
+                    'data': {
+                        'url': function (node) {
+                            if (node.id === '#') {
+                                return Routing.generate('catalog_category_tree');
+                            } else {
+                                return Routing.generate('catalog_category_tree', {id: node.id});
+                            }
+                        },
+                        'data': function (node) {
+                            return {'id': node.id};
+                        }
+                    }
+                }
+            }).on('changed.jstree', function (e, data) {
+                $.get(data.node.a_attr.href, function (data) {
+                    $("#catalogBody").html(data);
+                });
+            });
+
+            $("#catalogBody").on('click', ".pagination a", function (e) {
+                $.get(this.href, function (data) {
+                    $("#catalogBody").html(data);
+                });
+                e.preventDefault();
+            });
+
+            $("body").on('click', ".ajax-link", function (e) {
+                $.get(this.href, function (data) {
+                    $("#catalogBody").html(data);
+                });
+                e.preventDefault();
+            });
+
+            $("body").on('submit', ".ajax-form", function (e) {
+                $.get(this.action, $(this).serialize(), function (data) {
+                    $("#catalogBody").html(data);
+                });
+                e.preventDefault();
+            });
+
+            $.get(Routing.generate('catalog_list', {{ app.request.query.all|json_encode|raw }}), function (data) {
+                $("#catalogBody").html(data);
+            });
+
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+
+    <div class="affix" style="width:300px;">
+
+        <div id="categoryTree" class="hide-overflow"></div>
+
+    </div>
+
+    <div style="margin-left: 310px;">
+        <div id="catalogBody"></div>
+    </div>
+
+
+{% endblock %}

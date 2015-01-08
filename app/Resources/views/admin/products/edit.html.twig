@@ -1,0 +1,74 @@
+{% extends 'admin.html.twig' %}
+
+{% block stylesheets %}
+    <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('bundles/app/js/jstree/jstree.min.js') }}"></script>
+    <script type="text/javascript">
+                $(document).ready(function () {
+
+        $.jstree.defaults.checkbox.three_state = false;
+                $.jstree.defaults.checkbox.cascade = "undetermined";
+                $.jstree.defaults.checkbox.tie_selection = false;
+                $('#categoryTree').jstree({
+        "plugins": ["wholerow", "checkbox"],
+                'core': {
+                'data': {
+                'url': function (node) {
+                if (node.id === '#') {
+                return Routing.generate('admin_product_category_tree', {productId: {{ product.id }}});
+                } else {
+                return Routing.generate('admin_product_category_tree', {productId:{{ product.id }}, parentId: node.id});
+                }
+                },
+                        'data': function (node) {
+                        return {'id': node.id};
+                        }
+                }
+                }
+        }).on('check_node.jstree', function (e, data) {
+        $.post(Routing.generate('admin_product_add_to_category'), {productId:{{ product.id }}, categoryId: data.node.id},
+                function (response) {
+                if (response.code == 100 && response.success) {
+                console.log("Product Updated");
+                }
+                }
+        );
+        }).on('uncheck_node.jstree', function (e, data) {
+        $.post(Routing.generate('admin_product_remove_from_category'), {productId:{{ product.id }}, categoryId: data.node.id},
+                function (response) {
+                if (response.code == 100 && response.success) {
+                console.log("Product Updated");
+                }
+                }
+        );
+        });
+        });
+    </script>
+{% endblock %}
+
+{% block admin_body %}
+
+    {{ include('admin/products/nav.html.twig') }}
+
+    <div class="col-md-6">
+
+        {{ form(form) }}
+        
+        <br>
+        
+        <p><a class="btn btn-danger" href="{{ path('admin_list_products', app.request.query.all) }}">Cancel</a></p>
+
+    </div>
+
+    <div class="col-md-6">
+
+        Categories
+
+        <div id="categoryTree"></div>
+
+    </div>
+
+{% endblock %}

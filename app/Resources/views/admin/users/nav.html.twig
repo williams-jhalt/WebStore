@@ -1,0 +1,15 @@
+<nav class="navbar navbar-default" style="margin-top:1em;">
+    <div class="container-fluid">
+
+        <ul class="nav navbar-nav">
+            <li><a href="{{ path('admin_list_users') }}">List</a></li>
+            <li><a href="{{ path('admin_new_user') }}">Add</a></li>
+        </ul>
+
+        <form class="navbar-form navbar-right" role="search" action="{{ path('admin_list_users') }}" method="get">
+            <input type="text" class="form-control" name="searchTerms" value="{{ app.request.query.get('searchTerms') }}" placeholder="Search...">
+            <button type="submit" class="btn btn-default">Go</button>
+            <a href="{{ path('admin_list_users') }}" class="btn btn-default">Clear</a>
+        </form>
+    </div>
+</nav>

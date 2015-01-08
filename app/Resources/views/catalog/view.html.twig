@@ -1,0 +1,36 @@
+<img src="{{ image('test.jpeg').resize(300,300) }}" alt="image">
+
+<dl class="dl-horizontal">
+    <dt>SKU</dt>
+    <dd>{{ product.sku }}</dd>
+
+    <dt>Name</dt>
+    <dd>{{ product.name }}</dd>
+
+    <dt>Manufacturer</dt>
+    <dd>{{ product.manufacturer.name }}</dd>
+
+    <dt>Category</dt>
+    <dd>{% if product.category %}{{ product.category.name }}{% else %}Not Categorized{% endif %}</dd>
+</dl>
+
+{% if is_granted('ROLE_CUSTOMER') %}
+
+    {% if not cartCheck(product) %}
+
+        <form class="form-inline ajax-form" action="{{ path('catalog_add_to_cart', app.request.query.all|merge({id: product.id})) }}" method="post">
+            <input class="form-control" type="text" name="quantity" value="1" size="3">
+            <button class="btn btn-default" type="submit">Add to Cart</button>
+        </form>
+
+    {% else %}
+
+        Item is in cart
+
+    {% endif %}
+
+{% endif %}
+
+<p>
+    <a class="ajax-link" href="{{ path('catalog_list', app.request.query.all) }}">Back</a>
+</p>

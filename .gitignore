@@ -10,3 +10,7 @@
 /vendor/
 /bin/
 /composer.phar
+/nbproject/private/
+/app/data/*
+/web/cache/
+/web/components/

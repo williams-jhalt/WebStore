@@ -4,6 +4,81 @@ parameters:
 #    parameter_name: value
 
 services:
+    
+    app.product_service:
+        class: AppBundle\Service\ProductService
+        arguments: ["@doctrine.orm.entity_manager"]
+    
+    app.manufacturer_service:
+        class: AppBundle\Service\ManufacturerService
+        arguments: ["@doctrine.orm.entity_manager"]
+    
+    app.product_type_service:
+        class: AppBundle\Service\ProductTypeService
+        arguments: ["@doctrine.orm.entity_manager"]
+    
+    app.category_service:
+        class: AppBundle\Service\CategoryService
+        arguments: ["@doctrine.orm.entity_manager"]
+    
+    # menus
+    app.menu.voter.catalog_menu_voter:
+        class: AppBundle\Menu\Voter\CatalogMenuVoter
+        arguments: ["@service_container"]
+        tags: 
+            - { name: knp_menu.voter }
+    
+    app.menu_builder:
+        class: AppBundle\Menu\Builder
+        arguments: ["@knp_menu.factory"]
+        
+    app.menu.main:
+        class: Knp\Menu\MenuItem # the service definition requires setting the class
+        factory_service: app.menu_builder
+        factory_method: mainMenu
+        arguments: ["@security.authorization_checker"]
+        tags:
+            - { name: knp_menu.menu, alias: mainMenu }
+            
+    app.menu.category:
+        class: Knp\Menu\MenuItem # the service definition requires setting the class
+        factory_service: app.menu_builder
+        factory_method: categoryMenu
+        arguments: ["@doctrine.orm.entity_manager"]
+        tags:
+            - { name: knp_menu.menu, alias: categoryMenu }
+            
+    app.menu.manufacturer:
+        class: Knp\Menu\MenuItem # the service definition requires setting the class
+        factory_service: app.menu_builder
+        factory_method: manufacturerMenu
+        arguments: ["@doctrine.orm.entity_manager"]
+        tags:
+            - { name: knp_menu.menu, alias: manufacturerMenu }
+            
+    app.menu.product_type:
+        class: Knp\Menu\MenuItem # the service definition requires setting the class
+        factory_service: app.menu_builder
+        factory_method: productTypeMenu
+        arguments: ["@doctrine.orm.entity_manager"]
+        tags:
+            - { name: knp_menu.menu, alias: productTypeMenu }
+            
+    app.menu.admin:
+        class: Knp\Menu\MenuItem # the service definition requires setting the class
+        factory_service: app.menu_builder
+        factory_method: adminMenu
+        tags:
+            - { name: knp_menu.menu, alias: adminMenu }
+            
+    #twig extentions
+    app.twig.cart_check_extension:
+        class: AppBundle\Twig\CartCheckExtension
+        arguments: ["@security.token_storage", "@doctrine.orm.entity_manager"]
+        tags:
+            - { name: twig.extension }
+        
 #    service_name:
 #        class: AppBundle\Directory\ClassName
 #        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]
+

@@ -1,0 +1,26 @@
+{% extends 'admin.html.twig' %}
+
+{% block admin_body %}    
+    
+    {{ include('admin/users/nav.html.twig') }}
+        
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in pagination %}
+                <tr>
+                    <td><a href="{{ path('admin_edit_user', app.request.query.all|merge({id: user.id})) }}">{{ user.username }}</a></td>
+                    <td>{{ user.email }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+        
+    {{ knp_pagination_render(pagination) }}
+    
+{% endblock %}

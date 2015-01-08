@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h1>Submit Order</h1>
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            {{ form(form) }}
+            
+        </div>
+
+        <div class="col-md-6">
+            
+            {{ render(controller('AppBundle:Weborders:cartSummary')) }}
+
+        </div>
+
+    </div>
+
+{% endblock %}

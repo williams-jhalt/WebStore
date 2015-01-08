@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    
+    <h1>Weborders</h1>
+
+    {% if pagination|length > 0 %}
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order Number</th>
+                    <th>Order Date</th>
+                    <th>Customer Reference</th>
+                    <th>Customer Number</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for weborder in pagination %}
+                    <tr>
+                        <td>{{ weborder.orderNumber }}</td>
+                        <td>{{ weborder.orderDate|date('m/d/Y h:i:s A') }}</td>
+                        <td>{{ weborder.reference1 }}</td>
+                        <td>{{ weborder.customerNumber }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {{ knp_pagination_render(pagination) }}
+
+    {% else %}
+        
+        <p>You have no orders</p>
+        
+    {% endif %}
+    
+{% endblock %}
