@@ -154,7 +154,7 @@ class AdminProductController extends Controller {
 
             $filename = $form['importFile']->getData()->move(sys_get_temp_dir(), "import_products.csv")->getRealPath();
 
-            $process = new Process(PHP_BINDIR . "/php " . $this->get('kernel')->getRootDir() . "/console app:import " . $filename);
+            $process = new Process(PHP_BINDIR . "/php " . $this->get('kernel')->getRootDir() . "/console app:import:products " . $filename);
             $process->start();
 
             return $this->redirectToRoute('admin_list_products');

@@ -8,12 +8,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ImportCommand extends ContainerAwareCommand {
+class ImportProductsCommand extends ContainerAwareCommand {
 
     protected function configure() {
-        $this
-                ->setName('app:import')
-                ->setDescription('Greet someone')
+        $this->setName('app:import:manufacturers')
+                ->setDescription('Import Manufacturers')
                 ->addArgument(
                         'file', InputArgument::REQUIRED, 'File to import'
                 )
@@ -28,14 +27,8 @@ class ImportCommand extends ContainerAwareCommand {
         $service = $this->getContainer()->get('app.product_service');
 
         $service->importFromCSV($file, array(
-            'sku' => 0,
-            'name' => 1,
-            'releaseDate' => 2,
-            'stockQuantity' => 3,
-            'manufacturerCode' => 4,
-            'productTypeCode' => 5,
-            'categoryCodes' => 6,
-            'barcode' => 7
+            'code' => 0,
+            'name' => 1
                 ), true);
     }
 
