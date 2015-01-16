@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c3974318031b4839fdb3f16e6a66499c",
+    "hash": "248066d41e9f6e981a042129f07d7d72",
     "packages": [
         {
             "name": "braincrafted/bootstrap-bundle",
@@ -1110,7 +1110,7 @@
         },
         {
             "name": "gregwar/image-bundle",
-            "version": "dev-master",
+            "version": "v2.0.18",
             "target-dir": "Gregwar/ImageBundle",
             "source": {
                 "type": "git",
@@ -2469,9 +2469,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "gregwar/image-bundle": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

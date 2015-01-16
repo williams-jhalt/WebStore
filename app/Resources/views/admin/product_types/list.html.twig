@@ -2,7 +2,6 @@
 
 {% block javascripts %}
     <script type="text/javascript">
-        require(['jquery'], function($) {
             function toggleShowInMenu(id) {
                 $.post(Routing.generate('admin_product_types_toggle_show_in_menu'),
                     {id: id},
@@ -18,7 +17,6 @@
             $(document).ready(function() {
                 $('.toggleShowInMenu').on('click', function() { toggleShowInMenu(this.value); });
             });
-        });
     </script>
 {% endblock %}
 

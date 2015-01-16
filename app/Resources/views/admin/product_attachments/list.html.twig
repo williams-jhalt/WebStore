@@ -1,0 +1,54 @@
+{% extends 'admin.html.twig' %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        function toggleExplicit(id) {
+            $.post(Routing.generate('admin_product_attachments_toggle_explicit'),
+                    {id: id},
+            function (response) {
+                if (response.code == 100 && response.success) {
+                    console.log("Product Attachment Updated");
+                }
+            },
+                    "json"
+                    );
+        }
+
+        $(document).ready(function () {
+            $('.toggleExplicit').on('click', function () {
+                toggleExplicit(this.value);
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block admin_body %}
+
+    {{ include('admin/product_attachments/nav.html.twig') }}
+
+    <table class="table table-condensed table-striped">
+        <thead>
+            <tr>
+                <th style="width:30%;">Image</th>
+                <th style="width:60%">SKU</th>
+                <th style="width:10%;">Explicit</th>
+                <th>Action</th>                
+            </tr>
+        </thead>
+        <tbody>
+            {% for attachment in pagination %}
+                <tr>
+                    <td><a href="{{ path('admin_edit_product_attachment', app.request.query.all|merge({id: attachment.id})) }}"><img src="{{ image(attachment.url).resize(100,100) }}"></a></td>
+                    <td>{{ attachment.product.sku }}</td>
+                    <td class="text-center"><input class="toggleExplicit" type="checkbox" value="{{ attachment.id }}" {% if attachment.explicit %}checked{% endif %}></td>
+                    <td>
+                        <a href="{{ path('admin_remove_product_attachment', app.request.query.all|merge({id: attachment.id})) }}">delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ knp_pagination_render(pagination) }}
+
+{% endblock %}

@@ -2,23 +2,21 @@
 
 {% block javascripts %}
     <script type="text/javascript">
-        require(['jquery'], function ($) {
-            function toggleShowInMenu(id) {
-                $.post(Routing.generate('admin_products_toggle_shown'),
-                        {id: id},
-                function (response) {
-                    if (response.code == 100 && response.success) {
-                        console.log("Product Updated");
-                    }
-                },
-                        "json"
-                        );
-            }
+        function toggleShowInMenu(id) {
+            $.post(Routing.generate('admin_products_toggle_shown'),
+                    {id: id},
+            function (response) {
+                if (response.code == 100 && response.success) {
+                    console.log("Product Updated");
+                }
+            },
+                    "json"
+                    );
+        }
 
-            $(document).ready(function () {
-                $('.toggleShowInMenu').on('click', function () {
-                    toggleShowInMenu(this.value);
-                });
+        $(document).ready(function () {
+            $('.toggleShowInMenu').on('click', function () {
+                toggleShowInMenu(this.value);
             });
         });
     </script>

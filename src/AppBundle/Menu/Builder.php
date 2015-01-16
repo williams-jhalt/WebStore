@@ -22,7 +22,7 @@ class Builder {
         $menu->addChild('Home', array('route' => 'homepage'));
 
         if ($checker->isGranted('ROLE_USER')) {
-            $menu->addChild('Catalog', array('route' => 'catalog_index'));
+            $menu->addChild('Catalog', array('route' => 'catalog_list'));
         }
 
         if ($checker->isGranted('ROLE_CUSTOMER')) {
@@ -45,7 +45,7 @@ class Builder {
 
         $menu = $this->factory->createItem("root");
 
-        $menu->addChild('All Categories', array('route' => 'catalog_index'));
+        $menu->addChild('All Categories', array('route' => 'catalog_list'));
 
         $categoryRepository = $em->getRepository('AppBundle:Category');
 
@@ -56,7 +56,7 @@ class Builder {
             $count = $em->getRepository('AppBundle:Product')->countByCategoryAndShown($category, true);
 
             $menu->addChild($category->getName() . " ({$count})", array(
-                'route' => 'catalog_index',
+                'route' => 'catalog_list',
                 'routeParameters' => array(
                     'categoryId' => $category->getId()
             )));
@@ -71,7 +71,7 @@ class Builder {
 
         $menu = $this->factory->createItem("root");
 
-        $menu->addChild('All Manufacturers', array('route' => 'catalog_index'));
+        $menu->addChild('All Manufacturers', array('route' => 'catalog_list'));
 
         $repository = $em->getRepository('AppBundle:Manufacturer');
 
@@ -82,7 +82,7 @@ class Builder {
             $count = $em->getRepository('AppBundle:Product')->countByManufacturerAndShown($manufacturer, true);
 
             $menu->addChild($manufacturer->getName() . " ({$count})", array(
-                'route' => 'catalog_index',
+                'route' => 'catalog_list',
                 'routeParameters' => array(
                     'manufacturerId' => $manufacturer->getId()
             )));
@@ -97,7 +97,7 @@ class Builder {
 
         $menu = $this->factory->createItem("root");
 
-        $menu->addChild('All Product Types', array('route' => 'catalog_index'));
+        $menu->addChild('All Product Types', array('route' => 'catalog_list'));
 
         $repository = $em->getRepository('AppBundle:ProductType');
 
@@ -108,7 +108,7 @@ class Builder {
             $count = $em->getRepository('AppBundle:Product')->countByProductTypeAndShown($productType, true);
 
             $menu->addChild($productType->getName() . " ({$count})", array(
-                'route' => 'catalog_index',
+                'route' => 'catalog_list',
                 'routeParameters' => array(
                     'productTypeId' => $productType->getId()
             )));
@@ -125,6 +125,7 @@ class Builder {
 
         $menu->addChild('Overview', array('route' => 'admin_index'));
         $menu->addChild('Products', array('route' => 'admin_list_products'));
+        $menu->addChild('Product Attachments', array('route' => 'admin_list_product_attachments'));
         $menu->addChild('Manufacturers', array('route' => 'admin_list_manufacturers'));
         $menu->addChild('Categories', array('route' => 'admin_list_categories'));
         $menu->addChild('Product Types', array('route' => 'admin_list_product_types'));

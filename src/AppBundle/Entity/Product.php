@@ -286,5 +286,13 @@ class Product {
         $this->productDetail = $productDetail;
         return $this;
     }
+    
+    public function getProductAttachment() {
+        if (sizeof($this->productAttachments) > 0) {
+            return $this->productAttachments[0];
+        } else {
+            return null;
+        }
+    }
 
 }

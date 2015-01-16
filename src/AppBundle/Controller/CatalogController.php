@@ -16,24 +16,66 @@ use Symfony\Component\HttpFoundation\Response;
 class CatalogController extends Controller {
 
     /**
-     * @Route("/", name="catalog_index")
-     * @Template("catalog/index.html.twig")
+     * @Route("/", name="catalog_list", options={"expose": true})
      */
     public function indexAction(Request $request) {
-        return array('params' => $request->query->all());
-    }
-
-    /**
-     * @Route("/list", name="catalog_list", options={"expose": true})
-     * @Template("catalog/list.html.twig")
-     */
-    public function listAction(Request $request) {
 
         $page = $request->get('page', 1);
         $categoryId = $request->get('categoryId');
         $manufacturerId = $request->get('manufacturerId');
         $productTypeId = $request->get('productTypeId');
         $searchTerms = $request->get('searchTerms');
+
+        $repository = $this->getDoctrine()->getRepository("AppBundle:Product");
+
+        $qb = $repository->createQueryBuilder('p')->where('p.shown = 1');
+
+        if ($searchTerms) {
+            $qb->andWhere('p.name LIKE :searchTerms OR p.sku LIKE :searchTerms')
+                    ->setParameter('searchTerms', "%{$searchTerms}%");
+        }
+
+        if ($categoryId) {
+            $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $categoryId);
+        }
+
+        if ($manufacturerId) {
+            $manufacturer = $this->getDoctrine()->getRepository("AppBundle:Manufacturer")->find($manufacturerId);
+            $qb->andWhere('p.manufacturer = :manufacturer')
+                    ->setParameter('manufacturer', $manufacturer);
+        }
+
+        if ($productTypeId) {
+            $productType = $this->getDoctrine()->getRepository("AppBundle:ProductType")->find($productTypeId);
+            $qb->andWhere('p.productType = :productType')
+                    ->setParameter('productType', $productType);
+        }
+
+        $paginator = $this->get('knp_paginator');
+
+        $pagination = $paginator->paginate(
+                $qb->getQuery(), $page, 6
+        );
+
+        $params = array(
+            'pagination' => $pagination,
+            'manufacturerId' => $manufacturerId,
+            'categoryId' => $categoryId,
+            'productTypeId' => $productTypeId
+        );
+
+        if ($request->isXmlHttpRequest()) {
+            $response = new Response();
+            $engine = $this->container->get('templating');
+            $response->setContent($engine->render('catalog/list.html.twig', $params));
+            $response->headers->set('X-TotalPages', $pagination->getPaginationData()['pageCount']);
+            return $response;
+        } else {
+            return $this->render('catalog/index.html.twig', $params);
+        }
+    }
+
+    public function getFiltersAction() {
 
         if ($categoryId || $productTypeId) {
             $qb = $this->getDoctrine()->getRepository("AppBundle:Manufacturer")
@@ -75,50 +117,10 @@ class CatalogController extends Controller {
         } else {
             $productTypes = $this->getDoctrine()->getRepository("AppBundle:ProductType")->findByShowInMenu(true);
         }
-
-        $repository = $this->getDoctrine()->getRepository("AppBundle:Product");
-
-        $qb = $repository->createQueryBuilder('p')->where('p.shown = 1');
-
-        if ($searchTerms) {
-            $qb->andWhere('p.name LIKE :searchTerms')
-                    ->setParameter('searchTerms', "%{$searchTerms}%");
-        }
-
-        if ($categoryId) {
-            $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $categoryId);
-        }
-
-        if ($manufacturerId) {
-            $manufacturer = $this->getDoctrine()->getRepository("AppBundle:Manufacturer")->find($manufacturerId);
-            $qb->andWhere('p.manufacturer = :manufacturer')
-                    ->setParameter('manufacturer', $manufacturer);
-        }
-
-        if ($productTypeId) {
-            $productType = $this->getDoctrine()->getRepository("AppBundle:ProductType")->find($productTypeId);
-            $qb->andWhere('p.productType = :productType')
-                    ->setParameter('productType', $productType);
-        }
-
-        $paginator = $this->get('knp_paginator');
-
-        $pagination = $paginator->paginate(
-                $qb->getQuery(), $page, 6
-        );
-
-        return array(
-            'pagination' => $pagination,
-            'manufacturers' => $manufacturers,
-            'productTypes' => $productTypes,
-            'manufacturerId' => $manufacturerId,
-            'categoryId' => $categoryId,
-            'productTypeId' => $productTypeId
-        );
     }
 
     /**
-     * @Route("/view/{id}", name="catalog_view")
+     * @Route("/view/{id}", name="catalog_view", options={"expose": true})
      * @Template("catalog/view.html.twig")
      */
     public function viewAction($id) {
@@ -151,7 +153,7 @@ class CatalogController extends Controller {
             $request->getSession()->getFlashBag()->add('notices', "{$product->getSku()} is already in cart");
         }
 
-        return $this->redirectToRoute('catalog_list', $request->query->all());
+        return new Response("Added to Cart");
     }
 
     /**
@@ -200,7 +202,6 @@ class CatalogController extends Controller {
                     'href' => $this->generateUrl('catalog_list')
                 )
             );
-            
         } else {
 
             $qb = $this->getDoctrine()->getRepository("AppBundle:Category")

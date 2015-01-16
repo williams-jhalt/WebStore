@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block stylesheets %}
+    {{ parent() }}
     <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
     <style type="text/css">
         .hide-overflow {
@@ -10,14 +11,28 @@
             text-overflow: ellipsis;
             display: block;
         }
+        #spinner {
+            display: none;
+        }
     </style>
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script src="{{ asset('bundles/app/js/jstree/jstree.min.js') }}"></script>
     <script type="text/javascript">
+
         $(document).ready(function () {
 
+            var pageOptions = {searchTerms: null, categoryId: null, page: 1};
+
+            if ("{{ app.request.query.get('searchTerms') }}" !== "") {
+                pageOptions.searchTerms = "{{ app.request.query.get('searchTerms') }}";
+            }
+
+            var currentPage = '{{ pagination.paginationData['current'] }}';
+            var totalPages = '{{ pagination.paginationData['pageCount'] }}';
+            
             $('#categoryTree').jstree({
                 "plugins": ["wholerow"],
                 'core': {
@@ -34,17 +49,37 @@
                         }
                     }
                 }
-            }).on('changed.jstree', function (e, data) {
-                $.get(data.node.a_attr.href, function (data) {
+            }).on('changed.jstree', function (e, jstreeData) {
+                pageOptions.categoryId = jstreeData.node.id;
+                pageOptions.page = 1;
+                $('#spinner').show();
+                $.get(Routing.generate('catalog_list', pageOptions), function (data, status, xhr) {
                     $("#catalogBody").html(data);
+                    $('#spinner').hide();
+                    totalPages = xhr.getResponseHeader('X-TotalPages');
+                    window.scrollTo(0, 0);
                 });
             });
 
-            $("#catalogBody").on('click', ".pagination a", function (e) {
-                $.get(this.href, function (data) {
-                    $("#catalogBody").html(data);
+            $(window).scroll(function () {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 300) {
+                    if (++currentPage <= totalPages) {
+                        pageOptions.page = currentPage;
+                        $('#spinner').show();
+                        $.get(Routing.generate('catalog_list', pageOptions), function (data) {
+                            $("#catalogBody").append(data);
+                            $('#spinner').hide();
+                        });
+                    }
+                }
+            });
+
+            $('#catalogBody').on('click', 'a.view-product', function (e) {
+                $.get(Routing.generate('catalog_view', {id: e.target.dataset.id}), function (data) {
+                    $('.modal-body').html(data);
+                    $('#myModal').modal('show');
                 });
-                e.preventDefault();
+                return false;
             });
 
             $("body").on('click', ".ajax-link", function (e) {
@@ -54,15 +89,11 @@
                 e.preventDefault();
             });
 
-            $("body").on('submit', ".ajax-form", function (e) {
+            $("body").on('submit', ".add-to-cart", function (e) {
                 $.get(this.action, $(this).serialize(), function (data) {
-                    $("#catalogBody").html(data);
+                    $(e.target).html(data);
                 });
                 e.preventDefault();
-            });
-
-            $.get(Routing.generate('catalog_list', {{ app.request.query.all|json_encode|raw }}), function (data) {
-                $("#catalogBody").html(data);
             });
 
         });
@@ -71,14 +102,45 @@
 
 {% block body %}
 
-    <div class="affix" style="width:300px;">
+    <div class="col-md-4">
 
-        <div id="categoryTree" class="hide-overflow"></div>
+        <div id="categoryTree" class="well well-sm hide-overflow"></div>
 
     </div>
 
-    <div style="margin-left: 310px;">
-        <div id="catalogBody"></div>
+    <div class="col-md-8">
+
+        <div class="row">
+
+            <div class="well well-sm">
+                Filters will go here
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div id="catalogBody">{% include "catalog/list.html.twig" %}</div>
+            
+            <div id="spinner"><img src="{{ asset('image/ajax-loader.gif') }}"></div>
+
+        </div>
+
+    </div>
+
+    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Product</h4>
+                </div>
+                <div class="modal-body text-center"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 

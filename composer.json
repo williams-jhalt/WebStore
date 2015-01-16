@@ -42,7 +42,7 @@
         "jquery/jquery": "1.11.*",
         "oyejorge/less.php": "~1.5",
         "braincrafted/bootstrap-bundle": "~2.0",
-        "gregwar/image-bundle": "dev-master",
+        "gregwar/image-bundle": "~2.0",
         "friendsofsymfony/jsrouting-bundle": "~1.5"
     },
     "require-dev": {

@@ -17,6 +17,10 @@ services:
         class: AppBundle\Service\ProductTypeService
         arguments: ["@doctrine.orm.entity_manager"]
     
+    app.product_attachment_service:
+        class: AppBundle\Service\ProductAttachmentService
+        arguments: ["@doctrine.orm.entity_manager"]
+    
     app.category_service:
         class: AppBundle\Service\CategoryService
         arguments: ["@doctrine.orm.entity_manager"]

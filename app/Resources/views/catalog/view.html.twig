@@ -1,4 +1,40 @@
-<img src="{{ image('test.jpeg').resize(300,300) }}" alt="image">
+{% if product.productAttachments|length > 1 %}
+    <div id="product-image-carousel" class="carousel slide" data-ride="carousel">
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#product-image-carousel" data-slide-to="0" class="active"></li>
+            <li data-target="#product-image-carousel" data-slide-to="1"></li>
+            <li data-target="#product-image-carousel" data-slide-to="2"></li>
+        </ol>
+
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner" role="listbox">
+            {% for x, attachment in product.productAttachments %}
+                <div class="item {% if x == 0 %}active{% endif %}">
+                    <img src="{{ image(attachment.url).resize(300,300) }}" alt="image">
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Controls -->
+        <a class="left carousel-control" href="#product-image-carousel" role="button" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="right carousel-control" href="#product-image-carousel" role="button" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+{% elseif product.productAttachments|length == 1 %}
+    <img src="{{ image(product.productAttachment.url).resize(300,300) }}" alt="image">
+{% else %}
+    <h1 class="text-center" style="margin:1em;">No Image Available</h1>
+{% endif %}
+
+{% if product.productDetail %}
+    <p>{{ product.productDetail.description }}</p>
+{% endif %}
 
 <dl class="dl-horizontal">
     <dt>SKU</dt>
@@ -18,7 +54,7 @@
 
     {% if not cartCheck(product) %}
 
-        <form class="form-inline ajax-form" action="{{ path('catalog_add_to_cart', app.request.query.all|merge({id: product.id})) }}" method="post">
+        <form class="form-inline add-to-cart" action="{{ path('catalog_add_to_cart', {id: product.id}) }}" method="post">
             <input class="form-control" type="text" name="quantity" value="1" size="3">
             <button class="btn btn-default" type="submit">Add to Cart</button>
         </form>
@@ -30,7 +66,3 @@
     {% endif %}
 
 {% endif %}
-
-<p>
-    <a class="ajax-link" href="{{ path('catalog_list', app.request.query.all) }}">Back</a>
-</p>
