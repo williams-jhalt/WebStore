@@ -54,7 +54,7 @@ class CatalogController extends Controller {
         $paginator = $this->get('knp_paginator');
 
         $pagination = $paginator->paginate(
-                $qb->getQuery(), $page, 25
+                $qb->getQuery(), $page, 10
         );
 
         $params = array(
