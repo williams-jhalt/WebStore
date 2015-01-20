@@ -51,7 +51,7 @@ class AdminProductController extends Controller {
 
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($id);
         $productDetail = $this->getDoctrine()->getRepository('AppBundle:ProductDetail')->findByProduct($product);
-        
+
         if (!$productDetail) {
             $productDetail = new ProductDetail();
         }
@@ -73,7 +73,7 @@ class AdminProductController extends Controller {
                 ))
                 ->add('save', 'submit', array('label' => 'Update Product'))
                 ->getForm();
-        
+
         $detailForm = $this->createFormBuilder($productDetail)
                 ->getForm();
 
@@ -152,8 +152,20 @@ class AdminProductController extends Controller {
 
             $filename = $form['importFile']->getData()->move(sys_get_temp_dir(), "import_products.csv")->getRealPath();
 
-            $process = new Process(PHP_BINDIR . "/php " . $this->get('kernel')->getRootDir() . "/console app:import:products " . $filename);
-            $process->start();
+            $file = new SplFileObject($filename, "r");
+
+            $service = $this->getContainer()->get('app.product_service');
+
+            $service->importFromCSV($file, array(
+                'sku' => 0,
+                'name' => 1,
+                'releaseDate' => 2,
+                'stockQuantity' => 3,
+                'manufacturerCode' => 4,
+                'productTypeCode' => 5,
+                'categoryCodes' => 6,
+                'barcode' => 7
+                    ), true);
 
             return $this->redirectToRoute('admin_list_products');
         }
@@ -205,9 +217,9 @@ class AdminProductController extends Controller {
      * @Route("/categoryTree", name="admin_product_category_tree", options={"expose": true})
      */
     public function categoryTreeAction(Request $request) {
-        
+
         $productId = $request->get("productId");
-        
+
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($productId);
 
         $parentId = $request->get("parentId");
@@ -247,66 +259,63 @@ class AdminProductController extends Controller {
 
         return $response;
     }
-    
+
     /**
      * @Route("/addToCategory", name="admin_product_add_to_category", options={"expose": true})
      */
     public function addToCategoryAction(Request $request) {
-        
+
         $productId = $request->request->get("productId");
         $categoryId = $request->request->get("categoryId");
-        
+
         $em = $this->getDoctrine()->getManager();
-        
+
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($productId);
         $category = $this->getDoctrine()->getRepository('AppBundle:Category')->find($categoryId);
-        
+
         $product->addCategory($category);
-        
+
         $em->persist($product);
         $em->flush();
 
         $response = array('code' => 100, 'success' => true);
 
         return new Response(json_encode($response));
-        
     }
-    
+
     /**
      * @Route("/removeFromCategory", name="admin_product_remove_from_category", options={"expose": true})
      */
     public function removeFromCategoryAction(Request $request) {
-        
+
         $productId = $request->request->get("productId");
         $categoryId = $request->request->get("categoryId");
-        
+
         $em = $this->getDoctrine()->getManager();
-        
+
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($productId);
         $category = $this->getDoctrine()->getRepository('AppBundle:Category')->find($categoryId);
-        
+
         $product->removeCategory($category);
-        
+
         $em->persist($product);
         $em->flush();
 
         $response = array('code' => 100, 'success' => true);
 
         return new Response(json_encode($response));
-        
     }
-    
+
     /**
      * @Route("/remove/{id}", name="admin_remove_product")
      */
     public function removeAction($id, Request $request) {
-        
+
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($id);
         $em = $this->getDoctrine()->getManager();
         $em->remove($product);
         $em->flush();
         return $this->redirectToRoute('admin_list_products', $request->query->all());
-        
     }
 
 }
