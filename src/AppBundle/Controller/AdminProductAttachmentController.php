@@ -2,15 +2,13 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\Product;
 use AppBundle\Entity\ProductAttachment;
 use AppBundle\Entity\ProductDetail;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use SplFileObject;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Process\Process;
 
 /**
  * @Route("/admin/product_attachments")
@@ -46,7 +44,7 @@ class AdminProductAttachmentController extends Controller {
 
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($id);
         $productDetail = $this->getDoctrine()->getRepository('AppBundle:ProductDetail')->findByProduct($product);
-        
+
         if (!$productDetail) {
             $productDetail = new ProductDetail();
         }
@@ -68,7 +66,7 @@ class AdminProductAttachmentController extends Controller {
                 ))
                 ->add('save', 'submit', array('label' => 'Update Product'))
                 ->getForm();
-        
+
         $detailForm = $this->createFormBuilder($productDetail)
                 ->getForm();
 
@@ -108,11 +106,11 @@ class AdminProductAttachmentController extends Controller {
         if ($form->isValid()) {
 
             $em = $this->getDoctrine()->getManager();
-            
+
             $product = $em->getRepository('AppBundle:Product')->findOneBySku($form->get('sku')->getData());
-            
+
             $attachment->setProduct($product);
-            
+
 
             $em->persist($attachment);
             $em->flush();
@@ -140,28 +138,34 @@ class AdminProductAttachmentController extends Controller {
 
             $filename = $form['importFile']->getData()->move(sys_get_temp_dir(), "import_products.csv")->getRealPath();
 
-            $process = new Process(PHP_BINDIR . "/php " . $this->get('kernel')->getRootDir() . "/console app:import:productattachments " . $filename);
-            $process->start();
+
+            $file = new SplFileObject($filename, "r");
+
+            $service = $this->get('app.product_attachment_service');
+
+            $service->importFromCSV($file, array(
+                'sku' => 0,
+                'filename' => 2
+                    ), true);
 
             return $this->redirectToRoute('admin_list_products');
         }
 
         return array('form' => $form->createView());
     }
-    
+
     /**
      * @Route("/remove/{id}", name="admin_remove_product_attachment")
      */
     public function removeAction($id, Request $request) {
-        
+
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($id);
         $em = $this->getDoctrine()->getManager();
         $em->remove($product);
         $em->flush();
         return $this->redirectToRoute('admin_list_products', $request->query->all());
-        
     }
-    
+
     /**
      * @Route("/toggle_explicit/{id}", name="admin_product_attachments_toggle_explicit")
      */
