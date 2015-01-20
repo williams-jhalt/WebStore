@@ -133,5 +133,18 @@ class Builder {
 
         return $menu;
     }
+    
+    public function webordersMenu() {
+        
+        $menu = $this->factory->createItem("root");
+        
+        $menu->addChild('List Orders', array('route' => 'weborders_index'));
+        $menu->addChild('Submit Order', array('route' => 'weborders_submit'));
+        $menu->addChild('Import Orders', array('route' => 'weborders_import'));
+        $menu->addChild('Export Orders', array('route' => 'weborders_export'));
+        
+        return $menu;
+        
+    }
 
 }

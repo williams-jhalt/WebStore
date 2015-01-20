@@ -74,6 +74,7 @@ class WebordersController extends Controller {
                 ->add('shipToCountry', 'country', array('label' => 'Country', 'required' => true, 'preferred_choices' => array('US')))
                 ->add('shipToPhone', 'text', array('label' => 'Phone', 'required' => false))
                 ->add('shipToEmail', 'email', array('label' => 'Email', 'required' => false))
+                ->add('rush', 'checkbox', array('label' => 'Rush Order', 'required' => false))
                 ->add('save', 'submit', array('label' => 'Submit Order'))
                 ->getForm();
 
@@ -107,6 +108,26 @@ class WebordersController extends Controller {
         $cartItems = $this->getUser()->getCartItems();
 
         return array('cartItems' => $cartItems);
+        
+    }
+    
+    /**
+     * @Route("/import", name="weborders_import")
+     * @Template("weborders/import.html.twig")
+     */
+    public function importAction() {
+        
+        return array();
+        
+    }
+    
+    /**
+     * @Route("/export", name="weborders_export")
+     * @Template("weborders/export.html.twig")
+     */
+    public function exportAction() {
+        
+        return array();
         
     }
 

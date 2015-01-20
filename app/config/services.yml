@@ -75,6 +75,13 @@ services:
         tags:
             - { name: knp_menu.menu, alias: adminMenu }
             
+    app.menu.weborders:
+        class: Knp\Menu\MenuItem # the service definition requires setting the class
+        factory_service: app.menu_builder
+        factory_method: webordersMenu
+        tags:
+            - { name: knp_menu.menu, alias: webordersMenu }
+            
     #twig extentions
     app.twig.cart_check_extension:
         class: AppBundle\Twig\CartCheckExtension

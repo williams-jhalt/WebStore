@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <div class="row">
+
+        <div class="col-md-3">
+            {{ knp_menu_render('webordersMenu', { 'style': 'stacked-pills' }) }}
+        </div>
+
+        <div class="col-md-9">
+
+            {% block weborders_body %}{% endblock %}
+
+        </div>
+
+    </div>
+
+{% endblock %}

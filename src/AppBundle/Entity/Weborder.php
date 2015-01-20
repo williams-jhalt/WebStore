@@ -130,6 +130,11 @@ class Weborder {
     private $orderDate;
 
     /**
+     * @ORM\Column(name="rush", type="boolean", options={"default":0})
+     */
+    private $rush;
+
+    /**
      * Get id
      *
      * @return integer 
@@ -291,6 +296,15 @@ class Weborder {
 
     public function setOrderDate($orderDate) {
         $this->orderDate = $orderDate;
+        return $this;
+    }
+
+    function getRush() {
+        return $this->rush;
+    }
+
+    function setRush($rush) {
+        $this->rush = $rush;
         return $this;
     }
 
