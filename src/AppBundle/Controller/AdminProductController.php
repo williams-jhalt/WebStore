@@ -154,7 +154,7 @@ class AdminProductController extends Controller {
 
             $file = new SplFileObject($filename, "r");
 
-            $service = $this->getContainer()->get('app.product_service');
+            $service = $this->get('app.product_service');
 
             $service->importFromCSV($file, array(
                 'sku' => 0,
