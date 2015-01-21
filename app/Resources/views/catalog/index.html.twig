@@ -52,6 +52,7 @@
             }).on('changed.jstree', function (e, jstreeData) {
                 pageOptions.categoryId = jstreeData.node.id;
                 pageOptions.page = 1;
+                $("#catalogBody").html("Loading...");
                 $('#spinner').show();
                 $.get(Routing.generate('catalog_list', pageOptions), function (data, status, xhr) {
                     $("#catalogBody").html(data);
