@@ -1,33 +1,12 @@
-{% if product.productAttachments|length > 1 %}
-    <div id="product-image-carousel" class="carousel slide" data-ride="carousel">
-        <!-- Indicators -->
-        <ol class="carousel-indicators">
-            <li data-target="#product-image-carousel" data-slide-to="0" class="active"></li>
-            <li data-target="#product-image-carousel" data-slide-to="1"></li>
-            <li data-target="#product-image-carousel" data-slide-to="2"></li>
-        </ol>
-
-        <!-- Wrapper for slides -->
-        <div class="carousel-inner" role="listbox">
-            {% for x, attachment in product.productAttachments %}
-                <div class="item {% if x == 0 %}active{% endif %}">
-                    <img src="{{ image(attachment.url).resize(300,300) }}" alt="image">
-                </div>
-            {% endfor %}
-        </div>
-
-        <!-- Controls -->
-        <a class="left carousel-control" href="#product-image-carousel" role="button" data-slide="prev">
-            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-        </a>
-        <a class="right carousel-control" href="#product-image-carousel" role="button" data-slide="next">
-            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-        </a>
+{% if product.productAttachments|length > 0 %}
+    <div class="zoom" id="zoom">
+        <img src="{{ image(product.productAttachment.url).resize(300,300) }}" alt="image">
     </div>
-{% elseif product.productAttachments|length == 1 %}
-    <img src="{{ image(product.productAttachment.url).resize(300,300) }}" alt="image">
+    <script>
+        $(document).ready(function () {
+            $('#zoom').zoom({url: '{{product.productAttachment.url}}'});
+        });
+    </script>
 {% else %}
     <h1 class="text-center" style="margin:1em;">No Image Available</h1>
 {% endif %}

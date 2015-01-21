@@ -4,7 +4,7 @@
 
         <div class="panel-heading">
 
-            <a class="text-capitalize ajax-link hide-overflow view-product" href="#" data-id="{{product.id}}">{{ product.name }}</a>
+            <a class="text-capitalize hide-overflow view-product" href="#" data-id="{{product.id}}">{{ product.name }}</a>
 
         </div>
 
@@ -12,7 +12,7 @@
 
             <div class="col-sm-2">
 
-                <a class="ajax-link" href="{{ path('catalog_view', {id: product.id}) }}">
+                <a class="view-product" href="{{ path('catalog_view', {id: product.id}) }}">
                     {% if product.productAttachment %}
                         <img src="{{ image(product.productAttachment.url).resize(100,100) }}" alt="image">
                     {% else %}

@@ -30,8 +30,9 @@ class AdminProductController extends Controller {
         $qb = $repository->createQueryBuilder('p');
 
         if ($searchTerms !== null) {
-            $qb->where('p.name LIKE :searchTerms')
-                    ->setParameter('searchTerms', "%{$searchTerms}%");
+            $qb->where('p.name LIKE :searchTerms OR p.sku LIKE :searchTerms OR p.barcode = :barcode')
+                    ->setParameter('searchTerms', "%{$searchTerms}%")
+                    ->setParameter('barcode', $searchTerms);
         }
 
         $paginator = $this->get('knp_paginator');
