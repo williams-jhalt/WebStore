@@ -14,7 +14,14 @@
 
                 <a class="view-product" href="{{ path('catalog_view', {id: product.id}) }}">
                     {% if product.productAttachment %}
-                        <img src="{{ image(product.productAttachment.url).resize(100,100) }}" alt="image">
+                        <div class="zoom-{{product.productAttachment.id}}">
+                            <img src="{{ image(product.productAttachment.url).resize(100,100) }}" alt="image">
+                        </div>
+                        <script>
+                            $(document).ready(function () {
+                                $('#zoom-{{product.productAttachment.id}}').zoom({url: '{{ image(product.productAttachment.url).resize(300,300) }}'});
+                            });
+                        </script>
                     {% else %}
                         No Image Available
                     {% endif %}
