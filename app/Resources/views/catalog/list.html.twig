@@ -14,7 +14,7 @@
 
                 <a class="view-product" href="{{ path('catalog_view', {id: product.id}) }}">
                     {% if product.productAttachment %}
-                        <div class="zoom-{{product.productAttachment.id}}">
+                        <div class="zoom" id="zoom-{{product.productAttachment.id}}">
                             <img src="{{ image(product.productAttachment.url).resize(100,100) }}" alt="image">
                         </div>
                         <script>
