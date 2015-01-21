@@ -25,6 +25,7 @@ class CatalogController extends Controller {
         $manufacturerId = $request->get('manufacturerId');
         $productTypeId = $request->get('productTypeId');
         $searchTerms = $request->get('searchTerms');
+        $sortBy = $request->get('sortBy', 'p.sku');
 
         $repository = $this->getDoctrine()->getRepository("AppBundle:Product");
 
@@ -50,6 +51,8 @@ class CatalogController extends Controller {
             $qb->andWhere('p.productType = :productType')
                     ->setParameter('productType', $productType);
         }
+        
+        $qb->orderBy($sortBy, 'ASC');
 
         $paginator = $this->get('knp_paginator');
 
@@ -59,9 +62,14 @@ class CatalogController extends Controller {
 
         $params = array(
             'pagination' => $pagination,
-            'manufacturerId' => $manufacturerId,
-            'categoryId' => $categoryId,
-            'productTypeId' => $productTypeId
+            'pageOptions' => array(
+                'categoryId' => $categoryId,
+                'manufacturerId' => $manufacturerId,
+                'productTypeId' => $productTypeId,
+                'searchTerms' => $searchTerms,
+                'sortBy' => $sortBy,
+                'page' => $page
+            )
         );
 
         if ($request->isXmlHttpRequest()) {

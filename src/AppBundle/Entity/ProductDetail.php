@@ -24,92 +24,86 @@ class ProductDetail {
     /**
      * @var string
      *
-     * @ORM\Column(name="text_description", type="text")
+     * @ORM\Column(name="text_description", type="text", nullable=true)
      */
     private $textDescription;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="html_description", type="text")
+     * @ORM\Column(name="html_description", type="text", nullable=true)
      */
     private $htmlDescription;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="product_height", type="decimal")
+     * @ORM\Column(name="product_height", type="decimal", nullable=true)
      */
     private $productHeight;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="product_length", type="decimal")
+     * @ORM\Column(name="product_length", type="decimal", nullable=true)
      */
     private $productLength;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="product_width", type="decimal")
+     * @ORM\Column(name="product_width", type="decimal", nullable=true)
      */
     private $productWidth;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="product_weight", type="decimal")
+     * @ORM\Column(name="product_weight", type="decimal", nullable=true)
      */
     private $productWeight;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="package_height", type="decimal")
+     * @ORM\Column(name="package_height", type="decimal", nullable=true)
      */
     private $packageHeight;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="package_length", type="decimal")
+     * @ORM\Column(name="package_length", type="decimal", nullable=true)
      */
     private $packageLength;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="package_width", type="decimal")
+     * @ORM\Column(name="package_width", type="decimal", nullable=true)
      */
     private $packageWidth;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="package_weight", type="decimal")
+     * @ORM\Column(name="package_weight", type="decimal", nullable=true)
      */
     private $packageWeight;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="color", type="string", length=255)
+     * @ORM\Column(name="color", type="string", length=255, nullable=true)
      */
     private $color;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="material", type="string", length=255)
+     * @ORM\Column(name="material", type="string", length=255, nullable=true)
      */
     private $material;
-
-    /**
-     * @ORM\OneToOne(targetEntity="Product", inversedBy="productDetail")
-     * @ORM\JoinColumn(name="product_id", referencedColumnName="id")
-     * */
-    private $product;
 
     /**
      * Get id
@@ -370,15 +364,6 @@ class ProductDetail {
      */
     public function getMaterial() {
         return $this->material;
-    }
-
-    public function getProduct() {
-        return $this->product;
-    }
-
-    public function setProduct($product) {
-        $this->product = $product;
-        return $this;
     }
 
 }

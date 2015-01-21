@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Product;
 use AppBundle\Entity\ProductDetail;
+use AppBundle\Form\ProductDetailType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use SplFileObject;
@@ -34,6 +35,8 @@ class AdminProductController extends Controller {
                     ->setParameter('searchTerms', "%{$searchTerms}%")
                     ->setParameter('barcode', $searchTerms);
         }
+        
+        $qb->orderBy('p.sku', 'ASC');
 
         $paginator = $this->get('knp_paginator');
 
@@ -51,11 +54,6 @@ class AdminProductController extends Controller {
     public function editProductAction($id, Request $request) {
 
         $product = $this->getDoctrine()->getRepository('AppBundle:Product')->find($id);
-        $productDetail = $this->getDoctrine()->getRepository('AppBundle:ProductDetail')->findByProduct($product);
-
-        if (!$productDetail) {
-            $productDetail = new ProductDetail();
-        }
 
         $form = $this->createFormBuilder($product)
                 ->add('name', 'text')
@@ -72,16 +70,13 @@ class AdminProductController extends Controller {
                     'class' => 'AppBundle:ProductType',
                     'property' => 'name'
                 ))
+                ->add('productDetail', new ProductDetailType())
                 ->add('save', 'submit', array('label' => 'Update Product'))
                 ->getForm();
-
-        $detailForm = $this->createFormBuilder($productDetail)
-                ->getForm();
-
+        
         $form->handleRequest($request);
-        $detailForm->handleRequest($request);
 
-        if ($form->isValid() && $detailForm->isValid()) {
+        if ($form->isValid()) {
 
             $em = $this->getDoctrine()->getManager();
 
@@ -91,7 +86,7 @@ class AdminProductController extends Controller {
             return $this->redirectToRoute('admin_list_products', $request->query->all());
         }
 
-        return array('product' => $product, 'form' => $form->createView(), 'detail_form' => $detailForm->createView());
+        return array('product' => $product, 'form' => $form->createView());
     }
 
     /**

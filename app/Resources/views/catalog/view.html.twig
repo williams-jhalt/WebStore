@@ -12,7 +12,7 @@
 {% endif %}
 
 {% if product.productDetail %}
-    <p>{{ product.productDetail.description }}</p>
+    <div>{{ product.productDetail.htmlDescription|raw }}</div>
 {% endif %}
 
 <dl class="dl-horizontal">

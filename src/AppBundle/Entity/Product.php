@@ -73,8 +73,8 @@ class Product {
     private $shown = true;
 
     /**
-     * @ORM\OneToOne(targetEntity="ProductDetail", mappedBy="product")
-     * */
+     * @ORM\OneToOne(targetEntity="ProductDetail", cascade={"persist","remove"})
+     */
     private $productDetail;
 
     /**
@@ -286,7 +286,7 @@ class Product {
         $this->productDetail = $productDetail;
         return $this;
     }
-    
+
     public function getProductAttachment() {
         if (sizeof($this->productAttachments) > 0) {
             return $this->productAttachments[0];
