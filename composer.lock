@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0ebba047f4ee52a2273d2f0acf329e2d",
+    "hash": "a8678bfed235548d9008a2a27ed9c273",
     "packages": [
         {
             "name": "braincrafted/bootstrap-bundle",
@@ -1719,16 +1719,16 @@
         },
         {
             "name": "predis/predis",
-            "version": "v1.0.1",
+            "version": "0.8.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nrk/predis.git",
-                "reference": "7a170b3d8123c556597b4fbdb88631f99de180c2"
+                "reference": "4123fcd85d61354c6c9900db76c9597dbd129bf6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/7a170b3d8123c556597b4fbdb88631f99de180c2",
-                "reference": "7a170b3d8123c556597b4fbdb88631f99de180c2",
+                "url": "https://api.github.com/repos/nrk/predis/zipball/4123fcd85d61354c6c9900db76c9597dbd129bf6",
+                "reference": "4123fcd85d61354c6c9900db76c9597dbd129bf6",
                 "shasum": ""
             },
             "require": {
@@ -1743,8 +1743,8 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "Predis\\": "src/"
+                "psr-0": {
+                    "Predis": "lib/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1765,7 +1765,7 @@
                 "predis",
                 "redis"
             ],
-            "time": "2015-01-02 12:51:34"
+            "time": "2014-08-01 09:43:10"
         },
         {
             "name": "psr/log",
@@ -2619,7 +2619,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "snc/redis-bundle": 20
+        "snc/redis-bundle": 20,
+        "predis/predis": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
