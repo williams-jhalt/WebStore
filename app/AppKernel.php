@@ -22,12 +22,9 @@ class AppKernel extends Kernel {
             new Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle(),
             new Braincrafted\Bundle\BootstrapBundle\BraincraftedBootstrapBundle(),
             new Gregwar\ImageBundle\GregwarImageBundle(),
-            new FOS\JsRoutingBundle\FOSJsRoutingBundle()            
+            new FOS\JsRoutingBundle\FOSJsRoutingBundle(),
+            new Snc\RedisBundle\SncRedisBundle(),
         );
-        
-        if ($this->getEnvironment() == 'prod') {
-            $bundles[] = new Snc\RedisBundle\SncRedisBundle();
-        }
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();
