@@ -132,6 +132,43 @@ class AdminProductController extends Controller {
     }
 
     /**
+     * @Route("/import", name="admin_import_product_details")
+     * @Template("admin/products/import_product_details.html.twig")
+     */
+    public function importProductDetailsAction(Request $request) {
+
+        $form = $this->createFormBuilder()
+                ->add('importFile', 'file')
+                ->add('upload', 'submit', array('label' => 'Upload File'))
+                ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+
+            $filename = $form['importFile']->getData()->move(sys_get_temp_dir(), "import_products.csv")->getRealPath();
+
+            $file = new SplFileObject($filename, "r");
+
+            $service = $this->get('app.product_service');
+
+            $service->importDetailsFromCSV($file, array(
+                'sku' => 0,
+                'package_height' => 1,
+                'package_length' => 2,
+                'package_width' => 3,
+                'package_weight' => 5,
+                'color' => 6,
+                'material' => 7
+                    ), true);
+
+            return $this->redirectToRoute('admin_list_products');
+        }
+
+        return array('form' => $form->createView());
+    }
+
+    /**
      * @Route("/import", name="admin_import_products")
      * @Template("admin/products/import.html.twig")
      */
