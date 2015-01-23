@@ -132,7 +132,7 @@ class AdminProductController extends Controller {
     }
 
     /**
-     * @Route("/import", name="admin_import_product_details")
+     * @Route("/import_details", name="admin_import_product_details")
      * @Template("admin/products/import_product_details.html.twig")
      */
     public function importProductDetailsAction(Request $request) {
@@ -161,6 +161,35 @@ class AdminProductController extends Controller {
                 'color' => 6,
                 'material' => 7
                     ), true);
+
+            return $this->redirectToRoute('admin_list_products');
+        }
+
+        return array('form' => $form->createView());
+    }
+
+    /**
+     * @Route("/import_descriptions", name="admin_import_product_descriptions")
+     * @Template("admin/products/import_product_descriptions.html.twig")
+     */
+    public function importProductDescriptionsAction(Request $request) {
+
+        $form = $this->createFormBuilder()
+                ->add('importFile', 'file')
+                ->add('upload', 'submit', array('label' => 'Upload File'))
+                ->getForm();
+
+        $form->handleRequest($request);            
+
+        if ($form->isValid()) {
+
+            $filename = $form['importFile']->getData()->move(sys_get_temp_dir(), "import_products.xml")->getRealPath();
+
+            $file = new SplFileObject($filename, "r");
+
+            $service = $this->get('app.product_service');
+
+            $service->importDescriptionsFromXML($file);
 
             return $this->redirectToRoute('admin_list_products');
         }

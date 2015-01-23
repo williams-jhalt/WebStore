@@ -4,8 +4,14 @@
         <ul class="nav navbar-nav">
             <li><a href="{{ path('admin_list_products') }}">List</a></li>
             <li><a href="{{ path('admin_add_product') }}">Add</a></li>
-            <li><a href="{{ path('admin_import_products') }}">Import</a></li>
-            <li><a href="{{ path('admin_import_product_details') }}">Import Details</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Import <span class="caret"></span></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="{{ path('admin_import_products') }}">Products</a></li>
+                  <li><a href="{{ path('admin_import_product_details') }}">Product Details</a></li>
+                  <li><a href="{{ path('admin_import_product_descriptions') }}">Descriptions</a></li>
+                </ul>
+              </li>
             <li><a href="{{ path('admin_show_all_products') }}">Show All</a></li>
             <li><a href="{{ path('admin_hide_all_products') }}">Hide All</a></li>
         </ul>

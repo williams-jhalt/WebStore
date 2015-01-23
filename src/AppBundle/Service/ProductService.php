@@ -35,12 +35,12 @@ class ProductService {
      * @param type $skipFirstRow
      */
     public function importFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
-        
+
         $productRepository = $this->em->getRepository('AppBundle:Product');
         $manufacturerRepository = $this->em->getRepository('AppBundle:Manufacturer');
         $productTypeRepository = $this->em->getRepository('AppBundle:ProductType');
         $categoryRepository = $this->em->getRepository('AppBundle:Category');
-        
+
         $batchSize = 50;
         $i = 0;
 
@@ -48,7 +48,7 @@ class ProductService {
 
             $row = $file->fgetcsv(",");
 
-            if ($skipFirstRow && $i == 0) {   
+            if ($skipFirstRow && $i == 0) {
                 $i++;
                 continue;
             }
@@ -65,21 +65,21 @@ class ProductService {
                 $product->setName($row[$mapping['name']]);
                 $product->setReleaseDate(DateTime::createFromFormat('Y-m-d', $row[$mapping['releaseDate']]));
                 $product->setStockQuantity($row[$mapping['stockQuantity']]);
-                
+
                 $product->setManufacturer($manufacturerRepository->findOrCreateByCode($row[$mapping['manufacturerCode']]));
                 $product->setProductType($productTypeRepository->findOrCreateByCode($row[$mapping['productTypeCode']]));
-                
+
                 $categories = array();
                 foreach (explode("|", $row[$mapping['categoryCodes']]) as $categoryCode) {
                     $categories[] = $categoryRepository->findOrCreateByCode($categoryCode);
                 }
-                
+
                 $product->setCategories($categories);
 
                 $product->setBarcode($row[$mapping['barcode']]);
 
                 $this->em->persist($product);
-                
+
 
                 if (($i % $batchSize) === 0) {
                     $this->em->flush();
@@ -112,9 +112,9 @@ class ProductService {
      * @param type $skipFirstRow
      */
     public function importDetailsFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
-        
+
         $productRepository = $this->em->getRepository('AppBundle:Product');
-        
+
         $batchSize = 50;
         $i = 0;
 
@@ -122,7 +122,7 @@ class ProductService {
 
             $row = $file->fgetcsv(",");
 
-            if ($skipFirstRow && $i == 0) {   
+            if ($skipFirstRow && $i == 0) {
                 $i++;
                 continue;
             }
@@ -134,13 +134,13 @@ class ProductService {
                 if (!$product) {
                     continue;
                 }
-                
+
                 $productDetail = $product->getProductDetail();
-                
+
                 if (!$productDetail) {
                     $productDetail = new ProductDetail();
                 }
-                
+
                 $productDetail->setPackageHeight($row[$mapping['package_height']]);
                 $productDetail->setPackageLength($row[$mapping['package_length']]);
                 $productDetail->setPackageWidth($row[$mapping['package_width']]);
@@ -149,9 +149,9 @@ class ProductService {
                 $productDetail->setMaterial($row[$mapping['material']]);
 
                 $product->setProductDetail($productDetail);
-                
+
                 $this->em->persist($product);
-                
+
 
                 if (($i % $batchSize) === 0) {
                     $this->em->flush();
@@ -160,6 +160,53 @@ class ProductService {
             }
 
             $i++;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+    }
+
+    /**
+     * 
+     * @param SplFileObject $file
+     */
+    public function importDescriptionsFromXML(SplFileObject $file) {
+
+        $productRepository = $this->em->getRepository('AppBundle:Product');
+
+        $xmlProducts = simplexml_load_file($file->getRealPath());
+
+        $batchSize = 50;
+        $i = 0;
+
+        foreach ($xmlProducts as $xmlProduct) {
+
+            $product = $productRepository->findOneBySku($xmlProduct['sku']);
+
+            if (!$product) {
+                continue;
+            }
+
+            $productDetail = $product->getProductDetail();
+
+            if (!$productDetail) {
+                $productDetail = new ProductDetail();
+            }
+
+            $productDetail->setTextDescription($xmlProduct);
+
+            $product->setProductDetail($productDetail);
+
+            $this->em->persist($product);
+
+
+            if (($i % $batchSize) === 0) {
+                $this->em->flush();
+                $this->em->clear();
+            }
+
+            $i++;
+            
         }
 
         $this->em->flush();
