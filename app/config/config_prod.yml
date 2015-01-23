@@ -31,6 +31,8 @@ snc_redis:
             type: predis
             alias: default
             dsn: redis://webstore-dev.e51fwo.0001.use1.cache.amazonaws.com
+    session:
+        client: default
     doctrine:
         metadata_cache:
             client: default
