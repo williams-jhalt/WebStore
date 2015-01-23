@@ -1,5 +1,5 @@
 {% if product.productAttachments|length > 0 %}
-    <div class="zoom" id="zoom">
+    <div class="zoom text-center" id="zoom">
         <img src="{{ image(product.productAttachment.url).resize(300,300) }}" alt="image">
     </div>
     <script>
@@ -12,7 +12,7 @@
 {% endif %}
 
 {% if product.productDetail %}
-    <div>{{ product.productDetail.htmlDescription|raw }}</div>
+    <div class="text-justify">{{ product.productDetail.textDescription }}</div>
 {% endif %}
 
 <dl class="dl-horizontal">
