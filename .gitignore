@@ -12,7 +12,7 @@
 /composer.phar
 /nbproject/private/
 /app/data/*
-/web/cache/
+/web/cache/*
 /web/components/
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
