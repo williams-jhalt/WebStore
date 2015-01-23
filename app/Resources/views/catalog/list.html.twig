@@ -28,7 +28,7 @@
 
             <div class="col-sm-5">
                 {% if product.productDetail %}
-                    <p>{{ product.productDetail.textDescription|length > 50 ? myentity.text|slice(0, 50) ~ '...' : product.productDetail.textDescription }}</p>
+                    <p>{{ product.productDetail.textDescription|length > 200 ? product.productDetail.textDescription|slice(0, 200) ~ '...' : product.productDetail.textDescription }}</p>
                 {% else %}
                     <p>No description available</p>
                 {% endif %}
