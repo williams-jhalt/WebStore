@@ -23,7 +23,6 @@ class AppKernel extends Kernel {
             new Braincrafted\Bundle\BootstrapBundle\BraincraftedBootstrapBundle(),
             new Gregwar\ImageBundle\GregwarImageBundle(),
             new FOS\JsRoutingBundle\FOSJsRoutingBundle(),
-            new Snc\RedisBundle\SncRedisBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
@@ -31,6 +30,8 @@ class AppKernel extends Kernel {
             $bundles[] = new Symfony\Bundle\WebProfilerBundle\WebProfilerBundle();
             $bundles[] = new Sensio\Bundle\DistributionBundle\SensioDistributionBundle();
             $bundles[] = new Sensio\Bundle\GeneratorBundle\SensioGeneratorBundle();
+        } else {
+            $bundles[] = new Snc\RedisBundle\SncRedisBundle();
         }
 
         return $bundles;
