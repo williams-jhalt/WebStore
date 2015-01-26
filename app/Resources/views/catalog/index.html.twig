@@ -93,9 +93,16 @@
         $(document).ready(function () {
 
             var pageOptions = {{ pageOptions|json_encode|raw }};
-            
             var currentPage = '{{ pagination.paginationData['current'] }}';
             var totalPages = '{{ pagination.paginationData['pageCount'] }}';
+
+            $(document).ajaxStart(function () {
+                $('#spinner').show();
+            });
+
+            $(document).ajaxStop(function () {
+                $('#spinner').hide();
+            });
 
             $('#categoryTree').jstree({
                 "plugins": ["wholerow"],
@@ -117,10 +124,8 @@
                 pageOptions.categoryId = jstreeData.node.id;
                 pageOptions.page = 1;
                 $("#catalogBody").html("Loading...");
-                $('#spinner').show();
                 $.get(Routing.generate('catalog_list', pageOptions), function (data, status, xhr) {
                     $("#catalogBody").html(data);
-                    $('#spinner').hide();
                     totalPages = xhr.getResponseHeader('X-TotalPages');
                     window.scrollTo(0, 0);
                 });
@@ -130,10 +135,8 @@
                 if ($(window).scrollTop() + $(window).height() >= $(document).height() - 300) {
                     if (++currentPage <= totalPages) {
                         pageOptions.page = currentPage;
-                        $('#spinner').show();
                         $.get(Routing.generate('catalog_list', pageOptions), function (data) {
                             $("#catalogBody").append(data);
-                            $('#spinner').hide();
                         });
                     }
                 }
@@ -155,11 +158,8 @@
             });
 
             $("body").on('submit', ".ajax-form", function (e) {
-                $("#catalogBody").html("Loading...");
-                $('#spinner').show();
                 $.get(this.action, $.extend(pageOptions, $(this).serializeObject()), function (data) {
                     $("#catalogBody").html(data);
-                    $('#spinner').hide();
                 });
                 e.preventDefault();
             });

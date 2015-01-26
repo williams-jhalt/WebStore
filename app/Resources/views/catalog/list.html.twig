@@ -28,7 +28,7 @@
 
             <div class="col-sm-5">
                 {% if product.productDetail %}
-                    <p>{{ product.productDetail.textDescription|length > 200 ? product.productDetail.textDescription|slice(0, 200) ~ '...' : product.productDetail.textDescription }}</p>
+                    <p>{{ product.productDetail.textDescription|length > 500 ? product.productDetail.textDescription|slice(0, 500) ~ '...' : product.productDetail.textDescription }} <a class="view-product" href="#" data-id="{{product.id}}">more</a></p>
                 {% else %}
                     <p>No description available</p>
                 {% endif %}
