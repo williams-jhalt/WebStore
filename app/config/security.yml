@@ -7,6 +7,10 @@ security:
         FOS\UserBundle\Model\UserInterface: sha512
 
     firewalls:
+        api:
+            pattern: ^/api/
+            anonymous: ~
+            http_basic: ~
         main:
             pattern: ^/
             form_login:
@@ -21,8 +25,9 @@ security:
         - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/catalog/, role: ROLE_USER }
         - { path: ^/cart/, role: ROLE_CUSTOMER }
-        - { path: ^/weborders/, role: ROLE_CUSTOMER }
+        - { path: ^/weborders/, role: [ ROLE_CUSTOMER, ROLE_ADMIN ] }
         - { path: ^/admin/, role: ROLE_ADMIN }
+        - { path: ^/api, role: ROLE_USER }
 
     role_hierarchy:
         ROLE_CUSTOMER:    ROLE_USER

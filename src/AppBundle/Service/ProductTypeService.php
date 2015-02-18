@@ -2,7 +2,6 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\ProductType;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
 
@@ -60,6 +59,23 @@ class ProductTypeService {
 
         $this->em->flush();
         $this->em->clear();
+    }
+    
+    public function exportCsv($filename) {
+        
+        $file = new SplFileObject($filename, "wb");
+        
+        $repository = $this->em->getRepository('AppBundle:ProductType');
+
+        $productTypes = $repository->findAll();
+        
+        foreach ($productTypes as $productType) {
+            $file->fputcsv(array(
+                $productType->getCode(),
+                $productType->getName()
+            ));
+        }
+        
     }
 
 }

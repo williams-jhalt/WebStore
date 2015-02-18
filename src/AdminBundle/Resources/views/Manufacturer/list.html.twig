@@ -1,0 +1,49 @@
+{% extends 'AdminBundle::layout.html.twig' %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.toggleShowInMenu').on('click', function() {
+                $.post(Routing.generate('admin_manufacturers_toggle_show_in_menu', {id: this.value}),
+                    function (response) {
+                        if (response.code == 100 && response.success) {
+                            console.log("Manufacturer Updated");
+                        }
+                    },
+                    "json"
+                );
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block admin_body %}
+    
+    {{ include('AdminBundle:Manufacturer:nav.html.twig') }}
+        
+    <table class="table table-condensed table-striped">
+        <thead>
+            <tr>
+                <th style="width:10%;">Code</th>
+                <th style="width:80%;">Name</th>
+                <th style="width:10%;">In Menu</th>
+                <th>Action</th>                
+            </tr>
+        </thead>
+        <tbody>
+            {% for manufacturer in pagination %}
+                <tr>
+                    <td><a href="{{ path('admin_manufacturer_edit', app.request.query.all|merge({id: manufacturer.id})) }}">{{ manufacturer.code }}</a></td>
+                    <td>{{ manufacturer.name }}</td>
+                    <td class="text-center"><input class="toggleShowInMenu" type="checkbox" value="{{ manufacturer.id }}" {% if manufacturer.showInMenu %}checked{% endif %}></td>                    
+                    <td>
+                        <a href="{{ path('admin_manufacturer_remove', app.request.query.all|merge({id: manufacturer.id})) }}">delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+        
+    {{ knp_pagination_render(pagination) }}
+    
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'AdminBundle::layout.html.twig' %}
+
+{% block admin_body %}
+    
+    {{ include('AdminBundle:Product:nav.html.twig') }}
+    
+    <h1>Import Product Descriptions</h1>
+    
+    {{ form(form) }}
+    
+{% endblock %}

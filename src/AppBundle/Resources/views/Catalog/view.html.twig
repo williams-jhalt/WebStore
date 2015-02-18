@@ -1,0 +1,85 @@
+<div class="text-center">
+    {% if product.productAttachments|length > 0 %}
+        <div class="zoom text-center" id="zoom">
+            <img src="{{ image(product.productAttachment.absolutePath).resize(300,300) }}" alt="image">
+        </div>
+        <script>
+            $(document).ready(function () {
+                $('#zoom').zoom({url: '{{ image(product.productAttachment.absolutePath).resize(800,800) }}'});
+                $(document).on('click', 'a.replace-image', function (e) {
+                    $('#zoom img').attr('src', this.dataset.imgsrc);
+                    $('#zoom').zoom({url: this.dataset.zoomsrc});
+                    e.preventDefault();
+                });
+            });
+        </script>
+        {% if product.productAttachments|length > 1 %}
+            <div style="padding-top:10px;">
+                {% for attachment in product.productAttachments %}
+                    <a class="replace-image" href="#" data-imgsrc="{{ image(attachment.absolutePath).resize(300,300) }}" data-zoomsrc="{{ image(attachment.absolutePath).resize(800,800) }}">
+                        <img src="{{ image(attachment.absolutePath).resize(80,80) }}">
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% else %}
+        <h1 class="text-center" style="margin:1em;">No Image Available</h1>
+    {% endif %}
+</div>
+
+{% if product.productDetail %}
+    <div style="text-indent:1em;padding:2em;">{{ product.productDetail.textDescription }}</div>
+{% endif %}
+
+<dl class="dl-horizontal">
+
+    <dt>SKU</dt>
+    <dd>{{ product.sku }}</dd>
+
+    <dt>Price</dt>
+    <dd>${{ product.price|number_format(2) }}</dd>
+
+    <dt>Stock Quantity</dt>
+    <dd>{{ product.stockQuantity }}</dd>
+
+    <dt>Manufacturer</dt>
+    <dd>{{ product.manufacturer.name }}</dd>
+
+    <dt>Product Type</dt>
+    <dd>{{ product.productType.name }}</dd>
+
+    {% if product.productDetail %}
+        {% if product.productDetail.color is not empty %}
+            <dt>Color</dt>
+            <dd>{{ product.productDetail.color }}</dd>
+        {% endif %}
+
+        {% if product.productDetail.material is not empty %}
+            <dt>Material</dt>
+            <dd>{{ product.productDetail.material }}</dd>
+        {% endif %}
+
+        {% if product.productDetail.packageHeight is not empty %}
+            <dt>Packaging Dimensions</dt>
+            <dd>{{ product.productDetail.packageHeight }}h x {{ product.productDetail.packageLength }}l x {{ product.productDetail.packageHeight }}w</dd>
+        {% endif %}
+    {% endif %}
+
+</dl>
+
+{% if is_granted('ROLE_CUSTOMER') %}
+
+    {% if not cartCheck(product) %}
+
+        <form class="form-inline add-to-cart" action="{{ path('catalog_add_to_cart', {id: product.id}) }}" method="post">
+            <input class="form-control" type="text" name="quantity" value="1" size="3">
+            <button class="btn btn-default" type="submit">Add to Cart</button>
+        </form>
+
+    {% else %}
+
+        Item is in cart
+
+    {% endif %}
+
+{% endif %}

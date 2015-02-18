@@ -3,10 +3,12 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
 
 /**
  * ProductDetail
  *
+ * @JMS\ExclusionPolicy("all")
  * @ORM\Table(name="product_detail")
  * @ORM\Entity
  */
@@ -24,6 +26,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="text_description", type="text", nullable=true)
      */
     private $textDescription;
@@ -31,6 +34,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="html_description", type="text", nullable=true)
      */
     private $htmlDescription;
@@ -38,6 +42,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="product_height", type="decimal", nullable=true)
      */
     private $productHeight;
@@ -45,6 +50,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="product_length", type="decimal", nullable=true)
      */
     private $productLength;
@@ -52,6 +58,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="product_width", type="decimal", nullable=true)
      */
     private $productWidth;
@@ -59,6 +66,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="product_weight", type="decimal", nullable=true)
      */
     private $productWeight;
@@ -66,6 +74,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="package_height", type="decimal", nullable=true)
      */
     private $packageHeight;
@@ -73,6 +82,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="package_length", type="decimal", nullable=true)
      */
     private $packageLength;
@@ -80,6 +90,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="package_width", type="decimal", nullable=true)
      */
     private $packageWidth;
@@ -87,6 +98,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="package_weight", type="decimal", nullable=true)
      */
     private $packageWeight;
@@ -94,6 +106,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="color", type="string", length=255, nullable=true)
      */
     private $color;
@@ -101,6 +114,7 @@ class ProductDetail {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="material", type="string", length=255, nullable=true)
      */
     private $material;

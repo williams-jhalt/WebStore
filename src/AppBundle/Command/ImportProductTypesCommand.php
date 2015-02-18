@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ImportProductTypesCommand extends ContainerAwareCommand {
 
     protected function configure() {
-        $this->setName('app:import:producttypes')
+        $this->setName('app:import:product_types')
                 ->setDescription('Import Product Types')
                 ->addArgument(
                         'file', InputArgument::REQUIRED, 'File to import'

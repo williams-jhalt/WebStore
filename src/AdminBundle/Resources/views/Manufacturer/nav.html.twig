@@ -1,0 +1,12 @@
+<nav class="navbar navbar-default" style="margin-top:1em;">
+    <div class="container-fluid">
+
+        {{ knp_menu_render('adminManufacturerMenu', { 'style': 'navbar' }) }}
+
+        <form class="navbar-form navbar-right" role="search" action="{{ path('admin_manufacturer_list') }}" method="get">
+            <input type="text" class="form-control" name="searchTerms" value="{{ app.request.query.get('searchTerms') }}" placeholder="Search...">
+            <button type="submit" class="btn btn-default">Go</button>
+            <a href="{{ path('admin_manufacturer_list') }}" class="btn btn-default">Clear</a>
+        </form>
+    </div>
+</nav>

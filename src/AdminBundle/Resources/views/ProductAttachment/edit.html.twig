@@ -1,0 +1,13 @@
+{% extends 'AdminBundle::layout.html.twig' %}
+
+{% block admin_body %}
+
+    {{ include('AdminBundle:ProductAttachment:nav.html.twig') }}
+    
+    <img src="{{ image(productAttachment.absolutePath).resize(80,80) }}">
+
+    {{ form(form) }}
+
+    <p><a class="btn btn-danger" href="{{ path('admin_product_list', app.request.query.all) }}">Cancel</a></p>
+
+{% endblock %}

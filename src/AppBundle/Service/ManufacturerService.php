@@ -61,5 +61,23 @@ class ManufacturerService {
         $this->em->flush();
         $this->em->clear();
     }
+    
+    public function exportCsv($filename) {
+        
+        
+        $file = new SplFileObject($filename, "wb");
+        
+        $repository = $this->em->getRepository('AppBundle:Manufacturer');
+
+        $manufacturers = $repository->findAll();
+        
+        foreach ($manufacturers as $manufacturer) {
+            $file->fputcsv(array(
+                $manufacturer->getCode(),
+                $manufacturer->getName()
+            ));
+        }
+        
+    }
 
 }

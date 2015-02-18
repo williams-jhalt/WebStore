@@ -7,8 +7,16 @@ use AppBundle\Entity\ProductDetail;
 use DateTime;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
+use XMLWriter;
 
 class ProductService {
+
+    const EXPORT_FORMAT_DEFAULT = 'default';
+    const EXPORT_FORMAT_SHORT = 'short';
+    const EXPORT_FORMAT_CATEGORIES = 'categories';
+    const EXPORT_FORMAT_RELEASE_DATE = 'release_date';
+    const EXPORT_FORMAT_MINIMAL = 'minimal';
+    const EXPORT_FORMAT_DIMENSIONS = 'dimensions';
 
     private $em;
 
@@ -206,11 +214,258 @@ class ProductService {
             }
 
             $i++;
-            
         }
 
         $this->em->flush();
         $this->em->clear();
+    }
+
+    public function exportToXML($filename) {
+
+        $productRepository = $this->em->getRepository('AppBundle:Product');
+
+        $writer = new XMLWriter();
+
+        $writer->openUri($filename);
+
+        $writer->setIndent(true);
+        $writer->startDocument('1.0', 'UTF-8');
+        $writer->startElement('products');
+
+        $products = $productRepository->findAll();
+
+        foreach ($products as $product) {
+
+            $productDetail = $product->getProductDetail();
+
+            if ($productDetail == null) {
+                $productDetail = new ProductDetail();
+            }
+
+            $writer->startElement('product');
+
+            $writer->writeElement('sku', $product->getSku());
+
+            $writer->startElement('name');
+            $writer->writeCData($product->getName());
+            $writer->endElement(); // name
+
+            $writer->startElement('description');
+            $writer->writeCData($productDetail->getTextDescription());
+            $writer->endElement(); // description
+
+            $writer->writeElement('keywords', null);
+
+            $writer->writeElement('price', $product->getPrice());
+
+            $writer->writeElement('stock_quantity', $product->getStockQuantity());
+
+            $writer->writeElement('reorder_quantity', 0);
+
+            $writer->writeElement('height', $productDetail->getPackageHeight());
+
+            $writer->writeElement('length', $productDetail->getPackageLength());
+
+            $writer->writeElement('diameter', $productDetail->getPackageWidth());
+
+            $writer->writeElement('weight', $productDetail->getPackageWeight());
+
+            $writer->writeElement('color', $productDetail->getColor());
+
+            $writer->writeElement('material', $productDetail->getMaterial());
+
+            $writer->writeElement('barcode', $product->getBarcode());
+
+            $writer->writeElement('release_date', $product->getReleaseDate()->format('Y-m-d'));
+
+            $writer->startElement('images');
+
+            foreach ($product->getProductAttachments() as $attachment) {
+                $pathArr = explode('/', $attachment->getUrl());
+                $length = sizeof($pathArr);
+                $path = "/{$pathArr[$length - 2]}/{$pathArr[$length - 1]}";
+                $writer->writeElement('image', $path);
+            }
+
+            $writer->endElement(); // images
+
+            $writer->startElement('categories');
+
+            foreach ($product->getCategories() as $category) {
+
+                $writer->startElement('category');
+                $writer->writeAttribute('code', $category->getCode());
+                $writer->writeAttribute('video', 0);
+                $writer->writeAttribute('parent', $category->getParent() ? $category->getParent()->getCode() : 0);
+                $writer->text($category->getName());
+                $writer->endElement(); // category
+            }
+
+            $writer->endElement(); // categories
+
+            $writer->startElement('manufacturer');
+            $writer->writeAttribute('code', $product->getManufacturer()->getCode());
+            $writer->writeAttribute('video', 0);
+            $writer->text($product->getManufacturer()->getName());
+            $writer->endElement(); // manufacturer
+
+            $writer->startElement('type');
+            $writer->writeAttribute('code', $product->getProductType()->getCode());
+            $writer->writeAttribute('video', 0);
+            $writer->text($product->getProductType()->getName());
+            $writer->endElement(); // type
+
+            $writer->endElement(); // product
+        }
+
+
+        $writer->endElement(); // products
+    }
+
+    public function exportCsv($filename, $format = self::EXPORT_FORMAT_DEFAULT) {
+
+        $repository = $this->em->getRepository("AppBundle:Product");
+
+        $file = new SplFileObject($filename, "wb");
+        switch ($format) {
+            case self::EXPORT_FORMAT_SHORT:
+                $file->fputcsv(array(
+                    "sku", "name", "shortdesc", "longdesc", "type", "vendor", "price", "stock", "active", "barcode"
+                ));
+                break;
+            case self::EXPORT_FORMAT_CATEGORIES:
+                $file->fputcsv(array(
+                    "sku", "name", "shortdesc", "longdesc", "type", "vendor", "price", "stock", "active", "barcode", "categories"
+                ));
+                break;
+            case self::EXPORT_FORMAT_RELEASE_DATE:
+                $file->fputcsv(array(
+                    "sku", "name", "shortdesc", "longdesc", "type", "vendor", "price", "stock", "active", "barcode", "release_date"
+                ));
+                break;
+            case self::EXPORT_FORMAT_MINIMAL:
+                $file->fputcsv(array(
+                    "sku", "type", "vendor", "price", "stock", "active", "barcode"
+                ));
+                break;
+            case self::EXPORT_FORMAT_DIMENSIONS:
+                $file->fputcsv(array(
+                    "sku", "height", "length", "width", "weight", "barcode"
+                ));
+                break;
+            case self::EXPORT_FORMAT_DEFAULT:
+            default:
+                $file->fputcsv(array(
+                    "sku", "name", "shortdesc", "longdesc", "type", "vendor", "price", "stock", "active", "barcode"
+                ));
+                break;
+        }
+
+        $products = $repository->findAll();
+            
+        foreach ($products as $product) {
+
+            $productDetail = $product->getProductDetail();
+
+            if (!$productDetail) {
+                $productDetail = new ProductDetail();
+            }
+
+            switch ($format) {
+                case self::EXPORT_FORMAT_SHORT:
+                    if (!$product->getActive()) {
+                        continue;
+                    }
+                    $data = array(
+                        $product->getSku(),
+                        $product->getName(),
+                        substr($productDetail->getTextDescription(), 0, 200),
+                        $productDetail->getTextDescription(),
+                        $product->getProductType()->getCode(),
+                        $product->getManufacturer()->getCode(),
+                        $product->getPrice(),
+                        $product->getStockQuantity(),
+                        $product->getActive(),
+                        $product->getBarcode()
+                    );
+                    break;
+                case self::EXPORT_FORMAT_CATEGORIES:
+
+                    $categories = array();
+
+                    foreach ($product->getCategories() as $category) {
+                        $categories[] = $category->getCode();
+                    }
+
+                    $data = array(
+                        $product->getSku(),
+                        $product->getName(),
+                        substr($productDetail->getTextDescription(), 0, 200),
+                        $productDetail->getTextDescription(),
+                        $product->getProductType()->getCode(),
+                        $product->getManufacturer()->getCode(),
+                        $product->getPrice(),
+                        $product->getStockQuantity(),
+                        $product->getActive(),
+                        $product->getBarcode(),
+                        join(",", $categories)
+                    );
+                    break;
+                case self::EXPORT_FORMAT_RELEASE_DATE:
+                    $data = array(
+                        $product->getSku(),
+                        $product->getName(),
+                        substr($productDetail->getTextDescription(), 0, 200),
+                        $productDetail->getTextDescription(),
+                        $product->getProductType()->getCode(),
+                        $product->getManufacturer()->getCode(),
+                        $product->getPrice(),
+                        $product->getStockQuantity(),
+                        $product->getActive(),
+                        $product->getBarcode(),
+                        $product->getReleaseDate()->format('m-d-Y')
+                    );
+                    break;
+                case self::EXPORT_FORMAT_MINIMAL:
+                    $data = array(
+                        $product->getSku(),
+                        $product->getProductType()->getCode(),
+                        $product->getManufacturer()->getCode(),
+                        $product->getPrice(),
+                        $product->getStockQuantity(),
+                        $product->getActive(),
+                        $product->getBarcode()
+                    );
+                    break;
+                case self::EXPORT_FORMAT_DIMENSIONS:
+                    $data = array(
+                        $product->getSku(),
+                        $productDetail->getPackageHeight(),
+                        $productDetail->getPackageLength(),
+                        $productDetail->getPackageWidth(),
+                        $productDetail->getPackageWeight(),
+                        $product->getBarcode()
+                    );
+                    break;
+                case self::EXPORT_FORMAT_DEFAULT:
+                default:
+                    $data = array(
+                        $product->getSku(),
+                        $product->getName(),
+                        substr($productDetail->getTextDescription(), 0, 200),
+                        $productDetail->getTextDescription(),
+                        $product->getProductType()->getCode(),
+                        $product->getManufacturer()->getCode(),
+                        $product->getPrice(),
+                        $product->getStockQuantity(),
+                        $product->getActive(),
+                        $product->getBarcode()
+                    );
+                    break;
+            }
+
+            $file->fputcsv($data);
+        }
     }
 
 }

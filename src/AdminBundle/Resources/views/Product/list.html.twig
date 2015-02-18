@@ -1,0 +1,55 @@
+{% extends 'AdminBundle::layout.html.twig' %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.toggleShowInMenu').on('click', function () {
+                $.post(Routing.generate('admin_product_toggle_shown', {id: this.value}),
+                        function (response) {
+                            if (response.code == 100 && response.success) {
+                                console.log("Product Updated");
+                            }
+                        }, "json");
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block admin_body %}
+
+    {{ include('AdminBundle:Product:nav.html.twig') }}
+
+    <table class="table table-condensed table-striped">
+        <thead>
+            <tr>
+                <th style="width:10%;">SKU</th>
+                <th style="width:60%">Name</th>
+                <th style="width:5%;">Mfgr.</th>
+                <th style="width:5%;">Type</th>
+                <th style="width:5%;">Price</th>
+                <th style="width:5%;">Stock</th>
+                <th style="width:10%;">Shown</th>
+                <th>Action</th>                
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in pagination %}
+                <tr>
+                    <td><a href="{{ path('admin_product_edit', app.request.query.all|merge({id: product.id})) }}">{{ product.sku }}</a></td>
+                    <td>{{ product.name }}</td>
+                    <td><span title="{{ product.manufacturer.name }}">{{ product.manufacturer.code }}</span></td>
+                    <td><span title="{{ product.productType.name }}">{{ product.productType.code }}</span></td>
+                    <td class="text-right">${{ product.price|number_format(2) }}</td>
+                    <td class="text-right">{{ product.stockQuantity }}</td>
+                    <td class="text-center"><input class="toggleShowInMenu" type="checkbox" value="{{ product.id }}" {% if product.shown %}checked{% endif %}></td>
+                    <td>
+                        <a href="{{ path('admin_product_remove', app.request.query.all|merge({id: product.id})) }}">delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ knp_pagination_render(pagination) }}
+
+{% endblock %}

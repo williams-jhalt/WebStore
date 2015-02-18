@@ -1,0 +1,19 @@
+{% extends 'AppBundle::layout.html.twig' %}
+
+{% block body %}
+
+    <div class="row">
+
+        <div class="col-md-3">
+            {{ knp_menu_render('adminMenu', { 'style': 'stacked-pills' }) }}
+        </div>
+
+        <div class="col-md-9">
+
+            {% block admin_body %}{% endblock %}
+
+        </div>
+
+    </div>
+
+{% endblock %}

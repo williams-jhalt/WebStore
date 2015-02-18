@@ -1,8 +1,8 @@
 {
-    "name": "symfony/framework-standard-edition",
-    "license": "MIT",
+    "name": "williams/webstore",
+    "license": "GPL",
     "type": "project",
-    "description": "The \"Symfony Standard Edition\" distribution",
+    "description": "Williams Trading Web Store Application",
     "autoload": {
         "psr-0": {
             "": "src/",
@@ -45,7 +45,11 @@
         "gregwar/image-bundle": "~2.0",
         "friendsofsymfony/jsrouting-bundle": "~1.5",
         "snc/redis-bundle": "1.1.x-dev",
-        "predis/predis": "0.8.x-dev"
+        "predis/predis": "0.8.x-dev",
+        "seven/symfony-rpc-bundle": "V2.2.2",
+        "friendsofsymfony/rest-bundle": "~1.5",
+        "jms/serializer-bundle": "0.13.*",
+        "piotrooo/wsdl-creator": "1.*"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"

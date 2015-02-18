@@ -9,8 +9,8 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 class ProductDetailType extends AbstractType {
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
-        $builder->add('textDescription', 'textarea', array('label' => "Text Description", 'required' => false))
-                ->add('htmlDescription', 'textarea', array('label' => "HTML Description", 'required' => false))
+        $builder->add('textDescription', 'textarea', array('label' => "Text Description", 'required' => false, 'attr' => array('rows' => 25)))
+                ->add('htmlDescription', 'textarea', array('label' => "HTML Description", 'required' => false, 'attr' => array('class' => 'html-editor', 'rows' => 25)))
                 ->add('productHeight', 'text', array('label' => "Product Height", 'required' => false))
                 ->add('productLength', 'text', array('label' => "Product Length", 'required' => false))
                 ->add('productWidth', 'text', array('label' => "Product Width", 'required' => false))

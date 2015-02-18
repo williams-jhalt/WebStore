@@ -3,10 +3,12 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
 
 /**
  * CartItem
  *
+ * @JMS\ExclusionPolicy("all")
  * @ORM\Table(name="cart_item")
  * @ORM\Entity
  */

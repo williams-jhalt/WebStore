@@ -2,6 +2,7 @@
 
 namespace AppBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -9,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="weborder")
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
 class Weborder {
 
@@ -133,6 +135,22 @@ class Weborder {
      * @ORM\Column(name="rush", type="boolean", options={"default":0})
      */
     private $rush;
+
+    /**
+     * @ORM\OneToMany(targetEntity="WeborderItem", mappedBy="weborder")
+     * */
+    private $weborderItems;
+
+    public function __construct() {
+        $this->weborderItems = new ArrayCollection();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist() {
+        $this->orderNumber = date('U') . rand(0,99);
+    }
 
     /**
      * Get id
@@ -299,12 +317,21 @@ class Weborder {
         return $this;
     }
 
-    function getRush() {
+    public function getRush() {
         return $this->rush;
     }
 
-    function setRush($rush) {
+    public function setRush($rush) {
         $this->rush = $rush;
+        return $this;
+    }
+
+    public function getWeborderItems() {
+        return $this->weborderItems;
+    }
+
+    public function setWeborderItems($weborderItems) {
+        $this->weborderItems = $weborderItems;
         return $this;
     }
 

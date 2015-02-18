@@ -1,0 +1,11 @@
+{% extends 'AdminBundle::layout.html.twig' %}
+
+{% block admin_body %}
+    
+    {{ include('AdminBundle:Category:nav.html.twig') }}
+    
+    <h1>Import Categories</h1>
+    
+    {{ form(form) }}
+    
+{% endblock %}

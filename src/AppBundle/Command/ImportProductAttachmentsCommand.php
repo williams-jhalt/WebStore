@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ImportProductAttachmentsCommand extends ContainerAwareCommand {
 
     protected function configure() {
-        $this->setName('app:import:productattachments')
+        $this->setName('app:import:product_attachments')
                 ->setDescription('Import Product Attachments')
                 ->addArgument(
                         'file', InputArgument::REQUIRED, 'File to import'

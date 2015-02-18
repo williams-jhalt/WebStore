@@ -78,5 +78,25 @@ class ProductAttachmentService {
         $this->em->flush();
         $this->em->clear();
     }
+    
+    public function exportCsv($filename) {
+
+        $repository = $this->em->getRepository('AppBundle:ProductAttachment');
+        
+        $file = new SplFileObject($filename, "wb");
+        
+        $attachments = $repository->findAll();
+        
+        foreach ($attachments as $attachment) {
+            
+            $file->fputcsv(array(
+                $attachment->getProduct()->getSku(),
+                $attachment->getUrl(),
+                $attachment->getExplicit()
+            ));
+            
+        }
+        
+    }
 
 }

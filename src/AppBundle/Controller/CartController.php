@@ -18,7 +18,7 @@ class CartController extends Controller {
 
     /**
      * @Route("/", name="cart_index")
-     * @Template("cart/index.html.twig")
+     * @Template("AppBundle:Cart:index.html.twig")
      */
     public function indexAction() {
 
@@ -135,7 +135,7 @@ class CartController extends Controller {
     }
 
     /**
-     * @Template("cart/sidebar_display.html.twig")
+     * @Template("AppBundle:Cart:sidebar_display.html.twig")
      */
     public function sidebarDisplayAction() {
 
@@ -151,7 +151,7 @@ class CartController extends Controller {
 
     /**
      * @Route("/lookup", name="cart_lookup")
-     * @Template("cart/lookup.html.twig")
+     * @Template("AppBundle:Cart:lookup.html.twig")
      */
     public function cartLookupAction(Request $request) {
 
@@ -172,7 +172,7 @@ class CartController extends Controller {
         $repository = $this->getDoctrine()->getRepository('AppBundle:Product');
 
         $lines = explode("\n", $input);
-        
+
         foreach ($lines as $line) {
 
             $t = preg_split("/[\s,]+/", $line);
@@ -190,7 +190,7 @@ class CartController extends Controller {
             try {
 
                 $product = $repository->findOneBySku($sku);
-                
+
                 if ($product) {
 
                     $cartItem = new CartItem();
@@ -202,7 +202,6 @@ class CartController extends Controller {
 
                     $em->persist($cartItem);
                     $em->flush();
-                    
                 }
             } catch (Exception $e) {
                 // don't bother

@@ -5,10 +5,12 @@ namespace AppBundle\Entity;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
 
 /**
  * Product
  *
+ * @JMS\ExclusionPolicy("all")
  * @ORM\Table(name="product")
  * @ORM\Entity(repositoryClass="AppBundle\Entity\ProductRepository")
  */
@@ -17,6 +19,7 @@ class Product {
     /**
      * @var integer
      *
+     * @JMS\Expose
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
@@ -26,6 +29,7 @@ class Product {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="sku", type="string", length=255, unique=true)
      */
     private $sku;
@@ -33,6 +37,7 @@ class Product {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;
@@ -40,6 +45,7 @@ class Product {
     /**
      * @var DateTime
      * 
+     * @JMS\Expose
      * @ORM\Column(name="release_date", type="date", nullable=true)
      */
     private $releaseDate;
@@ -47,6 +53,7 @@ class Product {
     /**
      * @var integer
      * 
+     * @JMS\Expose
      * @ORM\Column(name="stock_quantity", type="integer", nullable=true)
      */
     private $stockQuantity;
@@ -54,6 +61,7 @@ class Product {
     /**
      * @var double
      * 
+     * @JMS\Expose
      * @ORM\Column(name="price", type="decimal", nullable=true)
      */
     private $price;
@@ -61,6 +69,7 @@ class Product {
     /**
      * @var string
      * 
+     * @JMS\Expose
      * @ORM\Column(name="barcode", type="string", length=255, nullable=true)
      */
     private $barcode;
@@ -68,29 +77,42 @@ class Product {
     /**
      * @var boolean
      * 
-     * @ORM\Column(name="shown", type="boolean")
+     * @JMS\Expose
+     * @ORM\Column(name="shown", type="boolean", options={"default = 1"})
      */
     private $shown = true;
 
     /**
+     * @var boolean
+     * 
+     * @JMS\Expose
+     * @ORM\Column(name="active", type="boolean", options={"default = 1"})
+     */
+    private $active = true;
+
+    /**
+     * @JMS\Expose
      * @ORM\OneToOne(targetEntity="ProductDetail", cascade={"persist","remove"})
      */
     private $productDetail;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Manufacturer", inversedBy="products")
+     * @JMS\Expose
+     * @ORM\ManyToOne(targetEntity="Manufacturer", inversedBy="products", cascade={"persist"})
      * @ORM\JoinColumn(name="manufacturer_id", referencedColumnName="id")
      * */
     private $manufacturer;
 
     /**
-     * @ORM\ManyToOne(targetEntity="ProductType", inversedBy="products")
+     * @JMS\Expose
+     * @ORM\ManyToOne(targetEntity="ProductType", inversedBy="products", cascade={"persist"})
      * @ORM\JoinColumn(name="product_type_id", referencedColumnName="id")
      * */
     private $productType;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Category", inversedBy="products")
+     * @JMS\Expose
+     * @ORM\ManyToMany(targetEntity="Category", inversedBy="products", cascade={"persist"})
      * @ORM\JoinTable(name="products_categories",
      *      joinColumns={@ORM\JoinColumn(name="product_id", referencedColumnName="id")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="category_id", referencedColumnName="id")}
@@ -99,6 +121,7 @@ class Product {
     private $categories;
 
     /**
+     * @JMS\Expose
      * @ORM\OneToMany(targetEntity="ProductAttachment", mappedBy="product")
      * */
     private $productAttachments;
@@ -106,6 +129,7 @@ class Product {
     public function __construct() {
         $this->categories = new ArrayCollection();
         $this->productAttachments = new ArrayCollection();
+        $this->productDetail = new ProductDetail();
     }
 
     /**
@@ -293,6 +317,15 @@ class Product {
         } else {
             return null;
         }
+    }
+
+    public function getActive() {
+        return $this->active;
+    }
+
+    public function setActive($active) {
+        $this->active = $active;
+        return $this;
     }
 
 }

@@ -4,10 +4,12 @@ namespace AppBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
 
 /**
  * ProductType
  *
+ * @JMS\ExclusionPolicy("all")
  * @ORM\Table(name="product_type")
  * @ORM\Entity(repositoryClass="AppBundle\Entity\ProductTypeRepository")
  */
@@ -25,6 +27,7 @@ class ProductType {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="code", type="string", length=255, unique=true)
      */
     private $code;
@@ -32,6 +35,7 @@ class ProductType {
     /**
      * @var string
      *
+     * @JMS\Expose
      * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;

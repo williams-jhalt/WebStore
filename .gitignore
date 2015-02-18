@@ -13,7 +13,8 @@
 /nbproject/private/
 /app/data/*
 /web/cache/*
-/web/components/
+/web/components/*
+/web/uploads/*
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml

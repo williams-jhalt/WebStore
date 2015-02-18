@@ -51,7 +51,7 @@ class CatalogController extends Controller {
             $qb->andWhere('p.productType = :productType')
                     ->setParameter('productType', $productType);
         }
-        
+
         $qb->orderBy($sortBy, 'ASC');
 
         $paginator = $this->get('knp_paginator');
@@ -75,11 +75,11 @@ class CatalogController extends Controller {
         if ($request->isXmlHttpRequest()) {
             $response = new Response();
             $engine = $this->container->get('templating');
-            $response->setContent($engine->render('catalog/list.html.twig', $params));
+            $response->setContent($engine->render('AppBundle:Catalog:list.html.twig', $params));
             $response->headers->set('X-TotalPages', $pagination->getPaginationData()['pageCount']);
             return $response;
         } else {
-            return $this->render('catalog/index.html.twig', $params);
+            return $this->render('AppBundle:Catalog:index.html.twig', $params);
         }
     }
 
@@ -129,7 +129,7 @@ class CatalogController extends Controller {
 
     /**
      * @Route("/view/{id}", name="catalog_view", options={"expose": true})
-     * @Template("catalog/view.html.twig")
+     * @Template("AppBundle:Catalog:view.html.twig")
      */
     public function viewAction($id) {
 
@@ -166,7 +166,7 @@ class CatalogController extends Controller {
 
     /**
      * @Route("/search", name="catalog_search")
-     * @Template("catalog/search.html.twig")
+     * @Template("AppBundle:Catalog:search.html.twig")
      */
     public function searchAction(Request $request) {
 

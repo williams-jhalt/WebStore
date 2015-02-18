@@ -2,7 +2,6 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Category;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
 
@@ -69,6 +68,25 @@ class CategoryService {
 
         $this->em->flush();
         $this->em->clear();
+    }
+    
+    public function exportCsv($filename) {
+        
+        
+        $file = new SplFileObject($filename, "wb");
+        
+        $repository = $this->em->getRepository('AppBundle:Category');
+
+        $categories = $repository->findAll();
+        
+        foreach ($categories as $category) {
+            $file->fputcsv(array(
+                $category->getCode(),
+                $category->getName(),
+                $category->getParent() ? $category->getParent()->getCode() : 0
+            ));
+        }
+        
     }
 
 }

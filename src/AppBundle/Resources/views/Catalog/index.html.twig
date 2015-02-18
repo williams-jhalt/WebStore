@@ -1,0 +1,229 @@
+{% extends 'AppBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
+    <style type="text/css">
+        .hide-overflow {
+            overflow: hidden;
+            -ms-text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        #spinner {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/app/js/jstree/jstree.min.js') }}"></script>
+    <script src="{{ asset('bundles/app/js/zoom-master/jquery.zoom.min.js') }}"></script>
+    <script type="text/javascript">
+
+        (function ($) {
+            $.fn.serializeObject = function () {
+
+                var self = this,
+                        json = {},
+                        push_counters = {},
+                        patterns = {
+                            "validate": /^[a-zA-Z][a-zA-Z0-9_]*(?:\[(?:\d*|[a-zA-Z0-9_]+)\])*$/,
+                            "key": /[a-zA-Z0-9_]+|(?=\[\])/g,
+                            "push": /^$/,
+                            "fixed": /^\d+$/,
+                            "named": /^[a-zA-Z0-9_]+$/
+                        };
+
+
+                this.build = function (base, key, value) {
+                    base[key] = value;
+                    return base;
+                };
+
+                this.push_counter = function (key) {
+                    if (push_counters[key] === undefined) {
+                        push_counters[key] = 0;
+                    }
+                    return push_counters[key]++;
+                };
+
+                $.each($(this).serializeArray(), function () {
+
+                    // skip invalid keys
+                    if (!patterns.validate.test(this.name)) {
+                        return;
+                    }
+
+                    var k,
+                            keys = this.name.match(patterns.key),
+                            merge = this.value,
+                            reverse_key = this.name;
+
+                    while ((k = keys.pop()) !== undefined) {
+
+                        // adjust reverse_key
+                        reverse_key = reverse_key.replace(new RegExp("\\[" + k + "\\]$"), '');
+
+                        // push
+                        if (k.match(patterns.push)) {
+                            merge = self.build([], self.push_counter(reverse_key), merge);
+                        }
+
+                        // fixed
+                        else if (k.match(patterns.fixed)) {
+                            merge = self.build([], k, merge);
+                        }
+
+                        // named
+                        else if (k.match(patterns.named)) {
+                            merge = self.build({}, k, merge);
+                        }
+                    }
+
+                    json = $.extend(true, json, merge);
+                });
+
+                return json;
+            };
+        })(jQuery);
+
+        $(document).ready(function () {
+
+            var pageOptions = $.parseJSON('{{ pageOptions|json_encode|raw }}');
+            var currentPage = '{{ pagination.paginationData['current'] }}';
+            var totalPages = '{{ pagination.paginationData['pageCount'] }}';
+
+            $(document).ajaxStart(function () {
+                $('#spinner').show();
+            });
+
+            $(document).ajaxStop(function () {
+                $('#spinner').hide();
+            });
+
+            $('#categoryTree').jstree({
+                "plugins": ["wholerow"],
+                'core': {
+                    'data': {
+                        'url': function (node) {
+                            if (node.id === '#') {
+                                return Routing.generate('catalog_category_tree');
+                            } else {
+                                return Routing.generate('catalog_category_tree', {id: node.id});
+                            }
+                        },
+                        'data': function (node) {
+                            return {'id': node.id};
+                        }
+                    }
+                }
+            }).on('changed.jstree', function (e, jstreeData) {
+                pageOptions.categoryId = jstreeData.node.id;
+                pageOptions.page = 1;
+                $("#catalogBody").html("Loading...");
+                $.get(Routing.generate('catalog_list', pageOptions), function (data, status, xhr) {
+                    $("#catalogBody").html(data);
+                    totalPages = xhr.getResponseHeader('X-TotalPages');
+                    window.scrollTo(0, 0);
+                });
+            });
+
+            $(window).scroll(function () {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 300) {
+                    if (++currentPage <= totalPages) {
+                        pageOptions.page = currentPage;
+                        $.get(Routing.generate('catalog_list', pageOptions), function (data) {
+                            $("#catalogBody").append(data);
+                        });
+                    }
+                }
+            });
+
+            $('#catalogBody').on('click', 'a.view-product', function (e) {
+                $.get(Routing.generate('catalog_view', {id: e.target.dataset.id}), function (data) {
+                    $('.modal-body').html(data);
+                    $('#myModal').modal('show');
+                });
+                return false;
+            });
+
+            $("body").on('click', ".ajax-link", function (e) {
+                $.get(this.href, function (data) {
+                    $("#catalogBody").html(data);
+                });
+                e.preventDefault();
+            });
+
+            $("body").on('submit', ".ajax-form", function (e) {
+                $.get(this.action, $.extend(pageOptions, $(this).serializeObject()), function (data) {
+                    $("#catalogBody").html(data);
+                });
+                e.preventDefault();
+            });
+
+            $("body").on('submit', ".add-to-cart", function (e) {
+                $.get(this.action, $(this).serialize(), function (data) {
+                    $(e.target).html(data);
+                });
+                e.preventDefault();
+            });
+
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+
+    <div class="col-md-4">
+
+        <div id="categoryTree" class="well well-sm hide-overflow"></div>
+
+    </div>
+
+    <div class="col-md-8">
+
+        <div class="row">
+
+            <div class="well well-sm">
+                <form class="ajax-form form-inline" action="{{ path('catalog_list') }}" method="get">                    
+                    <label for="sortBy">Sort By</label>
+                    <select class="form-control" name="sortBy" onchange="$(this.form).submit();">
+                        <option {% if pageOptions['sortBy'] == 'p.sku' %}selected{% endif %} value="p.sku">SKU</option>
+                        <option {% if pageOptions['sortBy'] == 'p.name' %}selected{% endif %} value="p.name">Name</option>
+                        <option {% if pageOptions['sortBy'] == 'p.price' %}selected{% endif %} value="p.price">Price</option>
+                    </select>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div id="catalogBody">{% include "AppBundle:Catalog:list.html.twig" %}</div>
+
+            <div id="spinner"><img src="{{ asset('image/ajax-loader.gif') }}"></div>
+
+        </div>
+
+    </div>
+
+    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Product</h4>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

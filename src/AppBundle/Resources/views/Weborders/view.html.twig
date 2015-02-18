@@ -1,0 +1,46 @@
+{% extends 'AppBundle::layout.html.twig' %}
+
+{% block body %}
+
+    <div class="row">
+
+        <div class="col-md-3">
+            {{ knp_menu_render('webordersMenu', { 'style': 'stacked-pills' }) }}
+        </div>
+        
+        <div class="col-md-9">
+            
+            <h1>Weborder</h1>
+            
+            <dl class="dl-horizontal">
+                
+                <dt>Order Number</dt>
+                <dd>{{ weborder.orderNumber }}</dd>
+                
+                <dt>Reference / PO#</dt>
+                <dd>{{ weborder.reference1 }}</dd>
+                
+                <dt>Reference 2</dt>
+                <dd>{{ weborder.reference2 }}</dd>
+                
+                <dt>Reference 3</dt>
+                <dd>{{ weborder.reference3 }}</dd>
+                
+                <dt>Shipping Address</dt>
+                <dd>
+                    <address>
+                        {{ weborder.shipToFirstName }} {{ weborder.shipToLastName }}<br>
+                        {{ weborder.shipToAddress1 }}<br>
+                        {% if weborder.shipToAddress2 %}{{ weborder.shipToAddress2 }}<br>{% endif %}
+                        {{ weborder.shipToCity }}, {{ weborder.shipToState }} {{ weborder.shipToZip }}<br>
+                        {{ weborder.shipToCountry }}
+                    </address>
+                </dd>
+                
+            </dl>
+            
+        </div>
+        
+    </div>
+        
+{% endblock %}

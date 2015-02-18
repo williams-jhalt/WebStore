@@ -23,3 +23,13 @@ fos_js_routing:
 app:
     resource: @AppBundle/Controller/
     type:     annotation
+    
+api:
+    resource: "@ApiBundle/Controller/"
+    type:     annotation
+    prefix:   /api
+    
+admin:
+    resource: "@AdminBundle/Controller/"
+    type:     annotation
+    prefix:   /admin

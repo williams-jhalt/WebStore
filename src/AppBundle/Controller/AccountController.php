@@ -8,13 +8,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 /**
  * @Route("/account")
  */
-class AccountController extends Controller
-{
+class AccountController extends Controller {
+
     /**
      * @Route("/", name="account_index")
      */
-    public function indexAction()
-    {
-        return $this->render('account/index.html.twig');
+    public function indexAction() {
+        return $this->render('AppBundle:Account:index.html.twig');
     }
+
 }

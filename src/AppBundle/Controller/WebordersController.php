@@ -16,9 +16,11 @@ class WebordersController extends Controller {
 
     /**
      * @Route("/", name="weborders_index")
-     * @Template("weborders/index.html.twig")
+     * @Template("AppBundle:Weborders:index.html.twig")
      */
     public function indexAction(Request $request) {
+        
+        $user = $this->getUser();
 
         $page = $request->get('page', 1);
 
@@ -26,9 +28,11 @@ class WebordersController extends Controller {
 
         $qb = $repository->createQueryBuilder('w');
         $qb->orderBy('w.orderDate', 'DESC');
-                        
-        $qb->where('w.customerNumber IN (:customerNumbers)');
-        $qb->setParameter('customerNumbers', $this->getUser()->getCustomerNumbers());
+
+        if ($user->hasRole('ROLE_CUSTOMER')) {
+            $qb->where('w.customerNumber IN (:customerNumbers)');
+            $qb->setParameter('customerNumbers', $this->getUser()->getCustomerNumbers());
+        }
 
         $paginator = $this->get('knp_paginator');
 
@@ -40,27 +44,41 @@ class WebordersController extends Controller {
     }
     
     /**
+     * @Route("/view/{id}", name="weborders_view")
+     * @Template("AppBundle:Weborders:view.html.twig")
+     */
+    public function viewAction($id) {
+        
+        $weborder = $this->getDoctrine()->getRepository('AppBundle:Weborder')->find($id);
+        
+        return array('weborder' => $weborder);
+        
+    }
+
+    /**
      * @Route("/submit", name="weborders_submit")
-     * @Template("weborders/submit.html.twig")
+     * @Template("AppBundle:Weborders:submit.html.twig")
      */
     public function submitAction(Request $request) {
 
         $weborder = new Weborder();
 
         $formBuilder = $this->createFormBuilder($weborder);
-        
+
         $customerNumbers = $this->getUser()->getCustomerNumbers();
-        
+
         if (sizeof($customerNumbers) > 1) {
             $options = array();
             foreach ($customerNumbers as $customerNumber) {
-                $options[$customerNumber] = $customerNumber;                
+                $options[$customerNumber] = $customerNumber;
             }
             $formBuilder->add('customerNumber', 'choice', array('label' => 'Customer Account', 'choices' => $options));
-        } else {
+        } elseif (sizeof($customerNumbers) > 0) {
             $weborder->setCustomerNumber($customerNumbers[0]);
+        } else {
+            $formBuilder->add('customerNumber', 'text');
         }
-        
+
         $form = $formBuilder->add('reference1', 'text', array('label' => 'Customer Reference (PO#)', 'required' => false))
                 ->add('reference2', 'text', array('label' => 'Customer Reference 2', 'required' => false))
                 ->add('reference3', 'text', array('label' => 'Customer Reference 3', 'required' => false))
@@ -81,14 +99,14 @@ class WebordersController extends Controller {
         $form->handleRequest($request);
 
         if ($form->isValid()) {
-            
+
             // this is where the order will be submitted to DistOne
-            $weborder->setOrderNumber(rand(1000000,9999999)); # just some test data
-            
+            $weborder->setOrderNumber(rand(1000000, 9999999)); # just some test data
+
             $weborder->setOrderDate(new DateTime());
 
             $em = $this->getDoctrine()->getManager();
-            
+
             $em->persist($weborder);
             $em->flush();
 
@@ -96,39 +114,35 @@ class WebordersController extends Controller {
         }
 
         return array('form' => $form->createView());
-        
     }
-    
+
     /**
      * @Route("/cartSummary", name="weborders_cart_summary")
-     * @Template("weborders/cart_summary.html.twig")
+     * @Template("AppBundle:Weborders:cart_summary.html.twig")
      */
     public function cartSummaryAction() {
 
         $cartItems = $this->getUser()->getCartItems();
 
         return array('cartItems' => $cartItems);
-        
     }
-    
+
     /**
      * @Route("/import", name="weborders_import")
-     * @Template("weborders/import.html.twig")
+     * @Template("AppBundle:Weborders:import.html.twig")
      */
     public function importAction() {
-        
+
         return array();
-        
     }
-    
+
     /**
      * @Route("/export", name="weborders_export")
-     * @Template("weborders/export.html.twig")
+     * @Template("AppBundle:Weborders:export.html.twig")
      */
     public function exportAction() {
-        
+
         return array();
-        
     }
 
 }
