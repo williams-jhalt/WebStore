@@ -1,6 +1,5 @@
 imports:
     - { resource: config.yml }
-    - { resource: eb_parameters.php }
 
 framework:
     validation:
