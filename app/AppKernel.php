@@ -27,6 +27,7 @@ class AppKernel extends Kernel {
             new FOS\UserBundle\FOSUserBundle(),
             new FOS\JsRoutingBundle\FOSJsRoutingBundle(),
             new FOS\RestBundle\FOSRestBundle(),
+            new Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
@@ -35,7 +36,7 @@ class AppKernel extends Kernel {
             $bundles[] = new Sensio\Bundle\DistributionBundle\SensioDistributionBundle();
             $bundles[] = new Sensio\Bundle\GeneratorBundle\SensioGeneratorBundle();
         } else {
-            $bundles[] = new Snc\RedisBundle\SncRedisBundle();
+//            $bundles[] = new Snc\RedisBundle\SncRedisBundle();
         }
 
         return $bundles;

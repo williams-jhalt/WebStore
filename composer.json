@@ -49,7 +49,9 @@
         "seven/symfony-rpc-bundle": "V2.2.2",
         "friendsofsymfony/rest-bundle": "~1.5",
         "jms/serializer-bundle": "0.13.*",
-        "piotrooo/wsdl-creator": "1.*"
+        "piotrooo/wsdl-creator": "1.*",
+        "doctrine/migrations": "1.0.*@dev",
+        "doctrine/doctrine-migrations-bundle": "2.1.*@dev"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"

@@ -2,7 +2,7 @@ FROM ubuntu:12.04
 
 # Install dependencies
 RUN apt-get update -y
-RUN apt-get install -y git curl apache2 php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-gd php5-curl
+RUN apt-get install -y git curl apache2 php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-gd php5-curl php5-apcu php5-redis redis-server
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php
