@@ -63,7 +63,7 @@ class ProductTypeController extends Controller {
             $em->persist($productType);
             $em->flush();
 
-            return $this->redirectToRoute('admin_list_product_types', $request->query->all());
+            return $this->redirectToRoute('admin_product_type_list', $request->query->all());
         }
 
         return array('productType' => $productType, 'form' => $form->createView());
@@ -92,7 +92,7 @@ class ProductTypeController extends Controller {
             $em->persist($productType);
             $em->flush();
 
-            return $this->redirectToRoute('admin_list_product_types', $request->query->all());
+            return $this->redirectToRoute('admin_product_type_list', $request->query->all());
         }
 
         return array('productType' => $productType, 'form' => $form->createView());
@@ -124,7 +124,7 @@ class ProductTypeController extends Controller {
                 'name' => 1
                     ), true);
 
-            return $this->redirectToRoute('admin_list_product_types');
+            return $this->redirectToRoute('admin_product_type_list');
         }
 
         return array('form' => $form->createView());
@@ -155,7 +155,7 @@ class ProductTypeController extends Controller {
 
         $this->getDoctrine()->getManager()->createQuery("UPDATE AppBundle:ProductType p SET p.showInMenu = 1")->execute();
 
-        return $this->redirectToRoute('admin_list_product_types', $request->query->all());
+        return $this->redirectToRoute('admin_product_type_list', $request->query->all());
     }
 
     /**
@@ -165,7 +165,7 @@ class ProductTypeController extends Controller {
 
         $this->getDoctrine()->getManager()->createQuery("UPDATE AppBundle:ProductType p SET p.showInMenu = 0")->execute();
 
-        return $this->redirectToRoute('admin_list_product_types', $request->query->all());
+        return $this->redirectToRoute('admin_product_type_list', $request->query->all());
     }
 
     /**
@@ -177,7 +177,7 @@ class ProductTypeController extends Controller {
         $em = $this->getDoctrine()->getManager();
         $em->remove($productType);
         $em->flush();
-        return $this->redirectToRoute('admin_list_product_types', $request->query->all());
+        return $this->redirectToRoute('admin_product_type_list', $request->query->all());
     }
 
 }

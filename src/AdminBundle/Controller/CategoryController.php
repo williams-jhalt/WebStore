@@ -63,7 +63,7 @@ class CategoryController extends Controller {
             $em->persist($category);
             $em->flush();
 
-            return $this->redirectToRoute('admin_list_categories', $request->query->all());
+            return $this->redirectToRoute('admin_category_list', $request->query->all());
         }
 
         return array('category' => $category, 'form' => $form->createView());
@@ -92,7 +92,7 @@ class CategoryController extends Controller {
             $em->persist($category);
             $em->flush();
 
-            return $this->redirectToRoute('admin_list_categories', $request->query->all());
+            return $this->redirectToRoute('admin_category_list', $request->query->all());
         }
 
         return array('category' => $category, 'form' => $form->createView());
@@ -125,7 +125,7 @@ class CategoryController extends Controller {
                 'parent' => 2
                     ), true);
 
-            return $this->redirectToRoute('admin_list_categories');
+            return $this->redirectToRoute('admin_category_list');
         }
 
         return array('form' => $form->createView());
@@ -156,7 +156,7 @@ class CategoryController extends Controller {
 
         $this->getDoctrine()->getManager()->createQuery("UPDATE AppBundle:Category p SET p.showInMenu = 1")->execute();
 
-        return $this->redirectToRoute('admin_list_categories', $request->query->all());
+        return $this->redirectToRoute('admin_category_list', $request->query->all());
     }
 
     /**
@@ -166,7 +166,7 @@ class CategoryController extends Controller {
 
         $this->getDoctrine()->getManager()->createQuery("UPDATE AppBundle:Category p SET p.showInMenu = 0")->execute();
 
-        return $this->redirectToRoute('admin_list_categories', $request->query->all());
+        return $this->redirectToRoute('admin_category_list', $request->query->all());
     }
 
     /**
@@ -178,7 +178,7 @@ class CategoryController extends Controller {
         $em = $this->getDoctrine()->getManager();
         $em->remove($category);
         $em->flush();
-        return $this->redirectToRoute('admin_list_categories', $request->query->all());
+        return $this->redirectToRoute('admin_category_list', $request->query->all());
     }
 
 }

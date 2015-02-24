@@ -63,7 +63,7 @@ class ManufacturerController extends Controller {
             $em->persist($manufacturer);
             $em->flush();
 
-            return $this->redirectToRoute('admin_list_manufacturers', $request->query->all());
+            return $this->redirectToRoute('admin_manufacturer_list', $request->query->all());
         }
 
         return array('manufacturer' => $manufacturer, 'form' => $form->createView());
@@ -92,7 +92,7 @@ class ManufacturerController extends Controller {
             $em->persist($manufacturer);
             $em->flush();
 
-            return $this->redirectToRoute('admin_list_manufacturers', $request->query->all());
+            return $this->redirectToRoute('admin_manufacturer_list', $request->query->all());
         }
 
         return array('manufacturer' => $manufacturer, 'form' => $form->createView());
@@ -124,7 +124,7 @@ class ManufacturerController extends Controller {
                 'name' => 1
                     ), true);
 
-            return $this->redirectToRoute('admin_list_manufacturers');
+            return $this->redirectToRoute('admin_manufacturer_list');
         }
 
         return array('form' => $form->createView());
@@ -155,7 +155,7 @@ class ManufacturerController extends Controller {
 
         $this->getDoctrine()->getManager()->createQuery("UPDATE AppBundle:Manufacturer p SET p.showInMenu = 1")->execute();
 
-        return $this->redirectToRoute('admin_list_manufacturers', $request->query->all());
+        return $this->redirectToRoute('admin_manufacturer_list', $request->query->all());
     }
 
     /**
@@ -165,7 +165,7 @@ class ManufacturerController extends Controller {
 
         $this->getDoctrine()->getManager()->createQuery("UPDATE AppBundle:Manufacturer p SET p.showInMenu = 0")->execute();
 
-        return $this->redirectToRoute('admin_list_manufacturers', $request->query->all());
+        return $this->redirectToRoute('admin_manufacturer_list', $request->query->all());
     }
 
     /**
@@ -177,7 +177,7 @@ class ManufacturerController extends Controller {
         $em = $this->getDoctrine()->getManager();
         $em->remove($manufacturer);
         $em->flush();
-        return $this->redirectToRoute('admin_list_manufacturers', $request->query->all());
+        return $this->redirectToRoute('admin_manufacturer_list', $request->query->all());
     }
 
 }

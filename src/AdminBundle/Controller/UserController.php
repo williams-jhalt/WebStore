@@ -67,7 +67,7 @@ class UserController extends Controller {
 
             $userManager->updateUser($user);
 
-            return $this->redirectToRoute('admin_list_users');
+            return $this->redirectToRoute('admin_user_list');
         }
 
         return array('form' => $form->createView());
@@ -93,7 +93,7 @@ class UserController extends Controller {
 
             $userManager->updateUser($user);
 
-            return $this->redirectToRoute('admin_list_users');
+            return $this->redirectToRoute('admin_user_list');
         }
 
         return array('user' => $user, 'form' => $form->createView());
@@ -162,7 +162,7 @@ class UserController extends Controller {
 
             $userManager->updateUser($user);
 
-            return $this->redirectToRoute('admin_list_users');
+            return $this->redirectToRoute('admin_user_list');
         }
 
         return array('form' => $form->createView());
@@ -190,7 +190,7 @@ class UserController extends Controller {
         $em = $this->getDoctrine()->getManager();
         $em->remove($user);
         $em->flush();
-        return $this->redirectToRoute('admin_list_users', $request->query->all());
+        return $this->redirectToRoute('admin_user_list', $request->query->all());
     }
 
 }
