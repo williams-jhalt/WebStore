@@ -75,7 +75,7 @@ class ProductAttachmentController extends Controller {
         $attachment = new ProductAttachment();
 
         $form = $this->createFormBuilder($attachment)
-                ->add('file', 'file', array('mapped' => false))
+                ->add('file', 'file')
                 ->add('sku', 'text', array('mapped' => false))
                 ->add('explicit', 'checkbox', array('required' => false))
                 ->add('save', 'submit', array('label' => 'Add Product Attachment'))
