@@ -98,14 +98,14 @@ class Product {
 
     /**
      * @JMS\Expose
-     * @ORM\ManyToOne(targetEntity="Manufacturer", inversedBy="products", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Manufacturer", inversedBy="products", cascade={"persist","remove"})
      * @ORM\JoinColumn(name="manufacturer_id", referencedColumnName="id")
      * */
     private $manufacturer;
 
     /**
      * @JMS\Expose
-     * @ORM\ManyToOne(targetEntity="ProductType", inversedBy="products", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ProductType", inversedBy="products", cascade={"persist","remove"})
      * @ORM\JoinColumn(name="product_type_id", referencedColumnName="id")
      * */
     private $productType;
