@@ -164,6 +164,7 @@ class ProductAttachment {
     }
 
     public function upload() {
+        
         // the file property can be empty if the field is not required
         if (null === $this->getFile()) {
             return;
@@ -172,6 +173,7 @@ class ProductAttachment {
         $sku = $this->getProduct()->getSku();
         
         $targetDir = $this->getUploadRootDir() . '/' . $sku;
+        
         
         if (!file_exists($targetDir)) {
             mkdir($targetDir, 0755, true);

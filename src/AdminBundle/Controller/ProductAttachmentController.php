@@ -77,7 +77,7 @@ class ProductAttachmentController extends Controller {
         $form = $this->createFormBuilder($attachment)
                 ->add('file', 'file', array('mapped' => false))
                 ->add('sku', 'text', array('mapped' => false))
-                ->add('explicit', 'checkbox')
+                ->add('explicit', 'checkbox', array('required' => false))
                 ->add('save', 'submit', array('label' => 'Add Product Attachment'))
                 ->getForm();
 
@@ -90,7 +90,8 @@ class ProductAttachmentController extends Controller {
             $product = $em->getRepository('AppBundle:Product')->findOneBySku($form->get('sku')->getData());
 
             $attachment->setProduct($product);
-
+            
+            $attachment->upload();
 
             $em->persist($attachment);
             $em->flush();
