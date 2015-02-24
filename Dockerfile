@@ -21,6 +21,9 @@ ENV APACHE_RUN_USER www-data
 ENV APACHE_RUN_GROUP www-data
 ENV APACHE_LOG_DIR /var/log/apache2
 
+# Configure WebStore
+ADD parameters.yml /var/www/app/config/parameters.yml
+
 EXPOSE 80
 
-CMD ["apache2ctl", "start"]
+CMD /usr/sbin/apache2ctl -D FOREGROUND
