@@ -43,7 +43,7 @@ class Manufacturer {
     /**
      * @var ArrayCollection
      * 
-     * @ORM\OneToMany(targetEntity="Product", mappedBy="manufacturer")
+     * @ORM\OneToMany(targetEntity="Product", mappedBy="manufacturer", cascade={"persist","remove"})
      */
     private $products;
 

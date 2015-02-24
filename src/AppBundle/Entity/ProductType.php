@@ -43,7 +43,7 @@ class ProductType {
     /**
      * @var ArrayCollection
      * 
-     * @ORM\OneToMany(targetEntity="Product", mappedBy="productType")
+     * @ORM\OneToMany(targetEntity="Product", mappedBy="productType", cascade={"persist","remove"})
      */
     private $products;
 
