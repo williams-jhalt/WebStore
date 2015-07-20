@@ -101,7 +101,7 @@ class WeborderService {
         try {
 
             $qb = $repository->createQueryBuilder('w');
-            $lastOrder = $qb->orderBy('w.createdOn', 'DESC')
+            $lastOrder = $qb->orderBy('w.updatedOn', 'DESC')
                     ->setMaxResults(1)
                     ->setFirstResult($offset)
                     ->getQuery()
@@ -188,7 +188,7 @@ class WeborderService {
 
             $qb = $repository->createQueryBuilder('w');
             $lastOrder = $qb->where($qb->expr()->eq('w.customerNumber', ':customerNumber'))
-                    ->orderBy('w.createdOn', 'DESC')
+                    ->orderBy('w.updatedOn', 'DESC')
                     ->setMaxResults(1)
                     ->setFirstResult($offset)
                     ->setParameter('customerNumber', $customerNumber)
@@ -198,7 +198,7 @@ class WeborderService {
             $lastOrder = new Weborder();
         }
 
-        if ($lastOrder->getCreatedOn() < new DateTime("-5 minute")) {
+        if ($lastOrder->getUpdatedOn() < new DateTime("-5 minute")) {
 
             $response = $this->erp->read(
                     "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
@@ -262,7 +262,7 @@ class WeborderService {
 
             $qb = $repository->createQueryBuilder('w');
             $lastOrder = $qb->where($qb->expr()->in('w.customerNumber', ':customerNumber'))
-                    ->orderBy('w.createdOn', 'DESC')
+                    ->orderBy('w.updatedOn', 'DESC')
                     ->setMaxResults(1)
                     ->setFirstResult($offset)
                     ->setParameter('customerNumber', $customerNumbers)
@@ -272,7 +272,7 @@ class WeborderService {
             $lastOrder = new Weborder();
         }
 
-        if ($lastOrder->getCreatedOn() < new DateTime("-5 minute")) {
+        if ($lastOrder->getUpdatedOn() < new DateTime("-5 minute")) {
 
             $customerSelect = "";
             for ($i = 0; $i < count($customerNumbers); $i++) {
