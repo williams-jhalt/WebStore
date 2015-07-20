@@ -21,7 +21,7 @@ class WeborderService {
         $this->auditService = $auditService;
     }
 
-    private function _getDbRecordFromErp($item) {
+    private function _getDbRecordFromErp($item, $products = false) {
 
         $data = array(
             'orderNumber' => $item->order,
@@ -69,20 +69,23 @@ class WeborderService {
 
         $weborder->setAudits($audits);
 
-        $itemResponse = $this->erp->read("FOR EACH oe_line NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND order = '{$item->order}'", "order, item, q_ord");
+        if ($products) {
 
-        $items = array();
+            $itemResponse = $this->erp->read("FOR EACH oe_line NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND order = '{$item->order}'", "order, item, q_ord");
 
-        foreach ($itemResponse as $itemObj) {
-            $items[] = $weborderItemRepository->findOrCreate(array(
-                'weborder' => $weborder,
-                'orderNumber' => $itemObj->order,
-                'sku' => $itemObj->item,
-                'quantity' => $itemObj->q_ord
-            ));
+            $items = array();
+
+            foreach ($itemResponse as $itemObj) {
+                $items[] = $weborderItemRepository->findOrCreate(array(
+                    'weborder' => $weborder,
+                    'orderNumber' => $itemObj->order,
+                    'sku' => $itemObj->item,
+                    'quantity' => $itemObj->q_ord
+                ));
+            }
+
+            $weborder->setItems($items);
         }
-
-        $weborder->setItems($items);
 
         return $weborder;
     }
@@ -310,7 +313,7 @@ class WeborderService {
             return null;
         }
 
-        return $this->_getDbRecordFromErp($response[0]);
+        return $this->_getDbRecordFromErp($response[0], true);
     }
 
     public function batchUpdate(OutputInterface $output) {
