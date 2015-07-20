@@ -42,9 +42,11 @@ class WeborderService {
 
         $repository = $this->em->getRepository('AppBundle:Weborder');
 
-        $weborder = $repository->findOrUpdate($data);
+        $weborder = $repository->findOrCreate($data);
 
         if ($weborder->getUpdatedOn() < new DateTime("-5 minute")) {
+
+            $weborder->setStatus($data['status']);
 
             $weborderAuditRepository = $this->em->getRepository('AppBundle:WeborderAudit');
 
@@ -91,44 +93,26 @@ class WeborderService {
             $weborder->setItems($items);
         }
 
+        $this->em->persist($weborder);
+
         return $weborder;
     }
 
     public function findAll($offset = 0, $limit = 100) {
 
-        $repository = $this->em->getRepository('AppBundle:Weborder');
+        $response = $this->erp->read(
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+        );
 
-        try {
+        $weborders = array();
 
-            $qb = $repository->createQueryBuilder('w');
-            $lastOrder = $qb->orderBy('w.updatedOn', 'DESC')
-                    ->setMaxResults(1)
-                    ->setFirstResult($offset)
-                    ->getQuery()
-                    ->getSingleResult();
-        } catch (\Exception $e) {
-            $lastOrder = new Weborder();
+        $this->em->beginTransaction();
+
+        foreach ($response as $item) {
+            $weborders[] = $this->_getDbRecordFromErp($item);
         }
 
-        if ($lastOrder->getUpdatedOn() < new DateTime("-5 minute")) {
-
-            $response = $this->erp->read(
-                    "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
-            );
-
-            $weborders = array();
-
-            $this->em->beginTransaction();
-
-            foreach ($response as $item) {
-                $weborders[] = $this->_getDbRecordFromErp($item);
-            }
-
-            $this->em->commit();
-        } else {
-
-            $weborders = $repository->findBy(array(), array('orderNumber' => 'DESC'), $limit, $offset);
-        }
+        $this->em->commit();
 
         return $weborders;
     }
@@ -182,41 +166,19 @@ class WeborderService {
 
     public function findByCustomer($customerNumber, $offset = 0, $limit = 100) {
 
-        $repository = $this->em->getRepository('AppBundle:Weborder');
+        $response = $this->erp->read(
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+        );
 
-        try {
+        $weborders = array();
 
-            $qb = $repository->createQueryBuilder('w');
-            $lastOrder = $qb->where($qb->expr()->eq('w.customerNumber', ':customerNumber'))
-                    ->orderBy('w.updatedOn', 'DESC')
-                    ->setMaxResults(1)
-                    ->setFirstResult($offset)
-                    ->setParameter('customerNumber', $customerNumber)
-                    ->getQuery()
-                    ->getSingleResult();
-        } catch (\Exception $e) {
-            $lastOrder = new Weborder();
+        $this->em->beginTransaction();
+
+        foreach ($response as $item) {
+            $weborders[] = $this->_getDbRecordFromErp($item);
         }
 
-        if ($lastOrder->getUpdatedOn() < new DateTime("-5 minute")) {
-
-            $response = $this->erp->read(
-                    "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
-            );
-
-            $weborders = array();
-
-            $this->em->beginTransaction();
-
-            foreach ($response as $item) {
-                $weborders[] = $this->_getDbRecordFromErp($item);
-            }
-
-            $this->em->commit();
-        } else {
-
-            $weborders = $repository->findBy(array('customerNumber' => $customerNumber), array('orderNumber' => 'DESC'), $limit, $offset);
-        }
+        $this->em->commit();
 
         return $weborders;
     }
@@ -256,53 +218,31 @@ class WeborderService {
 
     public function findByCustomerNumbers(array $customerNumbers, $offset = 0, $limit = 100) {
 
-        $repository = $this->em->getRepository('AppBundle:Weborder');
-
-        try {
-
-            $qb = $repository->createQueryBuilder('w');
-            $lastOrder = $qb->where($qb->expr()->in('w.customerNumber', ':customerNumber'))
-                    ->orderBy('w.updatedOn', 'DESC')
-                    ->setMaxResults(1)
-                    ->setFirstResult($offset)
-                    ->setParameter('customerNumber', $customerNumbers)
-                    ->getQuery()
-                    ->getSingleResult();
-        } catch (\Exception $e) {
-            $lastOrder = new Weborder();
+        $customerSelect = "";
+        for ($i = 0; $i < count($customerNumbers); $i++) {
+            $customerSelect .= " customer = '{$customerNumbers[$i]}' ";
+            if ($i < count($customerNumbers) - 1) {
+                $customerSelect .= " OR ";
+            }
         }
 
-        if ($lastOrder->getUpdatedOn() < new DateTime("-5 minute")) {
+        $response = $this->erp->read(
+                "FOR EACH oe_head NO-LOCK "
+                . "WHERE company_oe = 'WTC' "
+                . "AND rec_type = 'O' "
+                . "AND ({$customerSelect}) "
+                . "BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+        );
 
-            $customerSelect = "";
-            for ($i = 0; $i < count($customerNumbers); $i++) {
-                $customerSelect .= " customer = '{$customerNumbers[$i]}' ";
-                if ($i < count($customerNumbers) - 1) {
-                    $customerSelect .= " OR ";
-                }
-            }
+        $weborders = array();
 
-            $response = $this->erp->read(
-                    "FOR EACH oe_head NO-LOCK "
-                    . "WHERE company_oe = 'WTC' "
-                    . "AND rec_type = 'O' "
-                    . "AND ({$customerSelect}) "
-                    . "BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
-            );
+        $this->em->beginTransaction();
 
-            $weborders = array();
-
-            $this->em->beginTransaction();
-
-            foreach ($response as $item) {
-                $weborders[] = $this->_getDbRecordFromErp($item);
-            }
-
-            $this->em->commit();
-        } else {
-
-            $weborders = $repository->findBy(array('customerNumber' => $customerNumbers), array('orderNumber' => 'DESC'), $limit, $offset);
+        foreach ($response as $item) {
+            $weborders[] = $this->_getDbRecordFromErp($item);
         }
+
+        $this->em->commit();
 
         return $weborders;
     }
