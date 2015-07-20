@@ -23,7 +23,7 @@ class WeborderAudit {
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Weborder")
+     * @ORM\ManyToOne(targetEntity="Weborder", inversedBy="audits")
      * @ORM\JoinColumn(name="weborder_id", referencedColumnName="id")
      * */
     private $weborder;

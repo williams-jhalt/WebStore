@@ -41,12 +41,14 @@ class WeborderService {
         );
 
         $repository = $this->em->getRepository('AppBundle:Weborder');
-
+        
         $weborder = $repository->findOrCreate($data);
 
         if ($weborder->getUpdatedOn() < new DateTime("-5 minute")) {
 
             $weborder->setStatus($data['status']);
+
+            $this->em->persist($weborder);
 
             $weborderAuditRepository = $this->em->getRepository('AppBundle:WeborderAudit');
 
@@ -69,8 +71,7 @@ class WeborderService {
                     'timestamp' => $timestamp
                 ));
             }
-
-            $weborder->setAudits($audits);
+            
         }
 
         if ($products) {
@@ -89,11 +90,8 @@ class WeborderService {
                     'quantity' => $itemObj->q_ord
                 ));
             }
-
-            $weborder->setItems($items);
+            
         }
-
-        $this->em->persist($weborder);
 
         return $weborder;
     }
