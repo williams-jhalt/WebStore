@@ -1,5 +1,7 @@
 <?php
 
+// load RDS variables if they exist
+
 if(@$_ENV['RDS_HOSTNAME']) {
     $container->setParameter('database_host', $_ENV['RDS_HOSTNAME']);
     $container->setParameter('database_port', $_ENV['RDS_PORT']);
