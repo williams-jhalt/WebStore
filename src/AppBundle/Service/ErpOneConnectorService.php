@@ -9,11 +9,6 @@ class ErpOneConnectorService {
     private $_server;
     private $_username;
     private $_password;
-    private $_ch;
-    
-    public function __destruct() {
-        curl_close($this->_ch);
-    }
     
     public function __construct($server, $username, $password) {
         
@@ -41,13 +36,13 @@ class ErpOneConnectorService {
         $this->_grantToken = $response->grant_token;
         $this->_accessToken = $response->access_token;
         
-        $this->_ch = $ch;
+        curl_close($ch);
         
     }    
     
     private function _refreshToken() {
 
-        $ch = $this->_ch;
+        $ch = curl_init();
         
         curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/access");
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -65,14 +60,15 @@ class ErpOneConnectorService {
         
         $this->_accessToken = $response->access_token;
         
+        curl_close($ch);
         
     }
     
     public function read($query, $columns = "*", $offset = 0, $limit = 0) {
         
         $this->_refreshToken();
-
-        $ch = $this->_ch;
+        
+        $ch = curl_init();
         
         curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/data/read");
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -89,6 +85,8 @@ class ErpOneConnectorService {
         )));
         
         $response = json_decode(curl_exec($ch));
+
+        curl_close($ch);        
         
         return $response;
         
@@ -120,8 +118,8 @@ class ErpOneConnectorService {
     public function getItemPriceDetails($itemNumber, $customer = null, $quantity = 1, $uom = "EA") {
         
         $this->_refreshToken();
-
-        $ch = $this->_ch;
+        
+        $ch = curl_init();
         
         $queryData = array();
         
@@ -143,6 +141,8 @@ class ErpOneConnectorService {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         
         $response = json_decode(curl_exec($ch));
+
+        curl_close($ch);        
         
         return $response;
         
