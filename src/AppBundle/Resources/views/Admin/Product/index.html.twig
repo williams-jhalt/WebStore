@@ -1,0 +1,61 @@
+{% extends 'AppBundle:Admin:layout.html.twig' %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            var pageOptions = {{pageOptions|json_encode|raw}};
+
+            $.get(Routing.generate('admin_product_list', pageOptions), function (data) {
+                $("#catalogBody").html(data);
+            });
+
+            $(window).scroll(function () {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 300) {
+                    pageOptions.page++;
+                    $.get(Routing.generate('admin_product_list', pageOptions), function (data) {
+                        $("#catalogBody").append(data);
+                    });
+                }
+            });
+
+            {#$('#catalogBody').on('click', 'a.view-product', function (e) {
+                $.get(Routing.generate('admin_product_ajax_view', {itemNumber: e.target.dataset.id}), function (data) {
+                    $('.modal-body').html(data);
+                    $('#myModal').modal('show');
+                });
+                return false;
+            }); #}           
+            
+            $('#catalogBody').on('click', ".toggleShowInMenu", function () {
+                $.post(Routing.generate('admin_product_toggle_shown', {id: this.value}),
+                        function (response) {
+                            if (response.code == 100 && response.success) {
+                                console.log("Product Updated");
+                            }
+                        }, "json");
+            });
+
+        });
+    </script>
+{% endblock %}
+
+{% block admin_body %}
+
+    {{ include('AppBundle:Admin/Product:nav.html.twig') }}
+
+    <table class="table table-condensed table-striped">
+        <thead>
+            <tr>
+                <th style="width:10%;">SKU</th>
+                <th style="width:60%">Name</th>
+                <th style="width:5%;">Mfgr.</th>
+                <th style="width:5%;">Type</th>
+                <th class="text-center" style="width:10%;">Shown</th>
+            </tr>
+        </thead>
+        <tbody id="catalogBody"></tbody>
+    </table>
+
+{% endblock %}

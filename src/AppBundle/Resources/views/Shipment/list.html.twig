@@ -1,0 +1,13 @@
+{% for shipment in shipments %}
+
+    <div class="row">
+        <span class="col-sm-4"><a href="#" class="view-shipment" data-id="{{ shipment.orderNumber}}">{{ shipment.orderNumber }}</a></span>
+        <span class="col-sm-4">{{ shipment.status }}</span>
+        <span class="col-sm-4">{{ shipment.customerNumber }}</span>
+    </div>
+
+{% endfor %}
+
+{% if nextPage is defined %}
+    <p class="text-center"><a class="jscroll-next" href="{{ nextPage }}">Load More Results</a></p>
+{% endif %}

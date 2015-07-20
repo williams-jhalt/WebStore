@@ -7,6 +7,7 @@ use AppBundle\Entity\ProductDetail;
 use DateTime;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
+use Symfony\Component\Console\Output\OutputInterface;
 use XMLWriter;
 
 class ProductService {
@@ -19,9 +20,271 @@ class ProductService {
     const EXPORT_FORMAT_DIMENSIONS = 'dimensions';
 
     private $em;
+    private $erp;
 
-    public function __construct(EntityManager $em) {
+    public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
         $this->em = $em;
+        $this->erp = $erp;
+    }
+
+    /**
+     * Find all products
+     * 
+     * @param integer $offset
+     * @param integer $limit
+     * @return array
+     */
+    public function findAll($offset = 0, $limit = 100) {
+
+        $response = $this->erp->read(
+                "FOR EACH item NO-LOCK "
+                . "WHERE company_it = 'WTC' AND web_item = yes", "*", $offset, $limit
+        );
+
+        $products = array();
+        $manufacturers = array();
+        $types = array();
+
+        $repository = $this->em->getRepository('AppBundle:Product');
+        $mrep = $this->em->getRepository('AppBundle:Manufacturer');
+        $trep = $this->em->getRepository('AppBundle:ProductType');
+
+        $this->em->beginTransaction();
+
+        foreach ($response as $item) {
+            
+            if (!array_key_exists($item->manufacturer, $manufacturers)) {
+                $manufacturers[$item->manufacturer] = $mrep->findOrCreateByCode($item->manufacturer);
+            }
+            
+            if (!array_key_exists($item->product_line, $types)) {
+                $types[$item->product_line] = $trep->findOrCreateByCode($item->product_line);
+            }
+            
+            $product = $repository->findOrCreate(array(
+                'sku' => $item->item,
+                'name' => $item->descr[0] . " " . $item->descr[1],
+                'manufacturer' => $manufacturers[$item->manufacturer],
+                'productType' => $types[$item->product_line]
+            ));
+            
+            $products[] = $product;
+        }
+
+        $this->em->commit();
+
+        return $products;
+    }
+
+    /**
+     * Find products by multiple fields
+     * 
+     * $params['manufacturer']
+     * $params['product_line']
+     * $params['category_id']
+     * $params['search_terms']
+     * 
+     * @param array $params
+     * @param integer $offset
+     * @param integer $limit
+     * @return array
+     */
+    public function findBy(array $params, $offset = 0, $limit = 100) {
+
+        $products = null;
+
+        if (isset($params['search_terms']) || isset($params['category_id'])) {
+
+            $repository = $this->em->getRepository("AppBundle:Product");
+
+            $qb = $repository->createQueryBuilder('p');
+            
+            if (isset($params['search_terms'])) {
+                $qb->andWhere('p.sku LIKE :searchTerms OR p.name LIKE :searchTerms')->setParameter('searchTerms', '%' . $params['search_terms'] . '%');
+            }
+
+            if (isset($params['category_id'])) {
+                $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $params['category_id']);
+            }
+
+            if (isset($params['manufacturer'])) {
+                $manufacturer = $this->em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
+                $qb->andWhere('p.manufacturer = :manufacturer')->setParameter('manufacturer', $manufacturer);
+            }
+
+            if (isset($params['product_line'])) {
+                $productType = $this->em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
+                $qb->andWhere('p.productType = :productType')->setParameter('productType', $productType);
+            }
+
+            $qb->setFirstResult($offset);
+            $qb->setMaxResults($limit);
+            
+            $query = $qb->getQuery();
+            
+            $products = $query->getResult();
+            
+        } else {
+
+            $query = "FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes";
+
+            if (isset($params['manufacturer'])) {
+                $query .= " AND manufacturer = '{$params['manufacturer']}'";
+            }
+
+            if (isset($params['product_line'])) {
+                $query .= " AND product_line = '{$params['product_line']}'";
+            }
+
+            $response = $this->erp->read($query, "*", $offset, $limit);
+
+            $products = array();
+
+            $this->em->beginTransaction();
+
+            $repository = $this->em->getRepository('AppBundle:Product');
+            $mrep = $this->em->getRepository('AppBundle:Manufacturer');
+            $trep = $this->em->getRepository('AppBundle:ProductType');
+
+            foreach ($response as $item) {
+                $product = $repository->findOrCreate(array(
+                    'sku' => $item->item,
+                    'name' => $item->descr[0] . " " . $item->descr[1],
+                    'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
+                    'productType' => $trep->findOrCreateByCode($item->product_line)
+                ));
+                $products[] = $product;
+            }
+
+            $this->em->commit();
+        }
+
+        return $products;
+    }
+
+    public function findBySearchTerms($searchTerms, $offset = 0, $limit = 100) {
+
+        $response = $this->erp->read(
+                "FOR EACH item NO-LOCK "
+                . "WHERE company_it = 'WTC' AND web_item = yes AND item MATCHES('{$searchTerms}*')", "*", $offset, $limit
+        );
+
+        $products = array();
+
+        $this->em->beginTransaction();
+
+        $repository = $this->em->getRepository('AppBundle:Product');
+        $mrep = $this->em->getRepository('AppBundle:Manufacturer');
+        $trep = $this->em->getRepository('AppBundle:ProductType');
+
+        foreach ($response as $item) {
+            $product = $repository->findOrCreate(array(
+                'sku' => $item->item,
+                'name' => $item->descr[0] . " " . $item->descr[1],
+                'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
+                'productType' => $trep->findOrCreateByCode($item->product_line)
+            ));
+            $products[] = $product;
+        }
+
+        $this->em->commit();
+
+        return $products;
+    }
+
+    public function get($itemNumber) {
+
+        $query = "FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes AND item = '{$itemNumber}'";
+
+        $response = $this->erp->read($query);
+
+        $repository = $this->em->getRepository('AppBundle:Product');
+        $mrep = $this->em->getRepository('AppBundle:Manufacturer');
+        $trep = $this->em->getRepository('AppBundle:ProductType');
+
+        $item = $response[0];
+        $product = $repository->findOrCreate(array(
+            'sku' => $item->item,
+            'name' => $item->descr[0] . " " . $item->descr[1],
+            'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
+            'productType' => $trep->findOrCreateByCode($item->product_line)
+        ));
+
+        return $product;
+    }
+
+    /**
+     * Get the price of an item based on the parameters
+     * 
+     * @param string $itemNumber
+     * @param string $customer
+     * @param integer $quantity
+     * @param string $uom
+     * @return float
+     */
+    public function getPrice($itemNumber, $customer = null, $quantity = 1, $uom = "EA") {
+
+        $response = $this->erp->getItemPriceDetails($itemNumber, $customer, $quantity, $uom);
+
+        return (float) $response->price;
+    }
+
+    /**
+     * Get the current stock quantity of an item
+     * 
+     * @param string $itemNumber
+     * @return integer
+     */
+    public function getStock($itemNumber) {
+        $response = $this->erp->read("FOR EACH wa_item NO-LOCK WHERE item = '{$itemNumber}'", "qty_oh");
+        return (int) $response[0]->qty_oh;
+    }
+
+    public function prepareSynchronizeWithErp() {
+
+        $response = $this->erp->read("FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes", "item");
+
+        $allSkus = array();
+
+        foreach ($response as $item) {
+            $allSkus[] = $item->item;
+        }
+
+        $rep = $this->em->getRepository('AppBundle:Product');
+        $qb = $rep->createQueryBuilder('p')
+                ->select('p.sku')
+                ->getQuery();
+        $res = $qb->getArrayResult();
+
+        $knownSkus = array();
+
+        foreach ($res as $t) {
+            $knownSkus[] = $t['sku'];
+        }
+
+        return array(
+            'added' => array_diff($allSkus, $knownSkus),
+            'removed' => array_diff($knownSkus, $allSkus)
+        );
+    }
+
+    public function synchronizeWithErp($add, $remove) {
+
+        $this->loadAllFromErp();
+    }
+
+    public function loadAllFromErp(OutputInterface $output) {
+
+        $offset = 0;
+        $limit = 1000;
+
+        do {
+            $end = $offset + $limit;
+            $output->writeln("Processing records {$offset} to {$end}");
+            $response = $this->findAll($offset, $limit);
+            $output->writeln(count($response) . " records written");
+            $offset = $end;
+        } while (!empty($response));
     }
 
     /**
@@ -71,7 +334,9 @@ class ProductService {
 
                 $product->setSku($row[$mapping['sku']]);
                 $product->setName($row[$mapping['name']]);
-                $product->setReleaseDate(DateTime::createFromFormat('Y-m-d', $row[$mapping['releaseDate']]));
+                if (($releaseDate = DateTime::createFromFormat('Y-m-d', $row[$mapping['releaseDate']]))) {
+                    $product->setReleaseDate($releaseDate);
+                }
                 $product->setStockQuantity($row[$mapping['stockQuantity']]);
 
                 $product->setManufacturer($manufacturerRepository->findOrCreateByCode($row[$mapping['manufacturerCode']]));
@@ -362,7 +627,7 @@ class ProductService {
         }
 
         $products = $repository->findAll();
-            
+
         foreach ($products as $product) {
 
             $productDetail = $product->getProductDetail();

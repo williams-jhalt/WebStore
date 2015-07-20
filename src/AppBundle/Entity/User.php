@@ -78,14 +78,14 @@ class User extends BaseUser {
     }
 
     public function addCustomerNumber($customerNumber) {
-        if (!in_array(strtoupper($customerNumber), $this->customerNumbers, true)) {
+        if (!in_array($customerNumber, $this->customerNumbers, true)) {
             $this->customerNumbers[] = $customerNumber;
         }
         $this->addRole(static::ROLE_CUSTOMER);
     }
 
     public function removeCustomerNumber($customerNumber) {
-        if (false !== $key = array_search(strtoupper($customerNumber), $this->customerNumbers, true)) {
+        if (false !== $key = array_search($customerNumber, $this->customerNumbers, true)) {
             unset($this->customerNumbers[$key]);
             $this->customerNumbers = array_values($this->customerNumbers);
         }

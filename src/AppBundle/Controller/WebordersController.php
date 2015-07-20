@@ -4,10 +4,12 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Weborder;
 use DateTime;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @Route("/weborders")
@@ -16,43 +18,103 @@ class WebordersController extends Controller {
 
     /**
      * @Route("/", name="weborders_index")
-     * @Template("AppBundle:Weborders:index.html.twig")
      */
     public function indexAction(Request $request) {
-        
-        $user = $this->getUser();
 
-        $page = $request->get('page', 1);
+        $page = 1;
+        $searchTerms = $request->get('searchTerms', null);
 
-        $repository = $this->getDoctrine()->getRepository("AppBundle:Weborder");
-
-        $qb = $repository->createQueryBuilder('w');
-        $qb->orderBy('w.orderDate', 'DESC');
-
-        if ($user->hasRole('ROLE_CUSTOMER')) {
-            $qb->where('w.customerNumber IN (:customerNumbers)');
-            $qb->setParameter('customerNumbers', $this->getUser()->getCustomerNumbers());
+        if ($request->get('action') == 'clear') {
+            $searchTerms = null;
         }
 
-        $paginator = $this->get('knp_paginator');
-
-        $pagination = $paginator->paginate(
-                $qb->getQuery(), $page, 50
-        );
-
-        return array('pagination' => $pagination);
+        return $this->render('AppBundle:Weborders:index.html.twig', array('pageOptions' => array(
+                        'page' => $page,
+                        'searchTerms' => $searchTerms
+        )));
     }
-    
+
     /**
-     * @Route("/view/{id}", name="weborders_view")
-     * @Template("AppBundle:Weborders:view.html.twig")
+     * @Route("/ajax-view/{id}", name="weborders_ajax_view", options={"expose": true})
      */
-    public function viewAction($id) {
-        
-        $weborder = $this->getDoctrine()->getRepository('AppBundle:Weborder')->find($id);
-        
-        return array('weborder' => $weborder);
-        
+    public function ajaxViewAction($id) {
+
+        $service = $this->get('app.weborder_service');
+        $invService = $this->get('app.invoice_service');
+        $shipService = $this->get('app.shipment_service');
+        $packService = $this->get('app.package_service');
+
+        $weborder = $service->get($id);
+        $invoice = $invService->get($id);
+        $shipment = $shipService->get($id);
+        $packages = $packService->findByOrderNumber($id);
+
+        $response = new Response();
+        $engine = $this->container->get('templating');
+        $response->setContent($engine->render('AppBundle:Weborders:view.html.twig', array(
+                    'weborder' => $weborder,
+                    'shipment' => $shipment,
+                    'invoice' => $invoice,
+                    'packages' => $packages
+        )));
+        return $response;
+    }
+
+    /**
+     * @Route("/ajax-list", name="weborders_ajax_list", options={"expose": true})
+     */
+    public function ajaxListAction(Request $request) {
+
+        $page = $request->get('page', 1);
+        $searchTerms = $request->get('searchTerms');
+        $customerNumber = $request->get('customerNumber');
+        $perPage = 50;
+
+        $user = $this->getUser();
+
+        $service = $this->get('app.weborder_service');
+
+        $offset = (($page - 1) * $perPage);
+
+        if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
+            if (!empty($customerNumber)) {
+                if (!empty($searchTerms)) {
+                    $weborders = $service->findByCustomerAndSearchTerms($customerNumber, $searchTerms, $offset, $perPage);
+                } else {
+                    $weborders = $service->findByCustomer($customerNumber, $offset, $perPage);
+                }
+            } else {
+                if (!empty($searchTerms)) {
+                    $weborders = $service->findByCustomerNumbersAndSearchTerms($user->getCustomerNumbers(), $searchTerms, $offset, $perPage);
+                } else {
+                    $weborders = $service->findByCustomerNumbers($user->getCustomerNumbers(), $offset, $perPage);
+                }
+            }
+        } elseif ($this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+            if (!empty($searchTerms)) {
+                $weborders = $service->findBySearchTerms($searchTerms, $offset, $perPage);
+            } else {
+                $weborders = $service->findAll($offset, $perPage);
+            }
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            $response = new Response();
+            $engine = $this->container->get('templating');
+            if (!empty($weborders)) {
+                $nextPage = $this->generateUrl('weborders_ajax_list', array(
+                    'searchTerms' => $searchTerms,
+                    'customerNumber' => $customerNumber,
+                    'page' => $page + 1
+                ));
+                $response->setContent($engine->render('AppBundle:Weborders:list.html.twig', array('weborders' => $weborders, 'nextPage' => $nextPage)));
+            } else {
+                $response->setContent("<p>NO MORE RECORDS</p>");
+            }
+            return $response;
+        } else {
+            return $this->render('AppBundle:Weborders:list_test.html.twig', array('weborders' => $weborders));
+        }
     }
 
     /**

@@ -2,24 +2,18 @@
 
 namespace AppBundle\Menu;
 
-use Doctrine\ORM\EntityManager;
 use Knp\Menu\FactoryInterface;
-use Symfony\Component\ExpressionLanguage\Expression;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\DependencyInjection\ContainerAware;
 
-class Builder {
+class Builder extends ContainerAware {
 
-    private $factory;
+    public function mainMenu(FactoryInterface $factory, array $options) {
 
-    public function __construct(FactoryInterface $factory) {
-        $this->factory = $factory;
-    }
-
-    public function mainMenu(AuthorizationChecker $checker) {
-
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('Home', array('route' => 'homepage'));
+        
+        $checker = $this->container->get('security.authorization_checker');
 
         if ($checker->isGranted('ROLE_USER')) {
             $menu->addChild('Catalog', array('route' => 'catalog_list'));
@@ -30,25 +24,39 @@ class Builder {
         }
         
         if ($checker->isGranted(array('ROLE_CUSTOMER', 'ROLE_ADMIN'))) {
-            $menu->addChild('Weborders', array('route' => 'weborders_index'));
+            $weborders = $menu->addChild('Weborders');
+            $weborders->addChild('Orders', array('route' => 'weborders_index'));
+            $weborders->addChild('Invoices', array('route' => 'invoice_index'));
+            $weborders->addChild('Shipments', array('route' => 'shipment_index'));
         }
         
         if ($checker->isGranted('ROLE_ADMIN')) {
             $menu->addChild('Admin', array('route' => 'admin_index'));
         }
 
-        if ($checker->isGranted('ROLE_USER')) {
-            $menu->addChild('Account', array('route' => 'account_index'));
+        return $menu;
+    }
+
+    public function accountMenu(FactoryInterface $factory, array $options) {
+        $menu = $factory->createItem('root');
+
+        if ($this->container->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+            $menu->addChild('My Account', array('route' => 'account_index'));
+            $menu->addChild('Logout', array('route' => 'fos_user_security_logout'));
+        } else {
+            $menu->addChild('Login', array('route' => 'fos_user_security_login'));
         }
 
         return $menu;
     }
 
-    public function categoryMenu(EntityManager $em) {
+    public function categoryMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('All Categories', array('route' => 'catalog_list'));
+        
+        $em = $this->container->get('doctrine.orm.entity_manager');
 
         $categoryRepository = $em->getRepository('AppBundle:Category');
 
@@ -70,11 +78,13 @@ class Builder {
         return $menu;
     }
 
-    public function manufacturerMenu(EntityManager $em) {
+    public function manufacturerMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('All Manufacturers', array('route' => 'catalog_list'));
+        
+        $em = $this->container->get('doctrine.orm.entity_manager');
 
         $repository = $em->getRepository('AppBundle:Manufacturer');
 
@@ -96,11 +106,13 @@ class Builder {
         return $menu;
     }
 
-    public function productTypeMenu(EntityManager $em) {
+    public function productTypeMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('All Product Types', array('route' => 'catalog_list'));
+        
+        $em = $this->container->get('doctrine.orm.entity_manager');
 
         $repository = $em->getRepository('AppBundle:ProductType');
 
@@ -122,9 +134,9 @@ class Builder {
         return $menu;
     }
 
-    public function adminMenu() {
+    public function adminMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('Overview', array('route' => 'admin_index'));
         $menu->addChild('Products', array('route' => 'admin_product_list'));
@@ -137,9 +149,9 @@ class Builder {
         return $menu;
     }
 
-    public function adminCategoryMenu() {
+    public function adminCategoryMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('List', array('route' => 'admin_category_list'));
         $menu->addChild('Add', array('route' => 'admin_category_add'));
@@ -150,9 +162,9 @@ class Builder {
         return $menu;
     }
 
-    public function adminManufacturerMenu() {
+    public function adminManufacturerMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('List', array('route' => 'admin_manufacturer_list'));
         $menu->addChild('Add', array('route' => 'admin_manufacturer_add'));
@@ -163,9 +175,9 @@ class Builder {
         return $menu;
     }
 
-    public function adminProductAttachmentMenu() {
+    public function adminProductAttachmentMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('List', array('route' => 'admin_product_attachment_list'));
         $menu->addChild('Add', array('route' => 'admin_product_attachment_add'));
@@ -174,9 +186,9 @@ class Builder {
         return $menu;
     }
 
-    public function adminProductTypeMenu() {
+    public function adminProductTypeMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('List', array('route' => 'admin_product_type_list'));
         $menu->addChild('Add', array('route' => 'admin_product_type_add'));
@@ -187,9 +199,9 @@ class Builder {
         return $menu;
     }
 
-    public function adminProductMenu() {
+    public function adminProductMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('List', array('route' => 'admin_product_list'));
         $menu->addChild('Add', array('route' => 'admin_product_add'));
@@ -199,15 +211,17 @@ class Builder {
         $importMenu->addChild('Details', array('route' => 'admin_product_import_details'));
         $importMenu->addChild('Descriptions', array('route' => 'admin_product_import_descriptions'));
         
+        $menu->addChild('Syncronize', array('route' => 'admin_product_prepare_synchronize'));
+        
         $menu->addChild('Show All', array('route' => 'admin_product_show_all'));
         $menu->addChild('Hide All', array('route' => 'admin_product_hide_all'));
 
         return $menu;
     }
 
-    public function adminUserMenu() {
+    public function adminUserMenu(FactoryInterface $factory, array $options) {
 
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
 
         $menu->addChild('List', array('route' => 'admin_user_list'));
         $menu->addChild('Add', array('route' => 'admin_user_add'));
@@ -215,14 +229,35 @@ class Builder {
         return $menu;
     }
     
-    public function webordersMenu() {
+    public function webordersMenu(FactoryInterface $factory, array $options) {
         
-        $menu = $this->factory->createItem("root");
+        $menu = $factory->createItem("root");
         
         $menu->addChild('List Orders', array('route' => 'weborders_index'));
-        $menu->addChild('Submit Order', array('route' => 'weborders_submit'));
         $menu->addChild('Import Orders', array('route' => 'weborders_import'));
         $menu->addChild('Export Orders', array('route' => 'weborders_export'));
+        
+        return $menu;
+        
+    }
+    
+    public function invoiceMenu(FactoryInterface $factory, array $options) {
+        
+        $menu = $factory->createItem("root");
+        
+        $menu->addChild('List Invoices', array('route' => 'invoice_index'));
+        $menu->addChild('Export Invoices', array('route' => 'invoice_export'));
+        
+        return $menu;
+        
+    }
+    
+    public function shipmentMenu(FactoryInterface $factory, array $options) {
+        
+        $menu = $factory->createItem("root");
+        
+        $menu->addChild('List Shipments', array('route' => 'shipment_index'));
+        $menu->addChild('Export Shipments', array('route' => 'shipment_export'));
         
         return $menu;
         

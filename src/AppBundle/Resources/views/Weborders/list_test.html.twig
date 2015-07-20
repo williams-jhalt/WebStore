@@ -1,0 +1,19 @@
+{% extends 'AppBundle:Weborders:layout.html.twig' %}
+
+{% block weborders_body %}
+{% for weborder in weborders %}
+
+    <div class="row">
+        <span class="col-sm-2"><a href="#" class="view-weborder" data-id="{{ weborder.orderNumber}}">{{ weborder.orderNumber }}</a></span>
+        <span class="col-sm-2">{{ weborder.orderDate|date('Y-m-d') }}</span>
+        <span class="col-sm-3">{{ weborder.reference1 }}</span>
+        <span class="col-sm-2">{{ weborder.friendlyStatus }}</span>
+        <span class="col-sm-3">{{ weborder.customerNumber }}</span>
+    </div>
+
+{% endfor %}
+
+{% if nextPage is defined %}
+    <p class="text-center"><a class="jscroll-next" href="{{ nextPage }}">Load More Results</a></p>
+{% endif %}
+{% endblock %}

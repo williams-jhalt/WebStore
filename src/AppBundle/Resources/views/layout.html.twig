@@ -46,33 +46,9 @@
             </div>
             <div id="navbar" class="collapse navbar-collapse">
 
-                {{ knp_menu_render('mainMenu', { 'style': 'navbar' }) }}
-
-                {% if (is_granted('IS_AUTHENTICATED_REMEMBERED')) %}
-
-                    <form class="navbar-form navbar-left" action="{{ path('catalog_list') }}" method="get">
-                        <div class="form-group">
-                            <input type="text" class="form-control" name="searchTerms" value="{{ app.request.query.get('searchTerms') }}" placeholder="Search Catalog...">
-                            <input class="btn btn-default" type="submit" value="Go">
-                            <a class="btn btn-default" href="{{ path('catalog_list') }}">Clear</a>
-                        </div>
-                    </form>
-
-                    <p class="navbar-text navbar-right">Signed in as {{ app.user.username }} <a href="{{ path('fos_user_security_logout') }}">logout</a></p>
-
-                {% else %}
-
-                    <form class="navbar-form navbar-right" action="{{ path("fos_user_security_check") }}" method="post">
-                        <div class="form-group">
-                            <input type="hidden" name="_csrf_token" value="{{ fos_csrf_provider.generateCsrfToken('authenticate') }}" />
-                            <input class="form-control" type="text" id="username" name="_username" placeholder="Username" required="required" />
-                            <input class="form-control" type="password" id="password" name="_password" required="required" placeholder="Password" />
-                            <input class="btn btn-default" type="submit" id="_submit" name="_submit" value="{{ 'security.login.submit'|trans({}, 'FOSUserBundle') }}" />
-                        </div>
-                    </form>
-
-
-                {% endif %}
+                {{ knp_menu_render('AppBundle:Builder:accountMenu', { 'style': 'navbar-right' }) }}
+                {{ knp_menu_render('AppBundle:Builder:mainMenu', { 'style': 'navbar' }) }}
+                
             </div>
         </div>
     </nav>
@@ -94,7 +70,6 @@
     {% block body %}{% endblock %}
 
 </div>
-
 
 {% block javascripts %}
 {% endblock %}

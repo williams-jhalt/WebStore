@@ -1,0 +1,33 @@
+{% extends 'AppBundle:Admin:layout.html.twig' %}
+
+{% block admin_body %}
+
+    {{ include('AppBundle:Admin/Product:nav.html.twig') }}
+    
+    <span class="col-md-6">
+    
+    <p>The following items will be added.</p>
+    
+    {% for sku in added %}
+        
+        <div>{{ sku }}</div>
+        
+    {% endfor %}
+    
+    </span>
+    
+    <span class="col-md-6">
+    
+    <p>The following items will be removed.</p>
+    
+    {% for sku in removed %}
+        
+        <div>{{ sku }}</div>
+        
+    {% endfor %}
+    
+    </span>
+    
+    <p><a href="{{ path('admin_product_synchronize') }}">Run Sync</a></p>
+
+{% endblock %}

@@ -1,17 +1,45 @@
 services:
+        
+    app.erp_connector_service:
+        class: AppBundle\Service\ErpOneConnectorService    
+        arguments: ["%erp_server%", "%erp_username%", "%erp_password%"]
     
     # helper services
     app.product_service:
         class: AppBundle\Service\ProductService
-        arguments: ["@doctrine.orm.entity_manager"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
     
     app.manufacturer_service:
         class: AppBundle\Service\ManufacturerService
-        arguments: ["@doctrine.orm.entity_manager"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
     
     app.product_type_service:
         class: AppBundle\Service\ProductTypeService
-        arguments: ["@doctrine.orm.entity_manager"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+    
+    app.weborder_audit_service:
+        class: AppBundle\Service\WeborderAuditService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
+    app.weborder_service:
+        class: AppBundle\Service\WeborderService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "@app.weborder_audit_service"]
+        
+    app.invoice_service:
+        class: AppBundle\Service\InvoiceService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
+    app.customer_service:
+        class: AppBundle\Service\CustomerService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
+    app.shipment_service:
+        class: AppBundle\Service\ShipmentService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
+    app.package_service:
+        class: AppBundle\Service\PackageService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
     
     app.product_attachment_service:
         class: AppBundle\Service\ProductAttachmentService
@@ -19,51 +47,55 @@ services:
     
     app.category_service:
         class: AppBundle\Service\CategoryService
-        arguments: ["@doctrine.orm.entity_manager"]
-    
-    # menus
-    app.menu_builder:
-        class: AppBundle\Menu\Builder
-        arguments: ["@knp_menu.factory"]
+        arguments: ["@doctrine.orm.entity_manager"]    
         
-    app.menu.main:
-        class: Knp\Menu\MenuItem # the service definition requires setting the class
-        factory_service: app.menu_builder
-        factory_method: mainMenu
-        arguments: ["@security.authorization_checker"]
-        tags:
-            - { name: knp_menu.menu, alias: mainMenu }
-            
-    app.menu.category:
-        class: Knp\Menu\MenuItem # the service definition requires setting the class
-        factory_service: app.menu_builder
-        factory_method: categoryMenu
+    api.soap_service:
+        class: ApiBundle\Service\SoapService
         arguments: ["@doctrine.orm.entity_manager"]
-        tags:
-            - { name: knp_menu.menu, alias: categoryMenu }
-            
-    app.menu.manufacturer:
-        class: Knp\Menu\MenuItem # the service definition requires setting the class
-        factory_service: app.menu_builder
-        factory_method: manufacturerMenu
-        arguments: ["@doctrine.orm.entity_manager"]
-        tags:
-            - { name: knp_menu.menu, alias: manufacturerMenu }
-            
-    app.menu.product_type:
-        class: Knp\Menu\MenuItem # the service definition requires setting the class
-        factory_service: app.menu_builder
-        factory_method: productTypeMenu
-        arguments: ["@doctrine.orm.entity_manager"]
-        tags:
-            - { name: knp_menu.menu, alias: productTypeMenu }
-            
-    app.menu.weborders:
-        class: Knp\Menu\MenuItem # the service definition requires setting the class
-        factory_service: app.menu_builder
-        factory_method: webordersMenu
-        tags:
-            - { name: knp_menu.menu, alias: webordersMenu }
+#    
+#    # menus
+#    app.menu_builder:
+#        class: AppBundle\Menu\Builder
+#        arguments: ["@knp_menu.factory"]
+#        
+#    app.menu.main:
+#        class: Knp\Menu\MenuItem # the service definition requires setting the class
+#        factory_service: app.menu_builder
+#        factory_method: mainMenu
+#        arguments: ["@security.authorization_checker"]
+#        tags:
+#            - { name: knp_menu.menu, alias: mainMenu }
+#            
+#    app.menu.category:
+#        class: Knp\Menu\MenuItem # the service definition requires setting the class
+#        factory_service: app.menu_builder
+#        factory_method: categoryMenu
+#        arguments: ["@doctrine.orm.entity_manager"]
+#        tags:
+#            - { name: knp_menu.menu, alias: categoryMenu }
+#            
+#    app.menu.manufacturer:
+#        class: Knp\Menu\MenuItem # the service definition requires setting the class
+#        factory_service: app.menu_builder
+#        factory_method: manufacturerMenu
+#        arguments: ["@doctrine.orm.entity_manager"]
+#        tags:
+#            - { name: knp_menu.menu, alias: manufacturerMenu }
+#            
+#    app.menu.product_type:
+#        class: Knp\Menu\MenuItem # the service definition requires setting the class
+#        factory_service: app.menu_builder
+#        factory_method: productTypeMenu
+#        arguments: ["@doctrine.orm.entity_manager"]
+#        tags:
+#            - { name: knp_menu.menu, alias: productTypeMenu }
+#            
+#    app.menu.weborders:
+#        class: Knp\Menu\MenuItem # the service definition requires setting the class
+#        factory_service: app.menu_builder
+#        factory_method: webordersMenu
+#        tags:
+#            - { name: knp_menu.menu, alias: webordersMenu }
             
     #twig extentions
     app.twig.cart_check_extension:

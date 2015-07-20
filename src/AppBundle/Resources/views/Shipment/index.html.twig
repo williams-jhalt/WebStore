@@ -1,0 +1,81 @@
+{% extends 'AppBundle:Shipment:layout.html.twig' %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            pageOptions = {{pageOptions|json_encode|raw}};
+                    updateShipments = function () {
+                        $('#shipmentBody').load(Routing.generate('shipment_ajax_list', pageOptions), function (data) {
+                            $('#shipmentBody').data('jscroll', null);
+                            $('#shipmentBody').jscroll({
+                                loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                                autoTrigger: true,
+                                padding: 20,
+                                nextSelector: 'a.jscroll-next:last'
+                            });
+                        });
+                    };
+
+            $('#shipmentBody').on('click', 'a.view-shipment', function (e) {
+                $.get(Routing.generate('shipment_ajax_view', {id: e.target.dataset.id}), function (data) {
+                    $('.modal-body').html(data);
+                    $('#shipmentView').modal('show');
+                });
+                return false;
+            });
+
+            $("body").on('click', "a.update-display", function (e) {
+                pageOptions['status'] = e.target.dataset.id;
+                $(this).tab('show');
+                updateShipments();
+                e.preventDefault();
+            });
+
+            updateShipments();
+
+        });
+
+    </script>
+{% endblock %}
+
+{% block shipment_body %}
+
+    <div class="well well-sm">
+        <form class="form-inline" action="{{ path('weborders_index') }}" method="get">
+            <div class="form-group">
+                <input class="form-control" type="text" placeholder="Search..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
+            </div>
+            <button class="btn btn-default" type="submit" name="action" value="search">Search</button>
+            <button class="btn btn-default" type="submit" name="action" value="clear">Clear</button>
+        </form>
+    </div>
+
+    <div class="row">
+        <span class="col-sm-4"><strong>Order Number</strong></span>
+        <span class="col-sm-4"><strong>Status</strong></span>
+        <span class="col-sm-4"><strong>Customer Number</strong></span>
+    </div>
+
+    <div id="shipmentBody"></div>
+
+    <div class="modal" id="shipmentView" tabindex="-1" role="dialog" aria-labelledby="shipmentView" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Order</h4>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

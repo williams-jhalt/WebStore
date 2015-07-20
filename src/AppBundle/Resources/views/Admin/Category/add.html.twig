@@ -1,0 +1,9 @@
+{% extends 'AppBundle:Admin:layout.html.twig' %}
+
+{% block admin_body %}
+    
+    {{ include('AppBundle:Admin/Category:nav.html.twig') }}
+    
+    {{ form(form) }}
+    
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'AppBundle:Admin:layout.html.twig' %}
+
+{% block admin_body %}
+    
+    <h1>Statistics</h1>
+    
+    <table class="table">
+        <tr>
+            <td>Number of Products:</td>
+            <td>{{ number_of_products }}</td>
+        </tr>
+        <tr>
+            <td>Number of Categories:</td>
+            <td>{{ number_of_categories }}</td>
+        </tr>
+        <tr>
+            <td>Number of Manufacturers:</td>
+            <td>{{ number_of_manufacturers }}</td>
+        </tr>
+        <tr>
+            <td>Number of Product Types:</td>
+            <td>{{ number_of_product_types }}</td>
+        </tr>
+        <tr>
+            <td>Number of Users:</td>
+            <td>{{ number_of_users }}</td>
+        </tr>
+    </table>
+    
+{% endblock %}

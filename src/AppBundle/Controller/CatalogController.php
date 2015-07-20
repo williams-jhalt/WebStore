@@ -18,55 +18,46 @@ class CatalogController extends Controller {
     /**
      * @Route("/", name="catalog_list", options={"expose": true})
      */
-    public function indexAction(Request $request) {
-
+    public function indexAction(Request $request) {        
+        
+        $perPage = 50;
+        
         $page = $request->get('page', 1);
+        $searchTerms = $request->get('searchTerms');
         $categoryId = $request->get('categoryId');
         $manufacturerId = $request->get('manufacturerId');
         $productTypeId = $request->get('productTypeId');
-        $searchTerms = $request->get('searchTerms');
         $sortBy = $request->get('sortBy', 'p.sku');
-
-        $repository = $this->getDoctrine()->getRepository("AppBundle:Product");
-
-        $qb = $repository->createQueryBuilder('p')->where('p.shown = 1');
-
-        if ($searchTerms) {
-            $qb->andWhere('p.name LIKE :searchTerms OR p.sku LIKE :searchTerms')
-                    ->setParameter('searchTerms', "%{$searchTerms}%");
-        }
-
-        if ($categoryId) {
-            $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $categoryId);
-        }
-
+        
+        $service = $this->get('app.product_service');        
+        
+        $options = array();
+        
         if ($manufacturerId) {
-            $manufacturer = $this->getDoctrine()->getRepository("AppBundle:Manufacturer")->find($manufacturerId);
-            $qb->andWhere('p.manufacturer = :manufacturer')
-                    ->setParameter('manufacturer', $manufacturer);
+            $options['manufacturer'] = $this->getDoctrine()->getRepository('AppBundle:Manufacturer')->find($manufacturerId)->getCode();
         }
-
+        
         if ($productTypeId) {
-            $productType = $this->getDoctrine()->getRepository("AppBundle:ProductType")->find($productTypeId);
-            $qb->andWhere('p.productType = :productType')
-                    ->setParameter('productType', $productType);
+            $options['product_line'] = $this->getDoctrine()->getRepository('AppBundle:ProductType')->find($productTypeId)->getCode();
         }
-
-        $qb->orderBy($sortBy, 'ASC');
-
-        $paginator = $this->get('knp_paginator');
-
-        $pagination = $paginator->paginate(
-                $qb->getQuery(), $page, 10
-        );
+        
+        if ($categoryId) {
+            $options['category_id'] = $this->getDoctrine()->getRepository('AppBundle:Category')->find($categoryId)->getId();
+        }
+        
+        if ($searchTerms) {
+            $options['search_terms'] = $searchTerms;
+        }
+        
+        $products = $service->findBy($options, (($page - 1) * $perPage), $perPage);
 
         $params = array(
-            'pagination' => $pagination,
+            'products' => $products,
             'pageOptions' => array(
+                'searchTerms' => $searchTerms,
                 'categoryId' => $categoryId,
                 'manufacturerId' => $manufacturerId,
                 'productTypeId' => $productTypeId,
-                'searchTerms' => $searchTerms,
                 'sortBy' => $sortBy,
                 'page' => $page
             )
@@ -75,10 +66,19 @@ class CatalogController extends Controller {
         if ($request->isXmlHttpRequest()) {
             $response = new Response();
             $engine = $this->container->get('templating');
+            if (!empty($products)) {
+                $params['nextPage'] = $this->generateUrl('catalog_list', array(
+                    'searchTerms' => $searchTerms,
+                    'categoryId' => $categoryId,
+                    'manufacturerId' => $manufacturerId,
+                    'productTypeId' => $productTypeId,
+                    'sortBy' => $sortBy,
+                    'page' => $page + 1
+                ));
+            }
             $response->setContent($engine->render('AppBundle:Catalog:list.html.twig', $params));
-            $response->headers->set('X-TotalPages', $pagination->getPaginationData()['pageCount']);
             return $response;
-        } else {
+        } else {            
             return $this->render('AppBundle:Catalog:index.html.twig', $params);
         }
     }
@@ -186,6 +186,38 @@ class CatalogController extends Controller {
         );
 
         return array('pagination' => $pagination);
+    }
+
+    /**
+     * @Route("/price/{sku}", name="catalog_item_price")
+     */
+    public function itemPriceAjaxAction($sku) {
+        
+        $service = $this->get('app.product_service');
+        
+        $data = $service->getPrice($sku);
+
+        $response = new Response();
+        $response->setContent(json_encode($data));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+        
+    }
+
+    /**
+     * @Route("/stock/{sku}", name="catalog_item_stock")
+     */
+    public function itemStockAjaxAction($sku) {
+        
+        $service = $this->get('app.product_service');
+        
+        $data = $service->getStock($sku);
+
+        $response = new Response();
+        $response->setContent(json_encode($data));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+        
     }
 
     /**

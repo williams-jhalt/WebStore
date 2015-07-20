@@ -37,10 +37,28 @@
     <dd>{{ product.sku }}</dd>
 
     <dt>Price</dt>
-    <dd>${{ product.price|number_format(2) }}</dd>
+    <dd>
+        <span id="price_{{ product.id }}"></span>
+        <script>
+            $(document).ready(function () {
+                $.get('{{ path('catalog_item_price', {sku: product.sku}) }}', function (data) {
+                    $('#price_{{ product.id }}').text("$" + parseFloat(data).toFixed(2));
+                });
+            });
+        </script>
+    </dd>
 
     <dt>Stock Quantity</dt>
-    <dd>{{ product.stockQuantity }}</dd>
+    <dd>                        
+        <span id="stock_{{ product.id }}"></span>
+        <script>
+            $(document).ready(function () {
+                $.get('{{ path('catalog_item_stock', {sku: product.sku}) }}', function (data) {
+                    $('#stock_{{ product.id }}').text(data);
+                });
+            });
+        </script>
+    </dd>
 
     <dt>Manufacturer</dt>
     <dd>{{ product.manufacturer.name }}</dd>

@@ -54,7 +54,7 @@ class Webservice {
             $items[] = $weborderitem;
         }
 
-        $weborder->setWeborderItems($items);
+        $weborder->setItems($items);
 
         $this->em->persist($weborder);
 

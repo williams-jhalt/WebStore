@@ -2,6 +2,7 @@
 
 namespace AppBundle\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -9,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Weborder
  *
  * @ORM\Table(name="weborder")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="WeborderRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class Weborder {
@@ -26,6 +27,27 @@ class Weborder {
     /**
      * @var string
      * 
+     * @ORM\Column(name="ship_to_company", type="string", length=255, nullable=true)
+     */
+    private $shipToCompany;
+
+    /**
+     * @var string
+     * 
+     * @ORM\Column(name="ship_to_attention", type="string", length=255, nullable=true)
+     */
+    private $shipToAttention;
+
+    /**
+     * @var string
+     * 
+     * @ORM\Column(name="status", type="string", length=255, nullable=true)
+     */
+    private $status;
+
+    /**
+     * @var string
+     * 
      * @ORM\Column(name="order_number", type="string", length=255)
      */
     private $orderNumber;
@@ -33,35 +55,35 @@ class Weborder {
     /**
      * @var string
      *
-     * @ORM\Column(name="reference1", type="string", length=255)
+     * @ORM\Column(name="reference1", type="string", length=255, nullable=true)
      */
     private $reference1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="reference2", type="string", length=255)
+     * @ORM\Column(name="reference2", type="string", length=255, nullable=true)
      */
     private $reference2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="reference3", type="string", length=255)
+     * @ORM\Column(name="reference3", type="string", length=255, nullable=true)
      */
     private $reference3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ship_to_first_name", type="string", length=255)
+     * @ORM\Column(name="ship_to_first_name", type="string", length=255, nullable=true)
      */
     private $shipToFirstName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ship_to_last_name", type="string", length=255)
+     * @ORM\Column(name="ship_to_last_name", type="string", length=255, nullable=true)
      */
     private $shipToLastName;
 
@@ -75,9 +97,16 @@ class Weborder {
     /**
      * @var string
      *
-     * @ORM\Column(name="ship_to_address2", type="string", length=255)
+     * @ORM\Column(name="ship_to_address2", type="string", length=255, nullable=true)
      */
     private $shipToAddress2;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="ship_to_address3", type="string", length=255, nullable=true)
+     */
+    private $shipToAddress3;
 
     /**
      * @var string
@@ -89,14 +118,14 @@ class Weborder {
     /**
      * @var string
      *
-     * @ORM\Column(name="ship_to_state", type="string", length=255)
+     * @ORM\Column(name="ship_to_state", type="string", length=255, nullable=true)
      */
     private $shipToState;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ship_to_zip", type="string", length=255)
+     * @ORM\Column(name="ship_to_zip", type="string", length=255, nullable=true)
      */
     private $shipToZip;
 
@@ -110,14 +139,14 @@ class Weborder {
     /**
      * @var string
      *
-     * @ORM\Column(name="ship_to_phone", type="string", length=255)
+     * @ORM\Column(name="ship_to_phone", type="string", length=255, nullable=true)
      */
     private $shipToPhone;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ship_to_email", type="string", length=255)
+     * @ORM\Column(name="ship_to_email", type="string", length=255, nullable=true)
      */
     private $shipToEmail;
 
@@ -132,24 +161,33 @@ class Weborder {
     private $orderDate;
 
     /**
-     * @ORM\Column(name="rush", type="boolean", options={"default":0})
+     * @ORM\Column(name="rush", type="boolean", nullable=true)
      */
     private $rush;
 
     /**
-     * @ORM\OneToMany(targetEntity="WeborderItem", mappedBy="weborder")
+     * @ORM\OneToMany(targetEntity="WeborderItem", mappedBy="weborder", cascade={"persist", "remove"})
      * */
-    private $weborderItems;
-
-    public function __construct() {
-        $this->weborderItems = new ArrayCollection();
-    }
+    private $items;
 
     /**
-     * @ORM\PrePersist
+     * @ORM\OneToMany(targetEntity="WeborderAudit", mappedBy="weborder", cascade={"persist", "remove"})
+     * */
+    private $audits;
+
+    /**
+     * @ORM\Column(name="created_on", type="datetime")
      */
-    public function prePersist() {
-        $this->orderNumber = date('U') . rand(0,99);
+    private $createdOn;
+
+    /**
+     * @ORM\Column(name="updated_on", type="datetime")
+     */
+    private $updatedOn;
+
+    public function __construct() {
+        $this->items = new ArrayCollection();
+        $this->audits = new ArrayCollection();
     }
 
     /**
@@ -326,13 +364,139 @@ class Weborder {
         return $this;
     }
 
-    public function getWeborderItems() {
-        return $this->weborderItems;
+    public function getItems() {
+        return $this->items;
     }
 
-    public function setWeborderItems($weborderItems) {
-        $this->weborderItems = $weborderItems;
+    public function setItems($weborderItems) {
+        $this->items = $weborderItems;
         return $this;
+    }
+
+    public function getStatus() {
+        return $this->status;
+    }
+
+    public function setStatus($status) {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getShipToAttention() {
+        return $this->shipToAttention;
+    }
+
+    public function setShipToAttention($shipToAttention) {
+        $this->shipToAttention = $shipToAttention;
+        return $this;
+    }
+
+    public function getShipToCompany() {
+        return $this->shipToCompany;
+    }
+
+    public function setShipToCompany($shipToCompany) {
+        $this->shipToCompany = $shipToCompany;
+        return $this;
+    }
+
+    public function getShipToAddress3() {
+        return $this->shipToAddress3;
+    }
+
+    public function setShipToAddress3($shipToAddress3) {
+        $this->shipToAddress3 = $shipToAddress3;
+        return $this;
+    }
+
+    public function addItem(WeborderItem $item) {
+        $this->items[] = $item;
+    }
+
+    public function removeItem(WeborderItem $item) {
+        $this->items->removeElement($item);
+    }
+
+    public function getAudits() {
+        return $this->audits;
+    }
+
+    public function setAudits($audits) {
+        $this->audits = $audits;
+        return $this;
+    }
+
+    public function addAudit(WeborderAudit $audit) {
+        $this->audits[] = $audit;
+    }
+
+    public function removeAudit(WeborderAudit $audit) {
+        $this->audits->removeElement($audit);
+    }
+
+    public function getFriendlyStatus() {
+        $audits = $this->getAudits();
+        $shipped = false;
+        $packed = false;
+        $pickedUp = false;
+        foreach ($audits as $audit) {
+            if ($audit->getStatusCode() == 'SH') {
+                $shipped = true;
+            }
+            if ($audit->getStatusCode() == 'OESHIP') {
+                $pickedUp = true;
+            }
+            if ($audit->getStatusCode() == 'OEPT') {
+                $packed = true;
+            }
+        }
+
+        if ($shipped) {
+            return "Shipped";
+        }
+
+        if ($pickedUp) {
+            return "Picked Up";
+        }
+
+        if ($packed) {
+            return "Packed";
+        }
+
+        return "Processing";
+    }
+
+    public function getCreatedOn() {
+        return $this->createdOn;
+    }
+
+    public function getUpdatedOn() {
+        return $this->updatedOn;
+    }
+
+    public function setCreatedOn($createdOn) {
+        $this->createdOn = $createdOn;
+        return $this;
+    }
+
+    public function setUpdatedOn($updatedOn) {
+        $this->updatedOn = $updatedOn;
+        return $this;
+    }
+    
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist() {
+        $this->createdOn = new DateTime();
+        $this->updatedOn = new DateTime();
+    }
+    
+    /**
+     * @ORM\PreUpdate
+     */
+    public function preUpdate() {
+        $this->updatedOn = new DateTime();
     }
 
 }

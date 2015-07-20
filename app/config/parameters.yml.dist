@@ -18,3 +18,7 @@ parameters:
 
     # A secret key that's used to generate certain security-related tokens
     secret:            ThisTokenIsNotSoSecretChangeIt
+
+    erp_server: http://distone:8080
+    erp_username: user
+    erp_password: password

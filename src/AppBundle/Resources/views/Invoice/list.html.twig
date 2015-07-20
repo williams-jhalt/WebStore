@@ -1,0 +1,14 @@
+{% for invoice in invoices %}
+
+    <div class="row">
+        <span class="col-sm-3"><a href="#" class="view-invoice" data-id="{{ invoice.orderNumber}}">{{ invoice.orderNumber }}</a></span>
+        <span class="col-sm-3">{{ invoice.invoiceDate|date('Y-m-d') }}</span>
+        <span class="col-sm-3">{{ invoice.friendlyStatus }}</span>
+        <span class="col-sm-3">{{ invoice.customerNumber }}</span>
+    </div>
+
+{% endfor %}
+
+{% if nextPage is defined %}
+    <p class="text-center"><a class="jscroll-next" href="{{ nextPage }}">Load More Results</a></p>
+{% endif %}

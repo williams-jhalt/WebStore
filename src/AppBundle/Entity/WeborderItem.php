@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * WeborderItem
  *
  * @ORM\Table(name="weborder_item")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Entity\WeborderItemRepository")
  */
 class WeborderItem {
 
@@ -26,6 +26,13 @@ class WeborderItem {
      * @ORM\JoinColumn(name="weborder_id", referencedColumnName="id")
      * */
     private $weborder;
+
+    /**
+     * @var string
+     * 
+     * @ORM\Column(name="order_number", type="string", length=255)
+     */
+    private $orderNumber;
 
     /**
      * @var string
@@ -74,6 +81,15 @@ class WeborderItem {
 
     public function setQuantity($quantity) {
         $this->quantity = $quantity;
+        return $this;
+    }
+
+    public function getOrderNumber() {
+        return $this->orderNumber;
+    }
+
+    public function setOrderNumber($orderNumber) {
+        $this->orderNumber = $orderNumber;
         return $this;
     }
 

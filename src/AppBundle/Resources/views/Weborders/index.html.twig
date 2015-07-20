@@ -1,38 +1,98 @@
 {% extends 'AppBundle:Weborders:layout.html.twig' %}
 
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            var thread = null;
+
+            pageOptions = {{pageOptions|json_encode|raw}};
+                    updateWeborders = function () {
+                        $('#weborderBody').load(Routing.generate('weborders_ajax_list', pageOptions), function (data) {
+                            $('#weborderBody').data('jscroll', null);
+                            $('#weborderBody').jscroll({
+                                loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                                autoTrigger: true,
+                                padding: 20,
+                                nextSelector: 'a.jscroll-next:last'
+                            });
+                        });
+                    };
+
+            $('#weborderBody').on('click', 'a.view-weborder', function (e) {
+                $.get(Routing.generate('weborders_ajax_view', {id: e.target.dataset.id}), function (data) {
+                    $('.modal-body').html(data);
+                    $('#weborderView').modal('show');
+                });
+                return false;
+            });
+
+            $("#searchForm").on('change keyup paste', ":input", function (e) {
+                clearTimeout(thread);
+                thread = setTimeout(function () {
+                    pageOptions['searchTerms'] = $("input[name='searchTerms']").val();
+                    {% if app.user.customerNumbers|length > 1 %}
+                        pageOptions['customerNumber'] = $("select[name='customerNumber']").val();
+                    {% else %}
+                        pageOptions['customerNumber'] = '';
+                    {% endif %}
+                    console.log(pageOptions);
+                    updateWeborders();
+                },1000);
+            });
+
+            updateWeborders();
+
+        });
+
+    </script>
+{% endblock %}
+
 {% block weborders_body %}
-    
-    <h1>Weborders</h1>
 
-    {% if pagination|length > 0 %}
+    <div class="well well-sm">
+        <form id="searchForm" class="form-inline" action="#" method="get">
+            <div class="form-group">
+                <input class="form-control" type="text" placeholder="Filter..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
+            </div>
+            {% if app.user.customerNumbers|length > 1 %}
+                <select class="form-control" name="customerNumber">
+                    <option value="">All Accounts</option>
+                    {% for customerNumber in app.user.customerNumbers %}
+                        <option value="{{ customerNumber }}">{{ customerNumber }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+        </form>
+    </div>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Order Number</th>
-                    <th>Order Date</th>
-                    <th>Customer Reference</th>
-                    <th>Customer Number</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for weborder in pagination %}
-                    <tr>
-                        <td><a href="{{ path('weborders_view', {id: weborder.id}) }}">{{ weborder.orderNumber }}</a></td>
-                        <td>{{ weborder.orderDate|date('m/d/Y h:i:s A') }}</td>
-                        <td>{{ weborder.reference1 }}</td>
-                        <td>{{ weborder.customerNumber }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row">
+        <span class="col-sm-2"><strong>Order Number</strong></span>
+        <span class="col-sm-2"><strong>Order Date</strong></span>
+        <span class="col-sm-3"><strong>Customer PO / Reference</strong></span>
+        <span class="col-sm-2"><strong>Status</strong></span>
+        <span class="col-sm-3"><strong>Customer Number</strong></span>
+    </div>
 
-        {{ knp_pagination_render(pagination) }}
+    <div id="weborderBody"></div>
 
-    {% else %}
-        
-        <p>You have no orders</p>
-        
-    {% endif %}
-    
+    <div class="modal" id="weborderView" tabindex="-1" role="dialog" aria-labelledby="weborderView" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Order</h4>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

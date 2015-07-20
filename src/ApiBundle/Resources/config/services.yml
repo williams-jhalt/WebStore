@@ -1,5 +1,0 @@
-services:
-    
-    api.soap_service:
-        class: ApiBundle\Service\SoapService
-        arguments: ["@doctrine.orm.entity_manager"]

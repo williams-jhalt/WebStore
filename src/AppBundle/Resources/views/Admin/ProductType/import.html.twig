@@ -1,0 +1,11 @@
+{% extends 'AppBundle:Admin:layout.html.twig' %}
+
+{% block admin_body %}
+    
+    {{ include('AppBundle:Admin/ProductType:nav.html.twig') }}
+    
+    <h1>Import Product Types</h1>
+    
+    {{ form(form) }}
+    
+{% endblock %}

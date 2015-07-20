@@ -9,9 +9,11 @@ use SplFileObject;
 class ManufacturerService {
 
     private $em;
+    private $erp;
 
-    public function __construct(EntityManager $em) {
+    public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
         $this->em = $em;
+        $this->erp = $erp;
     }
 
     /**
