@@ -44,32 +44,36 @@ class WeborderService {
 
         $weborder = $repository->findOrUpdate($data);
 
-        $weborderItemRepository = $this->em->getRepository('AppBundle:WeborderItem');
-        $weborderAuditRepository = $this->em->getRepository('AppBundle:WeborderAudit');
+        if ($weborder->getUpdatedOn() < new DateTime("-5 minute")) {
 
-        $auditResponse = $this->erp->read("FOR EACH oe_status NO-LOCK WHERE company_oe = 'WTC' AND order = '{$item->order}'", "order, comment, rec_type, stat, stat_date, stat_ttime");
+            $weborderAuditRepository = $this->em->getRepository('AppBundle:WeborderAudit');
 
-        $audits = array();
+            $auditResponse = $this->erp->read("FOR EACH oe_status NO-LOCK WHERE company_oe = 'WTC' AND order = '{$item->order}'", "order, comment, rec_type, stat, stat_date, stat_ttime");
 
-        foreach ($auditResponse as $item) {
+            $audits = array();
 
-            $timeStr = str_pad($item->stat_ttime, 6, "0", STR_PAD_LEFT);
-            $dateStr = $item->stat_date;
-            $timestamp = DateTime::createFromFormat("Y-m-d His", "{$dateStr} {$timeStr}");
+            foreach ($auditResponse as $item) {
 
-            $audits[] = $weborderAuditRepository->findOrCreate(array(
-                'weborder' => $weborder,
-                'orderNumber' => $item->order,
-                'comment' => $item->comment,
-                'recordType' => $item->rec_type,
-                'statusCode' => $item->stat,
-                'timestamp' => $timestamp
-            ));
+                $timeStr = str_pad($item->stat_ttime, 6, "0", STR_PAD_LEFT);
+                $dateStr = $item->stat_date;
+                $timestamp = DateTime::createFromFormat("Y-m-d His", "{$dateStr} {$timeStr}");
+
+                $audits[] = $weborderAuditRepository->findOrCreate(array(
+                    'weborder' => $weborder,
+                    'orderNumber' => $item->order,
+                    'comment' => $item->comment,
+                    'recordType' => $item->rec_type,
+                    'statusCode' => $item->stat,
+                    'timestamp' => $timestamp
+                ));
+            }
+
+            $weborder->setAudits($audits);
         }
 
-        $weborder->setAudits($audits);
-
         if ($products) {
+
+            $weborderItemRepository = $this->em->getRepository('AppBundle:WeborderItem');
 
             $itemResponse = $this->erp->read("FOR EACH oe_line NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND order = '{$item->order}'", "order, item, q_ord");
 
