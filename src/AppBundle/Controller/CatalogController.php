@@ -22,7 +22,7 @@ class CatalogController extends Controller {
      */
     public function indexAction(Request $request) {        
         
-        $perPage = 25;
+        $perPage = 10;
         
         $page = $request->get('page', 1);
         $searchTerms = $request->get('searchTerms');
@@ -224,6 +224,7 @@ class CatalogController extends Controller {
 
     /**
      * @Route("/categoryTree", name="catalog_category_tree", options={"expose": true})
+     * @Cache(expires="+5 minute")
      */
     public function categoryTreeAction(Request $request) {
 
