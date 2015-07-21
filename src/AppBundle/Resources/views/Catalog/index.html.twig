@@ -29,7 +29,7 @@
 
             pageOptions = $.parseJSON('{{ pageOptions|json_encode|raw }}');
             
-            updateCatalog = function() {                
+            updateCatalog = function() {       
                 $('#catalogBody').load(Routing.generate('catalog_list', pageOptions), function(data) {
                     $('#catalogBody').data('jscroll', null);
                     $('#catalogBody').jscroll({
@@ -60,6 +60,7 @@
             }).on('changed.jstree', function (e, jstreeData) {
                 var categoryId = jstreeData.node.id;
                 pageOptions['categoryId'] = categoryId;
+                $('#catalogBody').text('Loading...');
                 updateCatalog();
             });
 
@@ -73,6 +74,7 @@
             $("body").on('submit', ".ajax-form", function (e) {
                 pageOptions['searchTerms'] = $("input[name='searchTerms']").val();
                 pageOptions['sortBy'] = $("select[name='sortBy']").val();
+                $('#catalogBody').text('Loading...');
                 updateCatalog();
                 e.preventDefault();
             });
