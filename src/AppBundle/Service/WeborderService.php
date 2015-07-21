@@ -44,7 +44,8 @@ class WeborderService {
         
         $weborder = $repository->findOrCreate($data);
 
-        if ($weborder->getUpdatedOn() < new DateTime("-5 minute")) {
+        // only update the audit if the record is older than 5 minutes, or has been created within the last 5 minutes
+        if ($weborder->getUpdatedOn() < new DateTime("-5 minute") || $weborder->getCreatedOn() > new DateTime("-5 minute")) {
 
             $weborder->setStatus($data['status']);
 
@@ -74,6 +75,7 @@ class WeborderService {
             
         }
 
+        // if we're just listing, don't load the products
         if ($products) {
 
             $weborderItemRepository = $this->em->getRepository('AppBundle:WeborderItem');
@@ -99,7 +101,7 @@ class WeborderService {
     public function findAll($offset = 0, $limit = 100) {
 
         $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O'", $this->erpOrderSelect, $offset, $limit
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -121,7 +123,7 @@ class WeborderService {
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}' OR customer BEGINS '{$searchTerms}') ", $this->erpOrderSelect, $offset, $limit
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}' OR customer BEGINS '{$searchTerms}') BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -144,7 +146,7 @@ class WeborderService {
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
                 . "AND customer = '{$customerNumber}' "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') ", $this->erpOrderSelect, $offset, $limit
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -163,7 +165,7 @@ class WeborderService {
     public function findByCustomer($customerNumber, $offset = 0, $limit = 100) {
 
         $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}'", $this->erpOrderSelect, $offset, $limit
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -193,7 +195,7 @@ class WeborderService {
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
                 . "AND ({$customerSelect}) "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') ";
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') BY oe_head.order DESCENDING";
 
         $response = $this->erp->read($query, $this->erpOrderSelect, $offset, $limit
         );
@@ -225,7 +227,7 @@ class WeborderService {
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
-                . "AND ({$customerSelect}) ", $this->erpOrderSelect, $offset, $limit
+                . "AND ({$customerSelect}) BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();

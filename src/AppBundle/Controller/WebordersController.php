@@ -68,7 +68,7 @@ class WebordersController extends Controller {
         $page = $request->get('page', 1);
         $searchTerms = $request->get('searchTerms');
         $customerNumber = $request->get('customerNumber');
-        $perPage = 25;
+        $perPage = 50;
 
         $user = $this->getUser();
 
