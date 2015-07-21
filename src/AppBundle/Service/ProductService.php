@@ -311,8 +311,10 @@ class ProductService {
         $productTypeRepository = $this->em->getRepository('AppBundle:ProductType');
         $categoryRepository = $this->em->getRepository('AppBundle:Category');
 
-        $batchSize = 50;
+        $batchSize = 500;
         $i = 0;
+        
+        $this->em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -351,19 +353,21 @@ class ProductService {
                 $product->setBarcode($row[$mapping['barcode']]);
 
                 $this->em->persist($product);
-
-
-                if (($i % $batchSize) === 0) {
-                    $this->em->flush();
-                    $this->em->clear();
-                }
+                $this->em->flush();
+                
+            }
+            
+            if (($i % $batchSize) === 0) {
+                $this->em->commit();
+                $this->em->clear();
+                $this->em->beginTransaction();
             }
 
             $i++;
         }
-
-        $this->em->flush();
-        $this->em->clear();
+        
+        $this->em->commit();
+        
     }
 
     /**
@@ -387,8 +391,9 @@ class ProductService {
 
         $productRepository = $this->em->getRepository('AppBundle:Product');
 
-        $batchSize = 50;
         $i = 0;
+
+        $this->em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -428,7 +433,8 @@ class ProductService {
 
             $i++;
         }
-        
+
+        $this->em->commit();
     }
 
     /**

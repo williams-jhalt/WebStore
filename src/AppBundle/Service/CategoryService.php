@@ -28,10 +28,11 @@ class CategoryService {
      */
     public function importFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
 
-        $batchSize = 500;
         $i = 0;
         
         $repository = $this->em->getRepository('AppBundle:Category');
+        
+        $this->em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -56,18 +57,14 @@ class CategoryService {
                 }
 
                 $this->em->persist($category);
-
-                if (($i % $batchSize) === 0) {
-                    $this->em->flush();
-                    $this->em->clear();
-                }
+                $this->em->flush();
             }
 
             $i++;
         }
-
-        $this->em->flush();
-        $this->em->clear();
+        
+        $this->em->commit();
+        
     }
     
     public function exportCsv($filename) {

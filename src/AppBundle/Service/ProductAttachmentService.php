@@ -31,8 +31,10 @@ class ProductAttachmentService {
 
         $productRepository = $this->em->getRepository('AppBundle:Product');
 
-        $batchSize = 50;
+        $batchSize = 500;
         $i = 0;
+        
+        $this->em->beginTransaction();                
 
         while (!$file->eof()) {
 
@@ -58,9 +60,17 @@ class ProductAttachmentService {
                     $this->em->flush();
                 }
             }
+            
+            if (($i % $batchSize) === 0) {
+                $this->em->commit();
+                $this->em->clear();
+                $this->em->beginTransaction();
+            }
 
             $i++;
         }
+        
+        $this->em->commit();
         
     }
 

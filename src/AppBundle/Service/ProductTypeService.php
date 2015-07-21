@@ -29,14 +29,15 @@ class ProductTypeService {
      */
     public function importFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
 
-        $batchSize = 500;
         $i = 0;
+
+        $this->em->beginTransaction();
 
         while (!$file->eof()) {
 
             $row = $file->fgetcsv(",");
 
-            if ($skipFirstRow && $i == 0) {   
+            if ($skipFirstRow && $i == 0) {
                 $i++;
                 continue;
             }
@@ -49,35 +50,29 @@ class ProductTypeService {
                 $productType->setName($row[$mapping['name']]);
 
                 $this->em->persist($productType);
-
-                if (($i % $batchSize) === 0) {
-                    $this->em->flush();
-                    $this->em->clear();
-                }
+                $this->em->flush();
             }
 
             $i++;
         }
 
-        $this->em->flush();
-        $this->em->clear();
+        $this->em->commit();
     }
-    
+
     public function exportCsv($filename) {
-        
+
         $file = new SplFileObject($filename, "wb");
-        
+
         $repository = $this->em->getRepository('AppBundle:ProductType');
 
         $productTypes = $repository->findAll();
-        
+
         foreach ($productTypes as $productType) {
             $file->fputcsv(array(
                 $productType->getCode(),
                 $productType->getName()
             ));
         }
-        
     }
 
 }
