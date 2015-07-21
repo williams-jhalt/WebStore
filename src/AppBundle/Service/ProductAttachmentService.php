@@ -34,8 +34,6 @@ class ProductAttachmentService {
         $batchSize = 50;
         $i = 0;
 
-        $this->em->beginTransaction();
-
         while (!$file->eof()) {
 
             $row = $file->fgetcsv(",");
@@ -63,8 +61,7 @@ class ProductAttachmentService {
 
             $i++;
         }
-
-        $this->em->commit();
+        
     }
 
     public function exportCsv($filename) {

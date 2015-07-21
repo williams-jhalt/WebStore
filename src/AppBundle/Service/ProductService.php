@@ -392,8 +392,6 @@ class ProductService {
 
         while (!$file->eof()) {
 
-            $this->em->beginTransaction();
-
             $row = $file->fgetcsv(",");
 
             if ($skipFirstRow && $i == 0) {
@@ -428,13 +426,9 @@ class ProductService {
                 $this->em->flush();
             }
 
-            $this->em->commit();
-
             $i++;
         }
-
-        $this->em->flush();
-        $this->em->clear();
+        
     }
 
     /**
