@@ -56,7 +56,6 @@ class ProductAttachmentService {
                         $attachment = new ProductAttachment();
                         $attachment->setProduct($product);
                         $attachment->setPath("http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']]);
-                        $attachment->setFilename($row[$mapping['filename']]);
                         $attachment->setExplicit(false);
 
                         $this->em->persist($attachment);
