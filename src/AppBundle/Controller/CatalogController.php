@@ -20,7 +20,7 @@ class CatalogController extends Controller {
      */
     public function indexAction(Request $request) {        
         
-        $perPage = 50;
+        $perPage = 25;
         
         $page = $request->get('page', 1);
         $searchTerms = $request->get('searchTerms');
