@@ -52,22 +52,22 @@ class ProductService {
         $this->em->beginTransaction();
 
         foreach ($response as $item) {
-            
+
             if (!array_key_exists($item->manufacturer, $manufacturers)) {
                 $manufacturers[$item->manufacturer] = $mrep->findOrCreateByCode($item->manufacturer);
             }
-            
+
             if (!array_key_exists($item->product_line, $types)) {
                 $types[$item->product_line] = $trep->findOrCreateByCode($item->product_line);
             }
-            
+
             $product = $repository->findOrCreate(array(
                 'sku' => $item->item,
                 'name' => $item->descr[0] . " " . $item->descr[1],
                 'manufacturer' => $manufacturers[$item->manufacturer],
                 'productType' => $types[$item->product_line]
             ));
-            
+
             $products[] = $product;
         }
 
@@ -98,7 +98,7 @@ class ProductService {
             $repository = $this->em->getRepository("AppBundle:Product");
 
             $qb = $repository->createQueryBuilder('p');
-            
+
             if (isset($params['search_terms'])) {
                 $qb->andWhere('p.sku LIKE :searchTerms OR p.name LIKE :searchTerms')->setParameter('searchTerms', '%' . $params['search_terms'] . '%');
             }
@@ -119,11 +119,10 @@ class ProductService {
 
             $qb->setFirstResult($offset);
             $qb->setMaxResults($limit);
-            
+
             $query = $qb->getQuery();
-            
+
             $products = $query->getResult();
-            
         } else {
 
             $query = "FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes";
@@ -392,7 +391,7 @@ class ProductService {
         $i = 0;
 
         while (!$file->eof()) {
-            
+
             $this->em->beginTransaction();
 
             $row = $file->fgetcsv(",");
@@ -426,14 +425,9 @@ class ProductService {
                 $product->setProductDetail($productDetail);
 
                 $this->em->persist($product);
-
-
-                if (($i % $batchSize) === 0) {
-                    $this->em->flush();
-                    $this->em->clear();
-                }
+                $this->em->flush();
             }
-            
+
             $this->em->commit();
 
             $i++;

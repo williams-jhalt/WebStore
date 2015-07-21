@@ -34,9 +34,9 @@ class ProductAttachmentService {
         $batchSize = 50;
         $i = 0;
 
+        $this->em->beginTransaction();
+
         while (!$file->eof()) {
-            
-            $this->em->beginTransaction();
 
             $row = $file->fgetcsv(",");
 
@@ -50,56 +50,39 @@ class ProductAttachmentService {
                 $product = $productRepository->findOneBySku($row[$mapping['sku']]);
 
                 if ($product) {
-                    
-                    try {
 
-                        $attachment = new ProductAttachment();
-                        $attachment->setProduct($product);
-                        $attachment->setPath("http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']]);
-                        $attachment->setExplicit(false);
+                    $attachment = new ProductAttachment();
+                    $attachment->setProduct($product);
+                    $attachment->setPath("http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']]);
+                    $attachment->setExplicit(false);
 
-                        $this->em->persist($attachment);
-                        
-                    } catch (Exception $e) {
-                        // don't worry about it
-                    }
-                    
-                }
-
-
-                if (($i % $batchSize) === 0) {
+                    $this->em->persist($attachment);
                     $this->em->flush();
-                    $this->em->clear();
                 }
             }
-            
-            $this->em->commit();
 
             $i++;
         }
 
-        $this->em->flush();
-        $this->em->clear();
+        $this->em->commit();
     }
-    
+
     public function exportCsv($filename) {
 
         $repository = $this->em->getRepository('AppBundle:ProductAttachment');
-        
+
         $file = new SplFileObject($filename, "wb");
-        
+
         $attachments = $repository->findAll();
-        
+
         foreach ($attachments as $attachment) {
-            
+
             $file->fputcsv(array(
                 $attachment->getProduct()->getSku(),
                 $attachment->getUrl(),
                 $attachment->getExplicit()
             ));
-            
         }
-        
     }
 
 }
