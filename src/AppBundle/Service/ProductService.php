@@ -392,6 +392,8 @@ class ProductService {
         $i = 0;
 
         while (!$file->eof()) {
+            
+            $this->em->beginTransaction();
 
             $row = $file->fgetcsv(",");
 
@@ -431,6 +433,8 @@ class ProductService {
                     $this->em->clear();
                 }
             }
+            
+            $this->em->commit();
 
             $i++;
         }

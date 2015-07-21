@@ -35,6 +35,8 @@ class ProductAttachmentService {
         $i = 0;
 
         while (!$file->eof()) {
+            
+            $this->em->beginTransaction();
 
             $row = $file->fgetcsv(",");
 
@@ -53,7 +55,7 @@ class ProductAttachmentService {
 
                         $attachment = new ProductAttachment();
                         $attachment->setProduct($product);
-                        $attachment->setUrl("http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']]);
+                        $attachment->setPath("http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']]);
                         $attachment->setFilename($row[$mapping['filename']]);
                         $attachment->setExplicit(false);
 
@@ -71,6 +73,8 @@ class ProductAttachmentService {
                     $this->em->clear();
                 }
             }
+            
+            $this->em->commit();
 
             $i++;
         }
