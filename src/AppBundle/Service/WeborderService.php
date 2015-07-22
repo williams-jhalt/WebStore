@@ -14,7 +14,7 @@ class WeborderService {
     private $auditService;
     private $erpOrderSelect = "order, customer, created_date, cu_po, ship_atn, name, state, postal_code, country_code, adr, stat";
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp, WeborderAuditService $auditService) {
+    public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
         $this->em = $em;
         $this->erp = $erp;
         $this->auditService = $auditService;
