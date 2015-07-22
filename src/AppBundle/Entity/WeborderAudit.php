@@ -65,10 +65,6 @@ class WeborderAudit {
      */
     private $comment;
 
-    public function getId() {
-        return $this->id;
-    }
-
     public function getOrderNumber() {
         return $this->orderNumber;
     }
@@ -88,11 +84,6 @@ class WeborderAudit {
 
     public function getComment() {
         return $this->comment;
-    }
-
-    public function setId($id) {
-        $this->id = $id;
-        return $this;
     }
 
     public function setOrderNumber($orderNumber) {

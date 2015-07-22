@@ -48,15 +48,6 @@ class WeborderItem {
      */
     private $quantity;
 
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId() {
-        return $this->id;
-    }
-
     public function getWeborder() {
         return $this->weborder;
     }
