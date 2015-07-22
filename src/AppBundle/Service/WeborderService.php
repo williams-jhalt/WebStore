@@ -101,7 +101,7 @@ class WeborderService {
     public function findAll($offset = 0, $limit = 100) {
 
         $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND order > 0 USE-INDEX customer_date_d", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -123,7 +123,7 @@ class WeborderService {
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}' OR customer BEGINS '{$searchTerms}') BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}' OR customer BEGINS '{$searchTerms}') AND order > 0 USE-INDEX customer_date_d", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -146,7 +146,7 @@ class WeborderService {
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
                 . "AND customer = '{$customerNumber}' "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') AND order > 0 USE-INDEX customer_date_d", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -165,7 +165,7 @@ class WeborderService {
     public function findByCustomer($customerNumber, $offset = 0, $limit = 100) {
 
         $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' AND order > 0 USE-INDEX customer_date_d", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
@@ -195,7 +195,7 @@ class WeborderService {
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
                 . "AND ({$customerSelect}) "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') BY oe_head.order DESCENDING";
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}') AND order > 0 USE-INDEX customer_date_d";
 
         $response = $this->erp->read($query, $this->erpOrderSelect, $offset, $limit
         );
@@ -227,7 +227,7 @@ class WeborderService {
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
-                . "AND ({$customerSelect}) BY oe_head.order DESCENDING", $this->erpOrderSelect, $offset, $limit
+                . "AND ({$customerSelect}) AND order > 0 USE-INDEX customer_date_d", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = array();
