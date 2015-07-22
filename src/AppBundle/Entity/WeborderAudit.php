@@ -2,25 +2,17 @@
 
 namespace AppBundle\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Weborder
  *
  * @ORM\Table(name="weborder_audit")
- * @ORM\Entity(repositoryClass="AppBundle\Entity\WeborderAuditRepository")
+ * @ORM\Entity(repositoryClass="WeborderAuditRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class WeborderAudit {
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="Weborder", inversedBy="audits")
@@ -32,15 +24,25 @@ class WeborderAudit {
      * @var string
      * 
      * @ORM\Column(name="order_number", type="string", length=255)
+     * @ORM\Id
      */
     private $orderNumber;
 
     /**
      * @var string
      * 
-     * @ORM\Column(name="timestamp", type="datetime")
+     * @ORM\Column(name="record_date", type="string", length=255)
+     * @ORM\Id
      */
-    private $timestamp;
+    private $recordDate;
+
+    /**
+     * @var string
+     * 
+     * @ORM\Column(name="record_time", type="string", length=255)
+     * @ORM\Id
+     */
+    private $recordTime;
 
     /**
      * @var string
@@ -72,7 +74,8 @@ class WeborderAudit {
     }
 
     public function getTimestamp() {
-        return $this->timestamp;
+        $timeStr = str_pad($this->recordTime, 6, "0", STR_PAD_LEFT);
+        return DateTime::createFromFormat("Y-m-d His", "{$this->recordDate} {$timeStr}");
     }
 
     public function getRecordType() {
@@ -97,11 +100,6 @@ class WeborderAudit {
         return $this;
     }
 
-    public function setTimestamp($timestamp) {
-        $this->timestamp = $timestamp;
-        return $this;
-    }
-
     public function setRecordType($recordType) {
         $this->recordType = $recordType;
         return $this;
@@ -123,6 +121,24 @@ class WeborderAudit {
 
     public function setWeborder($weborder) {
         $this->weborder = $weborder;
+        return $this;
+    }
+
+    public function getRecordDate() {
+        return $this->recordDate;
+    }
+
+    public function getRecordTime() {
+        return $this->recordTime;
+    }
+
+    public function setRecordDate($recordDate) {
+        $this->recordDate = $recordDate;
+        return $this;
+    }
+
+    public function setRecordTime($recordTime) {
+        $this->recordTime = $recordTime;
         return $this;
     }
 

@@ -10,13 +10,14 @@ class WeborderItemRepository extends EntityRepository {
 
         $item = $this->findOneBy(array(
             'orderNumber' => $data['orderNumber'],
-            'sku' => $data['sku']
+            'lineNumber' => $data['lineNumber']
         ));
 
         if (!$item) {
             $item = new WeborderItem();
             $item->setWeborder($data['weborder']);
             $item->setOrderNumber($data['orderNumber']);
+            $item->setLineNumber($data['lineNumber']);
             $item->setSku($data['sku']);
             $item->setQuantity($data['quantity']);
             $this->getEntityManager()->persist($item);

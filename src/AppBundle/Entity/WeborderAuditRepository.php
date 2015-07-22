@@ -10,17 +10,19 @@ class WeborderAuditRepository extends EntityRepository {
 
         $audit = $this->findOneBy(array(
             'orderNumber' => $data['orderNumber'],
-            'timestamp' => $data['timestamp']
+            'recordDate' => $data['recordDate'],
+            'recordTime' => $data['recordTime']
         ));
 
         if (!$audit) {
             $audit = new WeborderAudit();
             $audit->setWeborder($data['weborder']);
             $audit->setOrderNumber($data['orderNumber']);
+            $audit->setRecordDate($data['recordDate']);
+            $audit->setRecordTime($data['recordTime']);
             $audit->setComment($data['comment']);
             $audit->setRecordType($data['recordType']);
             $audit->setStatusCode($data['statusCode']);
-            $audit->setTimestamp($data['timestamp']);
             $this->getEntityManager()->persist($audit);
             $this->getEntityManager()->flush();
         }
