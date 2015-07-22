@@ -70,6 +70,8 @@ class WeborderAudit {
      * @ORM\Column(name="comment", type="string", length=255)
      */
     private $comment;
+    
+    private $timestamp;
 
     public function getId() {
         return $this->id;
@@ -85,8 +87,11 @@ class WeborderAudit {
     }
 
     public function getTimestamp() {
-        $timeStr = str_pad($this->recordTime, 6, "0", STR_PAD_LEFT);
-        return DateTime::createFromFormat("Y-m-d His", "{$this->recordDate} {$timeStr}");
+        if ($this->timestamp == null) {
+            $timeStr = str_pad($this->recordTime, 6, "0", STR_PAD_LEFT);
+            $this->timestamp = DateTime::createFromFormat("Y-m-d His", "{$this->recordDate} {$timeStr}");
+        }
+        return $this->timestamp;
     }
 
     public function getRecordType() {
