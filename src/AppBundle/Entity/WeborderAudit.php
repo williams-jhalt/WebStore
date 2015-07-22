@@ -15,6 +15,15 @@ use Doctrine\ORM\Mapping as ORM;
 class WeborderAudit {
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Weborder", inversedBy="audits")
      * @ORM\JoinColumn(name="weborder_id", referencedColumnName="id")
      * */
@@ -24,7 +33,6 @@ class WeborderAudit {
      * @var string
      * 
      * @ORM\Column(name="order_number", type="string", length=255)
-     * @ORM\Id
      */
     private $orderNumber;
 
@@ -32,7 +40,6 @@ class WeborderAudit {
      * @var string
      * 
      * @ORM\Column(name="record_date", type="string", length=255)
-     * @ORM\Id
      */
     private $recordDate;
 
@@ -40,7 +47,6 @@ class WeborderAudit {
      * @var string
      * 
      * @ORM\Column(name="record_time", type="string", length=255)
-     * @ORM\Id
      */
     private $recordTime;
 
@@ -64,6 +70,15 @@ class WeborderAudit {
      * @ORM\Column(name="comment", type="string", length=255)
      */
     private $comment;
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function setId($id) {
+        $this->id = $id;
+        return $this;
+    }
 
     public function getOrderNumber() {
         return $this->orderNumber;

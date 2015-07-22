@@ -13,6 +13,15 @@ use Doctrine\ORM\Mapping as ORM;
 class WeborderItem {
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Weborder", inversedBy="items")
      * @ORM\JoinColumn(name="weborder_id", referencedColumnName="id")
      * */
@@ -22,7 +31,6 @@ class WeborderItem {
      * @var string
      * 
      * @ORM\Column(name="order_number", type="string", length=255)
-     * @ORM\Id
      */
     private $orderNumber;
 
@@ -30,7 +38,6 @@ class WeborderItem {
      * @var string
      * 
      * @ORM\Column(name="line_number", type="string", length=255)
-     * @ORM\Id
      */
     private $lineNumber;
 
@@ -47,6 +54,15 @@ class WeborderItem {
      * @ORM\Column(name="quantity", type="integer")
      */
     private $quantity;
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function setId($id) {
+        $this->id = $id;
+        return $this;
+    }
 
     public function getWeborder() {
         return $this->weborder;
