@@ -37,37 +37,17 @@ class WeborderService {
 
         $newOrderNumbers = array_diff($orderNumbers, $knownOrderNumbers);
 
-        $weborders = array_reverse($weborders);
-
         $this->em->beginTransaction();
 
         foreach ($response as $item) {
             if (array_search($item->order, $newOrderNumbers) !== false) {
-
-                $data = array(
-                    'orderNumber' => $item->order,
-                    'customerNumber' => $item->customer,
-                    'orderDate' => new DateTime($item->created_date),
-                    'reference1' => $item->cu_po,
-                    'shipToAttention' => $item->ship_atn,
-                    'shipToCompany' => $item->name,
-                    'shipToState' => $item->state,
-                    'shipToZip' => $item->postal_code,
-                    'shipToCountry' => $item->country_code,
-                    'shipToAddress1' => $item->adr[0],
-                    'shipToAddress2' => $item->adr[1],
-                    'shipToAddress3' => $item->adr[2],
-                    'shipToCity' => $item->adr[4],
-                    'status' => $item->stat
-                );
-
-                array_push($weborders, $rep->findOrCreate($data));
+                
+                $weborders[] = $this->_getDbRecordFromErp($item);
+                
             }
         }
-
+        
         $this->em->commit();
-
-        $weborders = array_reverse($weborders);
 
         return $weborders;
     }
@@ -162,7 +142,7 @@ class WeborderService {
         $rep = $this->em->getRepository('AppBundle:Weborder');
 
         $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' USE-INDEX order_d", $this->erpOrderSelect, $offset, $limit
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O'", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = $this->_getMultipleDbRecordsFromErp($response);
@@ -202,7 +182,7 @@ class WeborderService {
     public function findByCustomer($customerNumber, $offset = 0, $limit = 100) {
 
         $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' USE-INDEX customer_date_d", $this->erpOrderSelect, $offset, $limit
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}'", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = $this->_getMultipleDbRecordsFromErp($response);
@@ -247,7 +227,7 @@ class WeborderService {
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
-                . "AND ({$customerSelect}) USE-INDEX customer_date_d", $this->erpOrderSelect, $offset, $limit
+                . "AND ({$customerSelect})", $this->erpOrderSelect, $offset, $limit
         );
 
         $weborders = $this->_getMultipleDbRecordsFromErp($response);
