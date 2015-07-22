@@ -25,22 +25,22 @@ monolog:
         console:
             type:  console
             
-#snc_redis:
-#    clients:
-#        default:
-#            type: predis
-#            alias: default
-#            dsn: redis://webstore-dev.e51fwo.0001.use1.cache.amazonaws.com
-#    session:
-#        client: default
-#    doctrine:
-#        metadata_cache:
-#            client: default
-#            entity_manager: default          # the name of your entity_manager connection
-#            document_manager: default        # the name of your document_manager connection
-#        result_cache:
-#            client: default
-#            entity_manager: [default, read]  # you may specify multiple entity_managers
-#        query_cache:
-#            client: default
-#            entity_manager: default
+snc_redis:
+    clients:
+        default:
+            type: predis
+            alias: default
+            dsn: redis://webstore-dev.e51fwo.0001.use1.cache.amazonaws.com
+    session:
+        client: default
+    doctrine:
+        metadata_cache:
+            client: default
+            entity_manager: default          # the name of your entity_manager connection
+            document_manager: default        # the name of your document_manager connection
+        result_cache:
+            client: default
+            entity_manager: [default, read]  # you may specify multiple entity_managers
+        query_cache:
+            client: default
+            entity_manager: default
