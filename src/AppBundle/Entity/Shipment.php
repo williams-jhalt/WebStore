@@ -43,6 +43,11 @@ class Shipment {
     private $customerNumber;
 
     /**
+     * @ORM\Column(name="shipped", type="boolean", nullable=true)
+     */
+    private $shipped;
+
+    /**
      * @ORM\OneToMany(targetEntity="ShipmentItem", mappedBy="shipment")
      * */
     private $items;
@@ -93,6 +98,15 @@ class Shipment {
 
     public function setItems($items) {
         $this->items = $items;
+        return $this;
+    }
+
+    public function getShipped() {
+        return $this->shipped;
+    }
+
+    public function setShipped($shipped) {
+        $this->shipped = $shipped;
         return $this;
     }
 

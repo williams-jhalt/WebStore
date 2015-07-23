@@ -48,7 +48,7 @@ class Weborder {
     /**
      * @var string
      * 
-     * @ORM\Column(name="order_number", type="string", length=255)
+     * @ORM\Column(name="order_number", type="string", length=255, unique=true)
      */
     private $orderNumber;
 
@@ -483,7 +483,7 @@ class Weborder {
         $this->updatedOn = $updatedOn;
         return $this;
     }
-    
+
     /**
      * @ORM\PrePersist
      */
@@ -491,7 +491,7 @@ class Weborder {
         $this->createdOn = new DateTime();
         $this->updatedOn = new DateTime();
     }
-    
+
     /**
      * @ORM\PreUpdate
      */

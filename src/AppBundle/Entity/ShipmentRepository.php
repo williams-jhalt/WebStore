@@ -17,6 +17,7 @@ class ShipmentRepository extends EntityRepository {
         $shipment->setOrderNumber($data['orderNumber']);
         $shipment->setCustomerNumber($data['customerNumber']);
         $shipment->setStatus($data['status']);
+        $shipment->setShipped($data['shipped']);
         
         $this->getEntityManager()->persist($shipment);
         $this->getEntityManager()->flush();

@@ -1,9 +1,10 @@
 {% for shipment in shipments %}
 
     <div class="row">
-        <span class="col-sm-4"><a href="#" class="view-shipment" data-id="{{ shipment.orderNumber}}">{{ shipment.orderNumber }}</a></span>
-        <span class="col-sm-4">{{ shipment.status }}</span>
-        <span class="col-sm-4">{{ shipment.customerNumber }}</span>
+        <span class="col-sm-3"><a href="#" class="view-shipment" data-id="{{ shipment.orderNumber}}">{{ shipment.orderNumber }}</a></span>
+        <span class="col-sm-3">{{ shipment.status }}</span>
+        <span class="col-sm-3">{{ shipment.customerNumber }}</span>
+        <span class="col-sm-3">{% if shipment.shipped %}yes{% else %}no{% endif %}</span>
     </div>
 
 {% endfor %}

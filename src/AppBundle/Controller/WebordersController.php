@@ -35,6 +35,31 @@ class WebordersController extends Controller {
     }
 
     /**
+     * @Route("/ajax-status/{orderNumber}", name="weborders_ajax_status", options={"expose": true})
+     */
+    public function ajaxGetStatus($orderNumber) {
+
+        $service = $this->get('app.weborder_service');
+        $packService = $this->get('app.package_service');
+
+        $weborder = $service->get($orderNumber);
+        $packages = $packService->findByOrderNumber($orderNumber);
+        
+        $status = "";
+        
+        if (sizeof($packages) > 0) {
+            $status = "S";
+        } else {
+            $status = "N";
+        }
+
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setContent(json_encode($status));
+        return $response;
+    }
+
+    /**
      * @Route("/ajax-view/{id}", name="weborders_ajax_view", options={"expose": true})
      */
     public function ajaxViewAction($id) {

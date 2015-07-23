@@ -267,25 +267,6 @@ class ProductService {
         );
     }
 
-    public function synchronizeWithErp($add, $remove) {
-
-        $this->loadAllFromErp();
-    }
-
-    public function loadAllFromErp(OutputInterface $output) {
-
-        $offset = 0;
-        $limit = 1000;
-
-        do {
-            $end = $offset + $limit;
-            $output->writeln("Processing records {$offset} to {$end}");
-            $response = $this->findAll($offset, $limit);
-            $output->writeln(count($response) . " records written");
-            $offset = $end;
-        } while (!empty($response));
-    }
-
     /**
      * Import products from a CSV file
      * 
@@ -313,7 +294,7 @@ class ProductService {
 
         $batchSize = 500;
         $i = 0;
-        
+
         $this->em->beginTransaction();
 
         while (!$file->eof()) {
@@ -354,9 +335,8 @@ class ProductService {
 
                 $this->em->persist($product);
                 $this->em->flush();
-                
             }
-            
+
             if (($i % $batchSize) === 0) {
                 $this->em->commit();
                 $this->em->clear();
@@ -365,9 +345,8 @@ class ProductService {
 
             $i++;
         }
-        
+
         $this->em->commit();
-        
     }
 
     /**

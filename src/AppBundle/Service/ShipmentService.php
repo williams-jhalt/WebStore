@@ -2,8 +2,6 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Shipment;
-use DateTime;
 use Doctrine\ORM\EntityManager;
 
 class ShipmentService {
@@ -33,7 +31,8 @@ class ShipmentService {
             $weborder = $repository->findOrUpdate(array(
                 'orderNumber' => $item->order,
                 'customerNumber' => $item->customer,
-                'status' => $item->stat
+                'status' => $item->stat,
+                'shipped' => $item->shipped
             ));
             $weborders[] = $weborder;
         }
@@ -59,7 +58,8 @@ class ShipmentService {
             $weborder = $repository->findOrUpdate(array(
                 'orderNumber' => $item->order,
                 'customerNumber' => $item->customer,
-                'status' => $item->stat
+                'status' => $item->stat,
+                'shipped' => $item->shipped
             ));
             $weborders[] = $weborder;
         }
@@ -97,7 +97,8 @@ class ShipmentService {
             $weborder = $repository->findOrUpdate(array(
                 'orderNumber' => $item->order,
                 'customerNumber' => $item->customer,
-                'status' => $item->stat
+                'status' => $item->stat,
+                'shipped' => $item->shipped
             ));
             $weborders[] = $weborder;
         }
@@ -127,7 +128,8 @@ class ShipmentService {
             $weborder = $repository->findOrUpdate(array(
                 'orderNumber' => $item->order,
                 'customerNumber' => $item->customer,
-                'status' => $item->stat
+                'status' => $item->stat,
+                'shipped' => $item->shipped
             ));
             $weborders[] = $weborder;
         }
