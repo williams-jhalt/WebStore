@@ -17,10 +17,6 @@ services:
         class: AppBundle\Service\ProductTypeService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
         
-    app.weborder_service:
-        class: AppBundle\Service\WeborderService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
-        
     app.weborder_audit_service:
         class: AppBundle\Service\WeborderAuditService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
@@ -28,6 +24,10 @@ services:
     app.weborder_item_service:
         class: AppBundle\Service\WeborderItemService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
+    app.weborder_service:
+        class: AppBundle\Service\WeborderService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "@app.weborder_item_service", "@app.weborder_audit_service"]
         
     app.invoice_service:
         class: AppBundle\Service\InvoiceService

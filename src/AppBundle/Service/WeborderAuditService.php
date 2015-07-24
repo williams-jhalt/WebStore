@@ -2,7 +2,6 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\WeborderAudit;
 use Doctrine\ORM\EntityManager;
 
 class WeborderAuditService {
@@ -21,16 +20,19 @@ class WeborderAuditService {
      */
     public function findByOrderNumber($orderNumber) {
 
+        $repository = $this->_em->getRepository('AppBundle:WeborderAudit');
         $weborderRep = $this->_em->getRepository('AppBundle:Weborder');
         $weborder = $weborderRep->findOneBy(array('orderNumber' => $orderNumber));
 
         $items = array();
 
-        $response = $this->_erp->read("FOR EACH oe_status WHERE company_oe = 'WTC' AND rec_type = 'O' AND order = '{$orderNumber}'");
+        $response = $this->_erp->read("FOR EACH oe_status WHERE company_oe = 'WTC' AND order = '{$orderNumber}'");
+
+        $this->_em->beginTransaction();
 
         foreach ($response as $item) {
 
-            $items[] = new WeborderAudit(array(
+            $items[] = $repository->findOrCreate(array(
                 'weborder' => $weborder,
                 'recordDate' => $item->stat_date,
                 'recordTime' => $item->stat_ttime,
@@ -40,6 +42,8 @@ class WeborderAuditService {
                 'statusCode' => $item->stat
             ));
         }
+
+        $this->_em->commit();
 
         return $items;
     }

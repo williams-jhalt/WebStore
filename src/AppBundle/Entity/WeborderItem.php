@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * WeborderItem
  *
  * @ORM\Table(name="weborder_item")
- * @ORM\Entity(repositoryClass="AppBundle\Entity\WeborderItemRepository")
+ * @ORM\Entity(repositoryClass="WeborderItemRepository")
  */
 class WeborderItem {
 

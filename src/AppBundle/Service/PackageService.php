@@ -2,32 +2,30 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Package;
-use DateTime;
 use Doctrine\ORM\EntityManager;
 
 class PackageService {
 
-    private $em;
-    private $erp;
+    private $_em;
+    private $_erp;
 
     public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
-        $this->em = $em;
-        $this->erp = $erp;
+        $this->_em = $em;
+        $this->_erp = $erp;
     }
 
     private function _getDbRecordFromErp($item) {
-        $repository = $this->em->getRepository('AppBundle:Package');
-        return new Package(array(
-            'orderNumber' => $item->order,
-            'trackingNumber' => $item->tracking_no,
-            'packageCharge' => $item->pkg_chg
+        $repository = $this->_em->getRepository('AppBundle:Package');
+        return $repository->findOrCreate(array(
+                    'orderNumber' => $item->order,
+                    'trackingNumber' => $item->tracking_no,
+                    'packageCharge' => $item->pkg_chg
         ));
     }
 
     public function findAll($offset = 0, $limit = 100) {
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH oe_ship_pack NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'S' "
@@ -46,7 +44,7 @@ class PackageService {
 
     public function findByOrderNumber($orderNumber, $offset = 0, $limit = 100) {
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH oe_ship_pack NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'S' "

@@ -7,12 +7,12 @@ use SplFileObject;
 
 class ProductTypeService {
 
-    private $em;
-    private $erp;
+    private $_em;
+    private $_erp;
 
     public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
-        $this->em = $em;
-        $this->erp = $erp;
+        $this->_em = $em;
+        $this->_erp = $erp;
     }
 
     /**
@@ -31,7 +31,7 @@ class ProductTypeService {
 
         $i = 0;
 
-        $this->em->beginTransaction();
+        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -44,26 +44,26 @@ class ProductTypeService {
 
             if (sizeof($row) > 1) {
 
-                $productType = $this->em->getRepository('AppBundle:ProductType')->findOrCreateByCode($row[$mapping['code']]);
+                $productType = $this->_em->getRepository('AppBundle:ProductType')->findOrCreateByCode($row[$mapping['code']]);
 
                 $productType->setCode($row[$mapping['code']]);
                 $productType->setName($row[$mapping['name']]);
 
-                $this->em->persist($productType);
-                $this->em->flush();
+                $this->_em->persist($productType);
+                $this->_em->flush();
             }
 
             $i++;
         }
 
-        $this->em->commit();
+        $this->_em->commit();
     }
 
     public function exportCsv($filename) {
 
         $file = new SplFileObject($filename, "wb");
 
-        $repository = $this->em->getRepository('AppBundle:ProductType');
+        $repository = $this->_em->getRepository('AppBundle:ProductType');
 
         $productTypes = $repository->findAll();
 

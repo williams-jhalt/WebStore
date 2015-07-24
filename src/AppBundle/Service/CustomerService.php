@@ -6,67 +6,54 @@ use Doctrine\ORM\EntityManager;
 
 class CustomerService {
 
-    private $em;
-    private $erp;
+    private $_em;
+    private $_erp;
 
     public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
-        $this->em = $em;
-        $this->erp = $erp;
+        $this->_em = $em;
+        $this->_erp = $erp;
+    }
+
+    public function _loadFromErp($item) {
+
+        $repository = $this->_em->getRepository('AppBundle:Customer');
+
+        return $repository->findOrUpdate(array(
+                    'customerNumber' => $item->customer
+        ));
     }
 
     public function findAll($offset = 0, $limit = 100) {
-        
-        
-        $response = $this->erp->read(
+
+
+        $response = $this->_erp->read(
                 "FOR EACH customer NO-LOCK WHERE company_cu = 'WTC'", "*", $offset, $limit
         );
-                
-        $repository = $this->em->getRepository('AppBundle:Customer');
-                
+
         $customers = array();
-        
-        $this->em->beginTransaction();                
+
+        $this->_em->beginTransaction();
 
         foreach ($response as $item) {
-            $customer = $repository->findOrUpdate(array(
-                'customerNumber' => $item->customer
-            ));
-            $customers[] = $customer;
+            $customers[] = $this->_loadFromErp($item);
         }
-        
-        $this->em->commit();
+
+        $this->_em->commit();
 
         return $customers;
     }
 
     public function get($customerNumber) {
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH customer NO-LOCK WHERE company_cu = 'WTC' AND customer = '{$customerNumber}'", "*"
         );
-                
+
         if (sizeof($response) == 0) {
             return null;
         }
-                
-        $repository = $this->em->getRepository('AppBundle:Customer');
-                
-        $customers = array();
-        
-        $this->em->beginTransaction();                
 
-        foreach ($response as $orderObj) {
-            
-            $customer = $repository->findOrUpdate(array(
-                'customerNumber' => $orderObj->customer
-            ));
-                        
-            $customers[] = $customer;
-        }
-        
-        $this->em->commit();
-
-        return $customers[0];
+        return $this->_loadFromErp($response[0]);
     }
 
 }

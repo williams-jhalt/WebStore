@@ -2,6 +2,7 @@
 
 namespace AppBundle\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -9,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Weborder
  *
  * @ORM\Table(name="shipment")
- * @ORM\Entity(repositoryClass="AppBundle\Entity\ShipmentRepository")
+ * @ORM\Entity(repositoryClass="ShipmentRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class Shipment {

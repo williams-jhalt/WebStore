@@ -6,13 +6,13 @@
         <span class="col-sm-3">{{ weborder.reference1 }}</span>
         <span class="col-sm-2">
             <span id="status_{{ weborder.orderNumber }}"></span>
-            <script>
+{#            <script>
                 $(document).ready(function () {
                     $.get('{{ path('weborders_ajax_status', {orderNumber: weborder.orderNumber}) }}', function (data) {
                         $('#status_{{ weborder.orderNumber }}').text(data);
                     });
                 });
-            </script>
+            </script>#}
         </span>
         <span class="col-sm-3">{{ weborder.customerNumber }}</span>
     </div>

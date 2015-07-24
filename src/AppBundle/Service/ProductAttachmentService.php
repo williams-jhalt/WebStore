@@ -4,15 +4,14 @@ namespace AppBundle\Service;
 
 use AppBundle\Entity\ProductAttachment;
 use Doctrine\ORM\EntityManager;
-use Exception;
 use SplFileObject;
 
 class ProductAttachmentService {
 
-    private $em;
+    private $_em;
 
     public function __construct(EntityManager $em) {
-        $this->em = $em;
+        $this->_em = $em;
     }
 
     /**
@@ -29,12 +28,13 @@ class ProductAttachmentService {
      */
     public function importFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
 
-        $productRepository = $this->em->getRepository('AppBundle:Product');
+        $repository = $this->_em->getRepository('AppBundle:ProductAttachment');
+        $productRepository = $this->_em->getRepository('AppBundle:Product');
 
         $batchSize = 500;
         $i = 0;
-        
-        $this->em->beginTransaction();                
+
+        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -47,36 +47,34 @@ class ProductAttachmentService {
 
             if (sizeof($row) > 1) {
 
-                $product = $productRepository->findOneBySku($row[$mapping['sku']]);
+                $product = $productRepository->findOrCreate(array(
+                    'sku' => $row[$mapping['sku']]));
 
                 if ($product) {
 
-                    $attachment = new ProductAttachment();
-                    $attachment->setProduct($product);
-                    $attachment->setPath("http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']]);
-                    $attachment->setExplicit(false);
-
-                    $this->em->persist($attachment);
-                    $this->em->flush();
+                    $repository->findOrCreate(array(
+                        'product' => $product,
+                        'path' => "http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']],
+                        'explicit' => false
+                    ));
                 }
             }
-            
+
             if (($i % $batchSize) === 0) {
-                $this->em->commit();
-                $this->em->clear();
-                $this->em->beginTransaction();
+                $this->_em->commit();
+                $this->_em->clear();
+                $this->_em->beginTransaction();
             }
 
             $i++;
         }
-        
-        $this->em->commit();
-        
+
+        $this->_em->commit();
     }
 
     public function exportCsv($filename) {
 
-        $repository = $this->em->getRepository('AppBundle:ProductAttachment');
+        $repository = $this->_em->getRepository('AppBundle:ProductAttachment');
 
         $file = new SplFileObject($filename, "wb");
 

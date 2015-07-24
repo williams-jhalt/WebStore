@@ -7,10 +7,10 @@ use SplFileObject;
 
 class CategoryService {
 
-    private $em;
+    private $_em;
 
     public function __construct(EntityManager $em) {
-        $this->em = $em;
+        $this->_em = $em;
     }
 
     /**
@@ -30,9 +30,9 @@ class CategoryService {
 
         $i = 0;
         
-        $repository = $this->em->getRepository('AppBundle:Category');
+        $repository = $this->_em->getRepository('AppBundle:Category');
         
-        $this->em->beginTransaction();
+        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -56,14 +56,14 @@ class CategoryService {
                     $category->setParent(null);
                 }
 
-                $this->em->persist($category);
-                $this->em->flush();
+                $this->_em->persist($category);
+                $this->_em->flush();
             }
 
             $i++;
         }
         
-        $this->em->commit();
+        $this->_em->commit();
         
     }
     
@@ -72,7 +72,7 @@ class CategoryService {
         
         $file = new SplFileObject($filename, "wb");
         
-        $repository = $this->em->getRepository('AppBundle:Category');
+        $repository = $this->_em->getRepository('AppBundle:Category');
 
         $categories = $repository->findAll();
         

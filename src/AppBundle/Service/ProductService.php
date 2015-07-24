@@ -7,7 +7,6 @@ use AppBundle\Entity\ProductDetail;
 use DateTime;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
-use Symfony\Component\Console\Output\OutputInterface;
 use XMLWriter;
 
 class ProductService {
@@ -19,12 +18,26 @@ class ProductService {
     const EXPORT_FORMAT_MINIMAL = 'minimal';
     const EXPORT_FORMAT_DIMENSIONS = 'dimensions';
 
-    private $em;
-    private $erp;
+    private $_em;
+    private $_erp;
 
     public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
-        $this->em = $em;
-        $this->erp = $erp;
+        $this->_em = $em;
+        $this->_erp = $erp;
+    }
+
+    public function _loadFromErp($item) {
+
+        $repository = $this->_em->getRepository('AppBundle:Product');
+        $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
+        $trep = $this->_em->getRepository('AppBundle:ProductType');
+
+        return $repository->findOrCreate(array(
+                    'sku' => $item->item,
+                    'name' => $item->descr[0] . " " . $item->descr[1],
+                    'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
+                    'productType' => $trep->findOrCreateByCode($item->manufacturer)
+        ));
     }
 
     /**
@@ -36,42 +49,20 @@ class ProductService {
      */
     public function findAll($offset = 0, $limit = 100) {
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH item NO-LOCK "
                 . "WHERE company_it = 'WTC' AND web_item = yes", "*", $offset, $limit
         );
 
         $products = array();
-        $manufacturers = array();
-        $types = array();
 
-        $repository = $this->em->getRepository('AppBundle:Product');
-        $mrep = $this->em->getRepository('AppBundle:Manufacturer');
-        $trep = $this->em->getRepository('AppBundle:ProductType');
-
-        $this->em->beginTransaction();
+        $this->_em->beginTransaction();
 
         foreach ($response as $item) {
-
-            if (!array_key_exists($item->manufacturer, $manufacturers)) {
-                $manufacturers[$item->manufacturer] = $mrep->findOrCreateByCode($item->manufacturer);
-            }
-
-            if (!array_key_exists($item->product_line, $types)) {
-                $types[$item->product_line] = $trep->findOrCreateByCode($item->product_line);
-            }
-
-            $product = $repository->findOrCreate(array(
-                'sku' => $item->item,
-                'name' => $item->descr[0] . " " . $item->descr[1],
-                'manufacturer' => $manufacturers[$item->manufacturer],
-                'productType' => $types[$item->product_line]
-            ));
-
-            $products[] = $product;
+            $products[] = $this->_loadFromErp($item);
         }
 
-        $this->em->commit();
+        $this->_em->commit();
 
         return $products;
     }
@@ -95,7 +86,7 @@ class ProductService {
 
         if (isset($params['search_terms']) || isset($params['category_id'])) {
 
-            $repository = $this->em->getRepository("AppBundle:Product");
+            $repository = $this->_em->getRepository("AppBundle:Product");
 
             $qb = $repository->createQueryBuilder('p');
 
@@ -108,12 +99,12 @@ class ProductService {
             }
 
             if (isset($params['manufacturer'])) {
-                $manufacturer = $this->em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
+                $manufacturer = $this->_em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
                 $qb->andWhere('p.manufacturer = :manufacturer')->setParameter('manufacturer', $manufacturer);
             }
 
             if (isset($params['product_line'])) {
-                $productType = $this->em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
+                $productType = $this->_em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
                 $qb->andWhere('p.productType = :productType')->setParameter('productType', $productType);
             }
 
@@ -135,27 +126,17 @@ class ProductService {
                 $query .= " AND product_line = '{$params['product_line']}'";
             }
 
-            $response = $this->erp->read($query, "*", $offset, $limit);
+            $response = $this->_erp->read($query, "*", $offset, $limit);
 
             $products = array();
 
-            $this->em->beginTransaction();
-
-            $repository = $this->em->getRepository('AppBundle:Product');
-            $mrep = $this->em->getRepository('AppBundle:Manufacturer');
-            $trep = $this->em->getRepository('AppBundle:ProductType');
+            $this->_em->beginTransaction();
 
             foreach ($response as $item) {
-                $product = $repository->findOrCreate(array(
-                    'sku' => $item->item,
-                    'name' => $item->descr[0] . " " . $item->descr[1],
-                    'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
-                    'productType' => $trep->findOrCreateByCode($item->product_line)
-                ));
-                $products[] = $product;
+                $products[] = $this->_loadFromErp($item);
             }
 
-            $this->em->commit();
+            $this->_em->commit();
         }
 
         return $products;
@@ -163,30 +144,20 @@ class ProductService {
 
     public function findBySearchTerms($searchTerms, $offset = 0, $limit = 100) {
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH item NO-LOCK "
                 . "WHERE company_it = 'WTC' AND web_item = yes AND item MATCHES('{$searchTerms}*')", "*", $offset, $limit
         );
 
         $products = array();
 
-        $this->em->beginTransaction();
-
-        $repository = $this->em->getRepository('AppBundle:Product');
-        $mrep = $this->em->getRepository('AppBundle:Manufacturer');
-        $trep = $this->em->getRepository('AppBundle:ProductType');
+        $this->_em->beginTransaction();
 
         foreach ($response as $item) {
-            $product = $repository->findOrCreate(array(
-                'sku' => $item->item,
-                'name' => $item->descr[0] . " " . $item->descr[1],
-                'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
-                'productType' => $trep->findOrCreateByCode($item->product_line)
-            ));
-            $products[] = $product;
+            $products[] = $this->_loadFromErp($item);
         }
 
-        $this->em->commit();
+        $this->_em->commit();
 
         return $products;
     }
@@ -195,21 +166,14 @@ class ProductService {
 
         $query = "FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes AND item = '{$itemNumber}'";
 
-        $response = $this->erp->read($query);
-
-        $repository = $this->em->getRepository('AppBundle:Product');
-        $mrep = $this->em->getRepository('AppBundle:Manufacturer');
-        $trep = $this->em->getRepository('AppBundle:ProductType');
-
-        $item = $response[0];
-        $product = $repository->findOrCreate(array(
-            'sku' => $item->item,
-            'name' => $item->descr[0] . " " . $item->descr[1],
-            'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
-            'productType' => $trep->findOrCreateByCode($item->product_line)
-        ));
-
-        return $product;
+        $response = $this->_erp->read($query);
+        
+        if (sizeof($response) == 0) {
+            return null;
+        }
+        
+        return $this->_loadFromErp($response[0]);
+        
     }
 
     /**
@@ -223,7 +187,7 @@ class ProductService {
      */
     public function getPrice($itemNumber, $customer = null, $quantity = 1, $uom = "EA") {
 
-        $response = $this->erp->getItemPriceDetails($itemNumber, $customer, $quantity, $uom);
+        $response = $this->_erp->getItemPriceDetails($itemNumber, $customer, $quantity, $uom);
 
         return (float) $response->price;
     }
@@ -235,13 +199,13 @@ class ProductService {
      * @return integer
      */
     public function getStock($itemNumber) {
-        $response = $this->erp->read("FOR EACH wa_item NO-LOCK WHERE item = '{$itemNumber}'", "qty_oh");
+        $response = $this->_erp->read("FOR EACH wa_item NO-LOCK WHERE item = '{$itemNumber}'", "qty_oh");
         return (int) $response[0]->qty_oh;
     }
 
     public function prepareSynchronizeWithErp() {
 
-        $response = $this->erp->read("FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes", "item");
+        $response = $this->_erp->read("FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes", "item");
 
         $allSkus = array();
 
@@ -249,7 +213,7 @@ class ProductService {
             $allSkus[] = $item->item;
         }
 
-        $rep = $this->em->getRepository('AppBundle:Product');
+        $rep = $this->_em->getRepository('AppBundle:Product');
         $qb = $rep->createQueryBuilder('p')
                 ->select('p.sku')
                 ->getQuery();
@@ -287,15 +251,15 @@ class ProductService {
      */
     public function importFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
 
-        $productRepository = $this->em->getRepository('AppBundle:Product');
-        $manufacturerRepository = $this->em->getRepository('AppBundle:Manufacturer');
-        $productTypeRepository = $this->em->getRepository('AppBundle:ProductType');
-        $categoryRepository = $this->em->getRepository('AppBundle:Category');
+        $productRepository = $this->_em->getRepository('AppBundle:Product');
+        $manufacturerRepository = $this->_em->getRepository('AppBundle:Manufacturer');
+        $productTypeRepository = $this->_em->getRepository('AppBundle:ProductType');
+        $categoryRepository = $this->_em->getRepository('AppBundle:Category');
 
         $batchSize = 500;
         $i = 0;
 
-        $this->em->beginTransaction();
+        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -333,20 +297,20 @@ class ProductService {
 
                 $product->setBarcode($row[$mapping['barcode']]);
 
-                $this->em->persist($product);
-                $this->em->flush();
+                $this->_em->persist($product);
+                $this->_em->flush();
             }
 
             if (($i % $batchSize) === 0) {
-                $this->em->commit();
-                $this->em->clear();
-                $this->em->beginTransaction();
+                $this->_em->commit();
+                $this->_em->clear();
+                $this->_em->beginTransaction();
             }
 
             $i++;
         }
 
-        $this->em->commit();
+        $this->_em->commit();
     }
 
     /**
@@ -368,11 +332,11 @@ class ProductService {
      */
     public function importDetailsFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
 
-        $productRepository = $this->em->getRepository('AppBundle:Product');
+        $productRepository = $this->_em->getRepository('AppBundle:Product');
 
         $i = 0;
 
-        $this->em->beginTransaction();
+        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -406,14 +370,14 @@ class ProductService {
 
                 $product->setProductDetail($productDetail);
 
-                $this->em->persist($product);
-                $this->em->flush();
+                $this->_em->persist($product);
+                $this->_em->flush();
             }
 
             $i++;
         }
 
-        $this->em->commit();
+        $this->_em->commit();
     }
 
     /**
@@ -422,7 +386,7 @@ class ProductService {
      */
     public function importDescriptionsFromXML(SplFileObject $file) {
 
-        $productRepository = $this->em->getRepository('AppBundle:Product');
+        $productRepository = $this->_em->getRepository('AppBundle:Product');
 
         $xmlProducts = simplexml_load_file($file->getRealPath());
 
@@ -447,24 +411,24 @@ class ProductService {
 
             $product->setProductDetail($productDetail);
 
-            $this->em->persist($product);
+            $this->_em->persist($product);
 
 
             if (($i % $batchSize) === 0) {
-                $this->em->flush();
-                $this->em->clear();
+                $this->_em->flush();
+                $this->_em->clear();
             }
 
             $i++;
         }
 
-        $this->em->flush();
-        $this->em->clear();
+        $this->_em->flush();
+        $this->_em->clear();
     }
 
     public function exportToXML($filename) {
 
-        $productRepository = $this->em->getRepository('AppBundle:Product');
+        $productRepository = $this->_em->getRepository('AppBundle:Product');
 
         $writer = new XMLWriter();
 
@@ -566,7 +530,7 @@ class ProductService {
 
     public function exportCsv($filename, $format = self::EXPORT_FORMAT_DEFAULT) {
 
-        $repository = $this->em->getRepository("AppBundle:Product");
+        $repository = $this->_em->getRepository("AppBundle:Product");
 
         $file = new SplFileObject($filename, "wb");
         switch ($format) {

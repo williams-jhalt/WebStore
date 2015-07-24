@@ -8,18 +8,24 @@ use Doctrine\ORM\EntityManager;
 
 class WeborderService {
 
-    private $em;
-    private $erp;
-    private $erpOrderSelect = "order, customer, created_date, cu_po, ship_atn, name, state, postal_code, country_code, adr, stat";
+    private $_em;
+    private $_erp;
+    private $_erpSelect = "order, customer, created_date, cu_po, ship_atn, name, state, postal_code, country_code, adr, stat";
+    private $_weborderItemService;
+    private $_weborderAuditService;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
-        $this->em = $em;
-        $this->erp = $erp;
+    public function __construct(EntityManager $em, ErpOneConnectorService $erp, WeborderItemService $weborderItemService, WeborderAuditService $weborderAuditService) {
+        $this->_em = $em;
+        $this->_erp = $erp;
+        $this->_weborderItemService = $weborderItemService;
+        $this->_weborderAuditService = $weborderAuditService;
     }
 
-    private function _getDbRecordFromErp($item) {
+    private function _loadFromErp($item) {
 
-        return new Weborder(array(
+        $repository = $this->_em->getRepository('AppBundle:Weborder');
+
+        $weborder = $repository->findOrUpdate(array(
             'orderNumber' => $item->order,
             'customerNumber' => $item->customer,
             'orderDate' => new DateTime($item->created_date),
@@ -35,77 +41,107 @@ class WeborderService {
             'shipToCity' => $item->adr[4],
             'status' => $item->stat
         ));
+
+        if (empty($weborder->getItems())) {
+            $weborder->setItems(
+                    $this->_weborderItemService->findByOrderNumber(
+                            $weborder->getOrderNumber()));
+        }
+
+        if (empty($weborder->getAudits())) {
+            $weborder->setAudits(
+                    $this->_weborderAuditService->findByOrderNumber(
+                            $weborder->getOrderNumber()));
+        }
+        
+        return $weborder;
     }
 
     public function findAll($offset = 0, $limit = 100) {
 
-        $rep = $this->em->getRepository('AppBundle:Weborder');
+        $rep = $this->_em->getRepository('AppBundle:Weborder');
 
-        $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' BY order DESCENDING", $this->erpOrderSelect, $offset, $limit
+        $response = $this->_erp->read(
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' BY order DESCENDING", $this->_erpSelect, $offset, $limit
         );
 
         $weborders = array();
 
+        $this->_em->beginTransaction();
+
         foreach ($response as $item) {
 
-            $weborders[] = $this->_getDbRecordFromErp($item);
+            $weborders[] = $this->_loadFromErp($item);
         }
+
+        $this->_em->commit();
 
         return $weborders;
     }
 
     public function findBySearchTerms($searchTerms, $offset = 0, $limit = 100) {
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}' OR customer BEGINS '{$searchTerms}')", $this->erpOrderSelect, $offset, $limit
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}' OR customer BEGINS '{$searchTerms}')", $this->_erpSelect, $offset, $limit
         );
 
         $weborders = array();
 
+        $this->_em->beginTransaction();
+
         foreach ($response as $item) {
 
-            $weborders[] = $this->_getDbRecordFromErp($item);
+            $weborders[] = $this->_loadFromErp($item);
         }
+
+        $this->_em->commit();
 
         return $weborders;
     }
 
     public function findByCustomerAndSearchTerms($customerNumber, $searchTerms, $offset = 0, $limit = 100) {
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
                 . "AND customer = '{$customerNumber}' "
-                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}')", $this->erpOrderSelect, $offset, $limit
+                . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}')", $this->_erpSelect, $offset, $limit
         );
 
         $weborders = array();
 
+        $this->_em->beginTransaction();
+
         foreach ($response as $item) {
 
-            $weborders[] = $this->_getDbRecordFromErp($item);
+            $weborders[] = $this->_loadFromErp($item);
         }
+
+        $this->_em->commit();
 
         return $weborders;
     }
 
     public function findByCustomer($customerNumber, $offset = 0, $limit = 100) {
 
-        $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' BY order DESCENDING", $this->erpOrderSelect, $offset, $limit
+        $response = $this->_erp->read(
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND customer = '{$customerNumber}' BY order DESCENDING", $this->_erpSelect, $offset, $limit
         );
 
         $weborders = array();
 
+        $this->_em->beginTransaction();
+
         foreach ($response as $item) {
 
-            $weborders[] = $this->_getDbRecordFromErp($item);
+            $weborders[] = $this->_loadFromErp($item);
         }
+
+        $this->_em->commit();
 
         return $weborders;
     }
@@ -126,14 +162,18 @@ class WeborderService {
                 . "AND ({$customerSelect}) "
                 . "AND (STRING(order) BEGINS '{$searchTerms}' OR cu_po BEGINS '{$searchTerms}')";
 
-        $response = $this->erp->read($query, $this->erpOrderSelect, $offset, $limit);
+        $response = $this->_erp->read($query, $this->_erpSelect, $offset, $limit);
 
         $weborders = array();
 
+        $this->_em->beginTransaction();
+
         foreach ($response as $item) {
 
-            $weborders[] = $this->_getDbRecordFromErp($item);
+            $weborders[] = $this->_loadFromErp($item);
         }
+
+        $this->_em->commit();
 
         return $weborders;
     }
@@ -148,34 +188,38 @@ class WeborderService {
             }
         }
 
-        $response = $this->erp->read(
+        $response = $this->_erp->read(
                 "FOR EACH oe_head NO-LOCK "
                 . "WHERE company_oe = 'WTC' "
                 . "AND rec_type = 'O' "
-                . "AND ({$customerSelect}) BY order DESCENDING", $this->erpOrderSelect, $offset, $limit
+                . "AND ({$customerSelect}) BY order DESCENDING", $this->_erpSelect, $offset, $limit
         );
 
         $weborders = array();
 
+        $this->_em->beginTransaction();
+
         foreach ($response as $item) {
 
-            $weborders[] = $this->_getDbRecordFromErp($item);
+            $weborders[] = $this->_loadFromErp($item);
         }
+
+        $this->_em->commit();
 
         return $weborders;
     }
 
     public function get($orderNumber) {
 
-        $response = $this->erp->read(
-                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND order = '{$orderNumber}'", $this->erpOrderSelect
+        $response = $this->_erp->read(
+                "FOR EACH oe_head NO-LOCK WHERE company_oe = 'WTC' AND rec_type = 'O' AND order = '{$orderNumber}'", $this->_erpSelect
         );
 
         if (sizeof($response) == 0) {
             return null;
         }
 
-        return $this->_getDbRecordFromErp($response[0]);
+        return $this->_loadFromErp($response[0]);
     }
 
 }

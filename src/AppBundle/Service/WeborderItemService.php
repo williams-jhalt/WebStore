@@ -2,7 +2,6 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\WeborderItem;
 use Doctrine\ORM\EntityManager;
 
 class WeborderItemService {
@@ -21,6 +20,7 @@ class WeborderItemService {
      */
     public function findByOrderNumber($orderNumber) {
 
+        $repository = $this->_em->getRepository('AppBundle:WeborderItem');
         $weborderRep = $this->_em->getRepository('AppBundle:Weborder');
         $weborder = $weborderRep->findOneBy(array('orderNumber' => $orderNumber));
 
@@ -29,7 +29,7 @@ class WeborderItemService {
         $response = $this->_erp->read("FOR EACH oe_line WHERE company_oe = 'WTC' AND rec_type = 'O' AND order = '{$orderNumber}'");
 
         foreach ($response as $item) {
-            $items[] = new WeborderItem(array(
+            $items[] = $repository->findOrCreate(array(
                 'weborder' => $weborder,
                 'orderNumber' => $item->order,
                 'lineNumber' => $item->line,

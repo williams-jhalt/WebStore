@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityRepository;
 
 class PackageRepository extends EntityRepository {
 
-    public function findOrUpdate(array $data) {
+    public function findOrCreate(array $data) {
 
         $package = $this->findOneBy(array(
             'orderNumber' => $data['orderNumber'],
@@ -15,14 +15,14 @@ class PackageRepository extends EntityRepository {
 
         if (!$package) {
             $package = new Package();
+
+            $package->setOrderNumber($data['orderNumber']);
+            $package->setTrackingNumber($data['trackingNumber']);
+            $package->setPackageCharge($data['packageCharge']);
+
+            $this->getEntityManager()->persist($package);
+            $this->getEntityManager()->flush();
         }
-
-        $package->setOrderNumber($data['orderNumber']);
-        $package->setTrackingNumber($data['trackingNumber']);
-        $package->setPackageCharge($data['packageCharge']);
-
-        $this->getEntityManager()->persist($package);
-        $this->getEntityManager()->flush();
 
         return $package;
     }

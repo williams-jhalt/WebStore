@@ -2,18 +2,17 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Manufacturer;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
 
 class ManufacturerService {
 
-    private $em;
-    private $erp;
+    private $_em;
+    private $_erp;
 
     public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
-        $this->em = $em;
-        $this->erp = $erp;
+        $this->_em = $em;
+        $this->_erp = $erp;
     }
 
     /**
@@ -32,7 +31,7 @@ class ManufacturerService {
 
         $i = 0;
 
-        $this->em->beginTransaction();
+        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -45,19 +44,19 @@ class ManufacturerService {
 
             if (sizeof($row) > 1) {
 
-                $manufacturer = $this->em->getRepository('AppBundle:Manufacturer')->findOrCreateByCode($row[$mapping['code']]);
+                $manufacturer = $this->_em->getRepository('AppBundle:Manufacturer')->findOrCreateByCode($row[$mapping['code']]);
 
                 $manufacturer->setCode($row[$mapping['code']]);
                 $manufacturer->setName($row[$mapping['name']]);
 
-                $this->em->persist($manufacturer);
-                $this->em->flush();
+                $this->_em->persist($manufacturer);
+                $this->_em->flush();
             }
 
             $i++;
         }
 
-        $this->em->commit();
+        $this->_em->commit();
     }
 
     public function exportCsv($filename) {
@@ -65,7 +64,7 @@ class ManufacturerService {
 
         $file = new SplFileObject($filename, "wb");
 
-        $repository = $this->em->getRepository('AppBundle:Manufacturer');
+        $repository = $this->_em->getRepository('AppBundle:Manufacturer');
 
         $manufacturers = $repository->findAll();
 

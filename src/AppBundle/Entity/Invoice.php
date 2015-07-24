@@ -3,13 +3,15 @@
 namespace AppBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+
 
 /**
  * Weborder
  *
  * @ORM\Table(name="invoice")
- * @ORM\Entity(repositoryClass="AppBundle\Entity\InvoiceRepository")
+ * @ORM\Entity(repositoryClass="InvoiceRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class Invoice {
