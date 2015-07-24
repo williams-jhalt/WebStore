@@ -52,8 +52,30 @@ class Shipment {
      * */
     private $items;
 
-    public function __construct() {
+    /**
+     * @ORM\OneToOne(targetEntity="Weborder", inversedBy="shipment")
+     * @ORM\JoinColumn(name="weborder_id", referencedColumnName="id")
+     */
+    private $weborder;
+
+    /**
+     * @ORM\Column(name="created_on", type="datetime")
+     */
+    private $createdOn;
+
+    /**
+     * @ORM\Column(name="updated_on", type="datetime")
+     */
+    private $updatedOn;
+
+    public function __construct($data = null) {
         $this->items = new ArrayCollection();
+        
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $this->$key = $value;
+            }
+        }
     }
 
     public function getId() {
@@ -109,5 +131,49 @@ class Shipment {
         $this->shipped = $shipped;
         return $this;
     }
+
+    public function getWeborder() {
+        return $this->weborder;
+    }
+
+    public function setWeborder($weborder) {
+        $this->weborder = $weborder;
+        return $this;
+    }
+    
+    public function getCreatedOn() {
+        return $this->createdOn;
+    }
+
+    public function getUpdatedOn() {
+        return $this->updatedOn;
+    }
+
+    public function setCreatedOn($createdOn) {
+        $this->createdOn = $createdOn;
+        return $this;
+    }
+
+    public function setUpdatedOn($updatedOn) {
+        $this->updatedOn = $updatedOn;
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist() {
+        $this->createdOn = new DateTime();
+        $this->updatedOn = new DateTime();
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function preUpdate() {
+        $this->updatedOn = new DateTime();
+    }
+
+
 
 }

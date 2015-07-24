@@ -176,6 +176,16 @@ class Weborder {
     private $audits;
 
     /**
+     * @ORM\OneToOne(targetEntity="Shipment", mappedBy="weborder")
+     */
+    private $shipment;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Invoice", mappedBy="weborder")
+     */
+    private $invoice;
+
+    /**
      * @ORM\Column(name="created_on", type="datetime")
      */
     private $createdOn;
@@ -185,9 +195,15 @@ class Weborder {
      */
     private $updatedOn;
 
-    public function __construct() {
+    public function __construct($data = null) {
         $this->items = new ArrayCollection();
         $this->audits = new ArrayCollection();
+        
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $this->$key = $value;
+            }
+        }
     }
 
     /**
@@ -497,6 +513,24 @@ class Weborder {
      */
     public function preUpdate() {
         $this->updatedOn = new DateTime();
+    }
+
+    public function getShipment() {
+        return $this->shipment;
+    }
+
+    public function getInvoice() {
+        return $this->invoice;
+    }
+
+    public function setShipment($shipment) {
+        $this->shipment = $shipment;
+        return $this;
+    }
+
+    public function setInvoice($invoice) {
+        $this->invoice = $invoice;
+        return $this;
     }
 
 }

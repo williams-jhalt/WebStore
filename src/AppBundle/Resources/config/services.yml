@@ -21,6 +21,14 @@ services:
         class: AppBundle\Service\WeborderService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
         
+    app.weborder_audit_service:
+        class: AppBundle\Service\WeborderAuditService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
+    app.weborder_item_service:
+        class: AppBundle\Service\WeborderItemService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
     app.invoice_service:
         class: AppBundle\Service\InvoiceService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]

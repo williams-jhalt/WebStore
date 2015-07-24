@@ -12,8 +12,9 @@ class InvoiceRepository extends EntityRepository {
         
         if (!$invoice) {
             $invoice = new Invoice();
+            $invoice->setWeborder($data['weborder']);
         }
-
+        
         $invoice->setOrderNumber($data['orderNumber']);
         $invoice->setCustomerNumber($data['customerNumber']);
         $invoice->setInvoiceDate($data['invoiceDate']);

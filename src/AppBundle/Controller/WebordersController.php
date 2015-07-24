@@ -44,13 +44,13 @@ class WebordersController extends Controller {
 
         $weborder = $service->get($orderNumber);
         $packages = $packService->findByOrderNumber($orderNumber);
-        
+
         $status = "";
-        
+
         if (sizeof($packages) > 0) {
-            $status = "S";
+            $status = "Shipped";
         } else {
-            $status = "N";
+            $status = "Processing";
         }
 
         $response = new Response();
@@ -68,16 +68,22 @@ class WebordersController extends Controller {
         $invService = $this->get('app.invoice_service');
         $shipService = $this->get('app.shipment_service');
         $packService = $this->get('app.package_service');
+        $itemService = $this->get('app.weborder_item_service');
+        $auditService = $this->get('app.weborder_audit_service');
 
         $weborder = $service->get($id);
         $invoice = $invService->get($id);
         $shipment = $shipService->get($id);
         $packages = $packService->findByOrderNumber($id);
+        $items = $itemService->findByOrderNumber($id);
+        $audits = $auditService->findByOrderNumber($id);
 
         $response = new Response();
         $engine = $this->container->get('templating');
         $response->setContent($engine->render('AppBundle:Weborders:view.html.twig', array(
                     'weborder' => $weborder,
+                    'items' => $items,
+                    'audits' => $audits,
                     'shipment' => $shipment,
                     'invoice' => $invoice,
                     'packages' => $packages

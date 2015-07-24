@@ -18,10 +18,10 @@ class PackageService {
 
     private function _getDbRecordFromErp($item) {
         $repository = $this->em->getRepository('AppBundle:Package');
-        return $repository->findOrUpdate(array(
-                    'orderNumber' => $item->order,
-                    'trackingNumber' => $item->tracking_no,
-                    'packageCharge' => $item->pkg_chg
+        return new Package(array(
+            'orderNumber' => $item->order,
+            'trackingNumber' => $item->tracking_no,
+            'packageCharge' => $item->pkg_chg
         ));
     }
 
@@ -35,18 +35,13 @@ class PackageService {
                 . "BY oe_ship_pack.order DESCENDING", "*", $offset, $limit
         );
 
-        $weborders = array();
-
-        $this->em->beginTransaction();
+        $packages = array();
 
         foreach ($response as $item) {
-            $weborder = $this->_getDbRecordFromErp($item);
-            $weborders[] = $weborder;
+            $packages[] = $this->_getDbRecordFromErp($item);
         }
 
-        $this->em->commit();
-
-        return $weborders;
+        return $packages;
     }
 
     public function findByOrderNumber($orderNumber, $offset = 0, $limit = 100) {
@@ -60,24 +55,17 @@ class PackageService {
                 . "BY oe_ship_pack.order DESCENDING", "*", $offset, $limit
         );
 
-        $weborders = array();
+        $packages = array();
 
         if (sizeof($response) == 0) {
-            return $weborders;
+            return $packages;
         }
-
-        $this->em->beginTransaction();
 
         foreach ($response as $item) {
-            $weborder = $this->_getDbRecordFromErp($item);
-            if (!in_array($weborder, $weborders)) {                
-                $weborders[] = $weborder;
-            }
+            $packages[] = $this->_getDbRecordFromErp($item);
         }
 
-        $this->em->commit();
-
-        return $weborders;
+        return $packages;
     }
 
 }

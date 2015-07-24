@@ -12,6 +12,7 @@ class ShipmentRepository extends EntityRepository {
         
         if (!$shipment) {
             $shipment = new Shipment();
+            $shipment->setWeborder($data['weborder']);
         }
 
         $shipment->setOrderNumber($data['orderNumber']);

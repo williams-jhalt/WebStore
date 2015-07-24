@@ -126,6 +126,16 @@ class Product {
      * */
     private $productAttachments;
 
+    /**
+     * @ORM\Column(name="created_on", type="datetime", nullable=true)
+     */
+    private $createdOn;
+
+    /**
+     * @ORM\Column(name="updated_on", type="datetime", nullable=true)
+     */
+    private $updatedOn;
+
     public function __construct() {
         $this->categories = new ArrayCollection();
         $this->productAttachments = new ArrayCollection();
@@ -326,6 +336,39 @@ class Product {
     public function setActive($active) {
         $this->active = $active;
         return $this;
+    }
+
+    public function getCreatedOn() {
+        return $this->createdOn;
+    }
+
+    public function getUpdatedOn() {
+        return $this->updatedOn;
+    }
+
+    public function setCreatedOn($createdOn) {
+        $this->createdOn = $createdOn;
+        return $this;
+    }
+
+    public function setUpdatedOn($updatedOn) {
+        $this->updatedOn = $updatedOn;
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist() {
+        $this->createdOn = new DateTime();
+        $this->updatedOn = new DateTime();
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function preUpdate() {
+        $this->updatedOn = new DateTime();
     }
 
 }

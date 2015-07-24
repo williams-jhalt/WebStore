@@ -54,6 +54,16 @@ class WeborderItem {
      * @ORM\Column(name="quantity", type="integer")
      */
     private $quantity;
+    
+    public function __construct($data = null) {
+        
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $this->$key = $value;
+            }
+        }
+        
+    }
 
     public function getId() {
         return $this->id;

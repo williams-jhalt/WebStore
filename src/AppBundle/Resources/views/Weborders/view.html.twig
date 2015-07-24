@@ -79,7 +79,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for audit in weborder.audits %}
+        {% for audit in audits %}
             <tr>
                 <td>{{ audit.comment }}</td>
                 <td>{{ audit.timestamp|date('Y-m-d H:i:s') }}</td>
@@ -98,7 +98,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in weborder.items %}
+        {% for item in items %}
             <tr>
                 <td>{{ item.sku }}</td>
                 <td class="text-right">{{ item.quantity }}</td>
