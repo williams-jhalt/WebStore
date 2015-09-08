@@ -2,6 +2,7 @@
 
 namespace AppBundle\Command;
 
+use DateTime;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,13 +15,14 @@ class ErpOneSyncCommand extends ContainerAwareCommand {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
-        $service2 = $this->getContainer()->get('app.weborder_service');
-        $output->write("Beginning weborder load...\n");
-        $service2->batchUpdate($output);
-        $output->write("Finished!\n\n");
-        $service = $this->getContainer()->get('app.product_service');
-        $output->write("Beginning product load...\n");
-        $service->loadAllFromErp($output);
+        
+        $startDate = new DateTime();
+        $startDate->modify("-1 day");
+        $endDate = new DateTime();
+        
+        $service2 = $this->getContainer()->get('app.erp_order_service');
+        $output->write("Beginning erp order load...\n");
+        $service2->loadFromErpOne($startDate, $endDate, $output);
         $output->write("Finished!\n\n");
     }
 

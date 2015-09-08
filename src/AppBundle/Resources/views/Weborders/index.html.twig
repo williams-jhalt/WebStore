@@ -11,17 +11,17 @@
             var thread = null;
 
             pageOptions = {{pageOptions|json_encode|raw}};
-                    updateWeborders = function () {
-                        $('#weborderBody').load(Routing.generate('weborders_ajax_list', pageOptions), function (data) {
-                            $('#weborderBody').data('jscroll', null);
-                            $('#weborderBody').jscroll({
-                                loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
-                                autoTrigger: true,
-                                padding: 20,
-                                nextSelector: 'a.jscroll-next:last'
-                            });
-                        });
-                    };
+            updateWeborders = function () {
+                $('#weborderBody').load(Routing.generate('weborders_ajax_list', pageOptions), function (data) {
+                    $('#weborderBody').data('jscroll', null);
+                    $('#weborderBody').jscroll({
+                        loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                        autoTrigger: true,
+                        padding: 20,
+                        nextSelector: 'a.jscroll-next:last'
+                    });
+                });
+            };
 
             $('#weborderBody').on('click', 'a.view-weborder', function (e) {
                 $.get(Routing.generate('weborders_ajax_view', {id: e.target.dataset.id}), function (data) {
@@ -55,10 +55,12 @@
 {% block weborders_body %}
 
     <div class="well well-sm">
-        <form id="searchForm" class="form-inline" action="#" method="get">
+        <form id="searchForm" class="form-inline" action="{{ path('weborders_index') }}" method="get">
             <div class="form-group">
-                <input class="form-control" type="text" placeholder="Filter..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
+                <input class="form-control" type="text" placeholder="Search..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
             </div>
+            <button class="btn btn-default" type="submit" name="action" value="search">Search</button>
+            <button class="btn btn-default" type="submit" name="action" value="clear">Clear</button>
             {% if app.user.customerNumbers|length > 1 %}
                 <select class="form-control" name="customerNumber">
                     <option value="">All Accounts</option>

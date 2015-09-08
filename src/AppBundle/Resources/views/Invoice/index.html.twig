@@ -22,7 +22,7 @@
                     };
 
             $('#invoiceBody').on('click', 'a.view-invoice', function (e) {
-                $.get(Routing.generate('shipment_ajax_view', {id: e.target.dataset.id}), function (data) {
+                $.get(Routing.generate('invoice_ajax_view', {id: e.target.dataset.id}), function (data) {
                     $('.modal-body').html(data);
                     $('#invoiceView').modal('show');
                 });
@@ -46,7 +46,7 @@
 {% block invoice_body %}
 
     <div class="well well-sm">
-        <form class="form-inline" action="{{ path('weborders_index') }}" method="get">
+        <form class="form-inline" action="{{ path('invoice_index') }}" method="get">
             <div class="form-group">
                 <input class="form-control" type="text" placeholder="Search..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
             </div>
@@ -56,7 +56,7 @@
     </div>
 
     <div class="row">
-        <span class="col-sm-3"><strong>Order Number</strong></span>
+        <span class="col-sm-3"><strong>Invoice Number</strong></span>
         <span class="col-sm-3"><strong>Invoice Date</strong></span>
         <span class="col-sm-3"><strong>Status</strong></span>
         <span class="col-sm-3"><strong>Customer Number</strong></span>

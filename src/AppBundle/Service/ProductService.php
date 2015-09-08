@@ -20,10 +20,14 @@ class ProductService {
 
     private $_em;
     private $_erp;
+    private $_company;
+    private $_cache;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
+    public function __construct(EntityManager $em, ErpOneConnectorService $erp, $company, $cache) {
         $this->_em = $em;
         $this->_erp = $erp;
+        $this->_company = $company;
+        $this->_cache = $cache;
     }
 
     public function _loadFromErp($item) {
@@ -49,20 +53,27 @@ class ProductService {
      */
     public function findAll($offset = 0, $limit = 100) {
 
-        $response = $this->_erp->read(
-                "FOR EACH item NO-LOCK "
-                . "WHERE company_it = 'WTC' AND web_item = yes", "*", $offset, $limit
-        );
+        $key = md5("AppBundle:ProductService:findAll:{$offset}:{$limit}");
 
-        $products = array();
+        if (($products = $this->_cache->fetch($key)) === false) {
 
-        $this->_em->beginTransaction();
+            $response = $this->_erp->read(
+                    "FOR EACH item NO-LOCK "
+                    . "WHERE company_it = '{$this->_company}' AND web_item = yes", "*", $offset, $limit
+            );
 
-        foreach ($response as $item) {
-            $products[] = $this->_loadFromErp($item);
+            $products = array();
+
+            $this->_em->beginTransaction();
+
+            foreach ($response as $item) {
+                $products[] = $this->_loadFromErp($item);
+            }
+
+            $this->_em->commit();
+
+            $this->_cache->save($key, $products, 300);
         }
-
-        $this->_em->commit();
 
         return $products;
     }
@@ -82,51 +93,83 @@ class ProductService {
      */
     public function findBy(array $params, $offset = 0, $limit = 100) {
 
-        $products = null;
+        $key = md5("AppBundle:ProductService:findBy:" . serialize($params) . ":{$offset}:{$limit}");
 
-        if (isset($params['search_terms']) || isset($params['category_id'])) {
+        if (($products = $this->_cache->fetch($key)) === false) {
 
-            $repository = $this->_em->getRepository("AppBundle:Product");
+            $products = null;
 
-            $qb = $repository->createQueryBuilder('p');
+            if (isset($params['search_terms']) || isset($params['category_id'])) {
 
-            if (isset($params['search_terms'])) {
-                $qb->andWhere('p.sku LIKE :searchTerms OR p.name LIKE :searchTerms')->setParameter('searchTerms', '%' . $params['search_terms'] . '%');
+                $repository = $this->_em->getRepository("AppBundle:Product");
+
+                $qb = $repository->createQueryBuilder('p');
+
+                if (isset($params['search_terms'])) {
+                    $qb->andWhere('p.sku LIKE :searchTerms OR p.name LIKE :searchTerms')->setParameter('searchTerms', '%' . $params['search_terms'] . '%');
+                }
+
+                if (isset($params['category_id'])) {
+                    $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $params['category_id']);
+                }
+
+                if (isset($params['manufacturer'])) {
+                    $manufacturer = $this->_em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
+                    $qb->andWhere('p.manufacturer = :manufacturer')->setParameter('manufacturer', $manufacturer);
+                }
+
+                if (isset($params['product_line'])) {
+                    $productType = $this->_em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
+                    $qb->andWhere('p.productType = :productType')->setParameter('productType', $productType);
+                }
+
+                $qb->setFirstResult($offset);
+                $qb->setMaxResults($limit);
+
+                $query = $qb->getQuery();
+
+                $products = $query->getResult();
+            } else {
+
+                $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes";
+
+                if (isset($params['manufacturer'])) {
+                    $query .= " AND manufacturer = '{$params['manufacturer']}'";
+                }
+
+                if (isset($params['product_line'])) {
+                    $query .= " AND product_line = '{$params['product_line']}'";
+                }
+
+                $response = $this->_erp->read($query, "*", $offset, $limit);
+
+                $products = array();
+
+                $this->_em->beginTransaction();
+
+                foreach ($response as $item) {
+                    $products[] = $this->_loadFromErp($item);
+                }
+
+                $this->_em->commit();
             }
 
-            if (isset($params['category_id'])) {
-                $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $params['category_id']);
-            }
+            $this->_cache->save($key, $products, 300);
+        }
 
-            if (isset($params['manufacturer'])) {
-                $manufacturer = $this->_em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
-                $qb->andWhere('p.manufacturer = :manufacturer')->setParameter('manufacturer', $manufacturer);
-            }
+        return $products;
+    }
 
-            if (isset($params['product_line'])) {
-                $productType = $this->_em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
-                $qb->andWhere('p.productType = :productType')->setParameter('productType', $productType);
-            }
+    public function findBySearchTerms($searchTerms, $offset = 0, $limit = 100) {
 
-            $qb->setFirstResult($offset);
-            $qb->setMaxResults($limit);
+        $key = md5("AppBundle:ProductService:findBySearchTerms:{$searchTerms}:{$offset}:{$limit}");
 
-            $query = $qb->getQuery();
+        if (($products = $this->_cache->fetch($key)) === false) {
 
-            $products = $query->getResult();
-        } else {
-
-            $query = "FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes";
-
-            if (isset($params['manufacturer'])) {
-                $query .= " AND manufacturer = '{$params['manufacturer']}'";
-            }
-
-            if (isset($params['product_line'])) {
-                $query .= " AND product_line = '{$params['product_line']}'";
-            }
-
-            $response = $this->_erp->read($query, "*", $offset, $limit);
+            $response = $this->_erp->read(
+                    "FOR EACH item NO-LOCK "
+                    . "WHERE company_it = '{$this->_company}' AND web_item = yes AND item MATCHES('{$searchTerms}*')", "*", $offset, $limit
+            );
 
             $products = array();
 
@@ -137,43 +180,33 @@ class ProductService {
             }
 
             $this->_em->commit();
+
+            $this->_cache->save($key, $products, 300);
         }
-
-        return $products;
-    }
-
-    public function findBySearchTerms($searchTerms, $offset = 0, $limit = 100) {
-
-        $response = $this->_erp->read(
-                "FOR EACH item NO-LOCK "
-                . "WHERE company_it = 'WTC' AND web_item = yes AND item MATCHES('{$searchTerms}*')", "*", $offset, $limit
-        );
-
-        $products = array();
-
-        $this->_em->beginTransaction();
-
-        foreach ($response as $item) {
-            $products[] = $this->_loadFromErp($item);
-        }
-
-        $this->_em->commit();
 
         return $products;
     }
 
     public function get($itemNumber) {
 
-        $query = "FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes AND item = '{$itemNumber}'";
+        $key = md5("AppBundle:ProductService:get:{$itemNumber}");
 
-        $response = $this->_erp->read($query);
-        
-        if (sizeof($response) == 0) {
-            return null;
+        if (($product = $this->_cache->fetch($key)) === false) {
+
+            $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes AND item = '{$itemNumber}'";
+
+            $response = $this->_erp->read($query);
+
+            if (sizeof($response) == 0) {
+                return null;
+            }
+
+            $product = $this->_loadFromErp($response[0]);
+
+            $this->_cache->save($key, $product, 300);
         }
-        
-        return $this->_loadFromErp($response[0]);
-        
+
+        return $product;
     }
 
     /**
@@ -187,9 +220,18 @@ class ProductService {
      */
     public function getPrice($itemNumber, $customer = null, $quantity = 1, $uom = "EA") {
 
-        $response = $this->_erp->getItemPriceDetails($itemNumber, $customer, $quantity, $uom);
+        $key = md5("AppBundle:ProductService:getPrice:{$itemNumber}:{$customer}:{$quantity}:{$uom}");
 
-        return (float) $response->price;
+        if (($price = $this->_cache->fetch($key)) === false) {
+
+            $response = $this->_erp->getItemPriceDetails($itemNumber, $customer, $quantity, $uom);
+
+            $price = (float) $response->price;
+
+            $this->_cache->save($key, $price, 300);
+        }
+
+        return $price;
     }
 
     /**
@@ -199,8 +241,17 @@ class ProductService {
      * @return integer
      */
     public function getStock($itemNumber) {
-        $response = $this->_erp->read("FOR EACH wa_item NO-LOCK WHERE item = '{$itemNumber}'", "qty_oh");
-        return (int) $response[0]->qty_oh;
+
+        $key = md5("AppBundle:ProductService:getStock:{$itemNumber}");
+
+        if (($stock = $this->_cache->fetch($key)) === false) {
+            $response = $this->_erp->read("FOR EACH wa_item NO-LOCK WHERE item = '{$itemNumber}'", "qty_oh");
+            $stock = (int) $response[0]->qty_oh;
+
+            $this->_cache->save($key, $stock, 300);
+        }
+
+        return $stock;
     }
 
     public function prepareSynchronizeWithErp() {

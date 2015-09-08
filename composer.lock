@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8a7f9e2e0438a091d9d28effa5298e74",
+    "hash": "be492755e437993c87bbb268885fc3e5",
     "packages": [
         {
             "name": "braincrafted/bootstrap-bundle",
@@ -890,7 +890,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/migrations/zipball/058a4635ac9b80a5b1997df28a754e64b1425a1d",
+                "url": "https://api.github.com/repos/doctrine/migrations/zipball/4e85ba638acf62e1afe735f94b0c51aa971f8773",
                 "reference": "058a4635ac9b80a5b1997df28a754e64b1425a1d",
                 "shasum": ""
             },
@@ -1263,12 +1263,12 @@
             "target-dir": "Gregwar/Image",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Gregwar/Image.git",
+                "url": "git@github.com:Gregwar/Image.git",
                 "reference": "8faeedfc211162bef5cddc93bea58700c32e06f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Gregwar/Image/zipball/8faeedfc211162bef5cddc93bea58700c32e06f6",
+                "url": "https://api.github.com/repos/Gregwar/Image/zipball/df2a20c25a328b689ff7a01e3131a970d5cd9031",
                 "reference": "8faeedfc211162bef5cddc93bea58700c32e06f6",
                 "shasum": ""
             },
@@ -2299,7 +2299,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/4123fcd85d61354c6c9900db76c9597dbd129bf6",
+                "url": "https://api.github.com/repos/nrk/predis/zipball/192dfd61e54c3d32c9526bba03365fff818e17e4",
                 "reference": "4123fcd85d61354c6c9900db76c9597dbd129bf6",
                 "shasum": ""
             },
@@ -2589,7 +2589,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/snc/SncRedisBundle/zipball/732bfa62ea1e30dbbda12486f971573274d3b48f",
+                "url": "https://api.github.com/repos/snc/SncRedisBundle/zipball/77f65e3d86a5e21b9bf3710d7e021595df2b6417",
                 "reference": "732bfa62ea1e30dbbda12486f971573274d3b48f",
                 "shasum": ""
             },

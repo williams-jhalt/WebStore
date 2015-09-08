@@ -2,32 +2,32 @@
 
 namespace AppBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use AppBundle\Entity\Package;
 
 class PackageService {
 
-    private $_em;
     private $_erp;
+    private $_company;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
-        $this->_em = $em;
+    public function __construct(ErpOneConnectorService $erp, $company) {
         $this->_erp = $erp;
+        $this->_company = $company;
     }
 
-    private function _getDbRecordFromErp($item) {
-        $repository = $this->_em->getRepository('AppBundle:Package');
-        return $repository->findOrCreate(array(
-                    'orderNumber' => $item->order,
-                    'trackingNumber' => $item->tracking_no,
-                    'packageCharge' => $item->pkg_chg
-        ));
+    private function _loadFromErp($item) {
+        $package = new Package();
+        $package->setManifestId($item->Manifest_id)
+                ->setOrderNumber($item->order)
+                ->setTrackingNumber($item->tracking_no)
+                ->setPackageCharge($item->pkg_chg);
+        return $package;
     }
 
     public function findAll($offset = 0, $limit = 100) {
 
         $response = $this->_erp->read(
                 "FOR EACH oe_ship_pack NO-LOCK "
-                . "WHERE company_oe = 'WTC' "
+                . "WHERE company_oe = '{$this->_company}' "
                 . "AND rec_type = 'S' "
                 . "AND NOT ( tracking_no BEGINS 'Verify' ) "
                 . "BY oe_ship_pack.order DESCENDING", "*", $offset, $limit
@@ -36,7 +36,7 @@ class PackageService {
         $packages = array();
 
         foreach ($response as $item) {
-            $packages[] = $this->_getDbRecordFromErp($item);
+            $packages[] = $this->_loadFromErp($item);
         }
 
         return $packages;
@@ -46,7 +46,7 @@ class PackageService {
 
         $response = $this->_erp->read(
                 "FOR EACH oe_ship_pack NO-LOCK "
-                . "WHERE company_oe = 'WTC' "
+                . "WHERE company_oe = '{$this->_company}' "
                 . "AND rec_type = 'S' "
                 . "AND order= '{$orderNumber}' "
                 . "AND NOT ( tracking_no BEGINS 'Verify' ) "
@@ -60,7 +60,7 @@ class PackageService {
         }
 
         foreach ($response as $item) {
-            $packages[] = $this->_getDbRecordFromErp($item);
+            $packages[] = $this->_loadFromErp($item);
         }
 
         return $packages;

@@ -46,7 +46,7 @@
 {% block shipment_body %}
 
     <div class="well well-sm">
-        <form class="form-inline" action="{{ path('weborders_index') }}" method="get">
+        <form class="form-inline" action="{{ path('shipment_index') }}" method="get">
             <div class="form-group">
                 <input class="form-control" type="text" placeholder="Search..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
             </div>
@@ -59,7 +59,6 @@
         <span class="col-sm-3"><strong>Order Number</strong></span>
         <span class="col-sm-3"><strong>Status</strong></span>
         <span class="col-sm-3"><strong>Customer Number</strong></span>
-        <span class="col-sm-3"><strong>Shipped</strong></span>
     </div>
 
     <div id="shipmentBody"></div>

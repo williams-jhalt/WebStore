@@ -51,7 +51,8 @@
         "jms/serializer-bundle": "0.13.*",
         "piotrooo/wsdl-creator": "1.*",
         "doctrine/migrations": "1.0.*@dev",
-        "doctrine/doctrine-migrations-bundle": "2.1.*@dev"
+        "doctrine/doctrine-migrations-bundle": "2.1.*@dev",
+        "doctrine/doctrine-cache-bundle": "^1.0"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"

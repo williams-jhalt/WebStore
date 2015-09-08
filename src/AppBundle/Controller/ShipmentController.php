@@ -2,14 +2,11 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\Shipment;
-use AppBundle\Service\ShipmentService;
-use DateTime;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/shipment")
@@ -41,7 +38,7 @@ class ShipmentController extends Controller {
                 
         $service = $this->get('app.shipment_service');
         
-        $shipment = $service->get($id);
+        $shipment = $service->find($id);
 
         $response = new Response();
         $engine = $this->container->get('templating');
@@ -56,30 +53,55 @@ class ShipmentController extends Controller {
     public function ajaxListAction(Request $request) {
 
         $page = $request->get('page', 1);
+        $searchTerms = $request->get('searchTerms');
+        $customerNumber = $request->get('customerNumber');
         $perPage = 50;
-        
+
         $user = $this->getUser();
 
         $service = $this->get('app.shipment_service');
-        
+
         $offset = (($page - 1) * $perPage);
-        
+
         if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
-            $shipments = $service->findByCustomerNumbers($user->getCustomerNumbers(), $offset, $perPage);
+            if (!empty($customerNumber)) {
+                if (!empty($searchTerms)) {
+                    $shipments = $service->findByCustomerAndSearchTerms($customerNumber, $searchTerms, $offset, $perPage);
+                } else {
+                    $shipments = $service->findByCustomer($customerNumber, $offset, $perPage);
+                }
+            } else {
+                if (!empty($searchTerms)) {
+                    $shipments = $service->findByCustomerNumbersAndSearchTerms($user->getCustomerNumbers(), $searchTerms, $offset, $perPage);
+                } else {
+                    $shipments = $service->findByCustomerNumbers($user->getCustomerNumbers(), $offset, $perPage);
+                }
+            }
         } elseif ($this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
-            $shipments = $service->findAll($offset, $perPage);
+            if (!empty($searchTerms)) {
+                $shipments = $service->findBySearchTerms($searchTerms, $offset, $perPage);
+            } else {
+                $shipments = $service->findAll($offset, $perPage);
+            }
         }
 
-        $response = new Response();
-        $nextPage = "";
-        $engine = $this->container->get('templating');
-        if (!empty($shipments)) {
-            $nextPage = $this->generateUrl('shipment_ajax_list', array(
-                'page' => $page + 1
-            ));
+        if ($request->isXmlHttpRequest()) {
+            $response = new Response();
+            $engine = $this->container->get('templating');
+            if (!empty($shipments)) {
+                $nextPage = $this->generateUrl('shipment_ajax_list', array(
+                    'searchTerms' => $searchTerms,
+                    'customerNumber' => $customerNumber,
+                    'page' => $page + 1
+                ));
+                $response->setContent($engine->render('AppBundle:Shipment:list.html.twig', array('shipments' => $shipments, 'nextPage' => $nextPage)));
+            } else {
+                $response->setContent("<p>NO MORE RECORDS</p>");
+            }
+            return $response;
+        } else {
+            return $this->render('AppBundle:Shipment:list_test.html.twig', array('shipments' => $shipments));
         }
-        $response->setContent($engine->render('AppBundle:Shipment:list.html.twig', array('shipments' => $shipments, 'nextPage' => $nextPage)));
-        return $response;
     }
     
     /**

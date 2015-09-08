@@ -13,6 +13,7 @@ use JMS\Serializer\Annotation as JMS;
  * @JMS\ExclusionPolicy("all")
  * @ORM\Table(name="product")
  * @ORM\Entity(repositoryClass="AppBundle\Entity\ProductRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Product {
 

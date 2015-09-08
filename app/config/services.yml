@@ -5,7 +5,62 @@ parameters:
 
 services:
         
-#    service_name:
-#        class: AppBundle\Directory\ClassName
-#        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]
-
+    app.erp_connector_service:
+        class: AppBundle\Service\ErpOneConnectorService    
+        arguments: ["%erp_server%", "%erp_username%", "%erp_password%"]
+    
+    # helper services
+    app.product_service:
+        class: AppBundle\Service\ProductService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%", "@erp_cache"]
+    
+    app.manufacturer_service:
+        class: AppBundle\Service\ManufacturerService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+    
+    app.product_type_service:
+        class: AppBundle\Service\ProductTypeService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+    
+    app.weborder_audit_service:
+        class: AppBundle\Service\WeborderAuditService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        
+    app.order_service:
+        class: AppBundle\Service\OrderService
+        arguments: ["@app.erp_connector_service", "%erp_company%", "@erp_cache"]
+        
+    app.invoice_service:
+        class: AppBundle\Service\InvoiceService
+        arguments: ["@app.erp_connector_service", "%erp_company%", "@erp_cache"]
+        
+    app.customer_service:
+        class: AppBundle\Service\CustomerService
+        arguments: ["@app.erp_connector_service", "%erp_company%"]
+        
+    app.shipment_service:
+        class: AppBundle\Service\ShipmentService
+        arguments: ["@app.erp_connector_service", "%erp_company%"]
+        
+    app.package_service:
+        class: AppBundle\Service\PackageService
+        arguments: ["@app.erp_connector_service", "%erp_company%"]
+    
+    app.product_attachment_service:
+        class: AppBundle\Service\ProductAttachmentService
+        arguments: ["@doctrine.orm.entity_manager"]
+    
+    app.category_service:
+        class: AppBundle\Service\CategoryService
+        arguments: ["@doctrine.orm.entity_manager"]    
+        
+    api.soap_service:
+        class: ApiBundle\Service\SoapService
+        arguments: ["@doctrine.orm.entity_manager"]
+            
+    #twig extentions
+    app.twig.cart_check_extension:
+        class: AppBundle\Twig\CartCheckExtension
+        arguments: ["@security.token_storage", "@doctrine.orm.entity_manager"]
+        tags:
+            - { name: twig.extension }

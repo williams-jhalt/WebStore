@@ -39,10 +39,10 @@ class WebordersController extends Controller {
      */
     public function ajaxGetStatus($orderNumber) {
 
-        $service = $this->get('app.weborder_service');
+        $service = $this->get('app.order_service');
         $packService = $this->get('app.package_service');
 
-        $weborder = $service->get($orderNumber);
+        $weborder = $service->find($orderNumber);
         $packages = $packService->findByOrderNumber($orderNumber);
 
         $status = "";
@@ -63,30 +63,15 @@ class WebordersController extends Controller {
      * @Route("/ajax-view/{id}", name="weborders_ajax_view", options={"expose": true})
      */
     public function ajaxViewAction($id) {
-
-        $service = $this->get('app.weborder_service');
-        $invService = $this->get('app.invoice_service');
-        $shipService = $this->get('app.shipment_service');
-        $packService = $this->get('app.package_service');
-        $itemService = $this->get('app.weborder_item_service');
-        $auditService = $this->get('app.weborder_audit_service');
-
-        $weborder = $service->get($id);
-        $invoice = $invService->get($id);
-        $shipment = $shipService->get($id);
-        $packages = $packService->findByOrderNumber($id);
-        $items = $itemService->findByOrderNumber($id);
-        $audits = $auditService->findByOrderNumber($id);
+        
+        $service = $this->get('app.order_service');
+        
+        $order = $service->find($id);
 
         $response = new Response();
         $engine = $this->container->get('templating');
         $response->setContent($engine->render('AppBundle:Weborders:view.html.twig', array(
-                    'weborder' => $weborder,
-                    'items' => $items,
-                    'audits' => $audits,
-                    'shipment' => $shipment,
-                    'invoice' => $invoice,
-                    'packages' => $packages
+                    'order' => $order
         )));
         return $response;
     }
@@ -103,7 +88,7 @@ class WebordersController extends Controller {
 
         $user = $this->getUser();
 
-        $service = $this->get('app.weborder_service');
+        $service = $this->get('app.order_service');
 
         $offset = (($page - 1) * $perPage);
 

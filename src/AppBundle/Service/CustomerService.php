@@ -18,7 +18,7 @@ class CustomerService {
 
         $repository = $this->_em->getRepository('AppBundle:Customer');
 
-        return $repository->findOrUpdate(array(
+        return $repository->findOrCreate(array(
                     'customerNumber' => $item->customer
         ));
     }
@@ -27,7 +27,7 @@ class CustomerService {
 
 
         $response = $this->_erp->read(
-                "FOR EACH customer NO-LOCK WHERE company_cu = 'WTC'", "*", $offset, $limit
+                "FOR EACH customer NO-LOCK WHERE company_cu = 'WTC'", "customer", $offset, $limit
         );
 
         $customers = array();
@@ -46,7 +46,7 @@ class CustomerService {
     public function get($customerNumber) {
 
         $response = $this->_erp->read(
-                "FOR EACH customer NO-LOCK WHERE company_cu = 'WTC' AND customer = '{$customerNumber}'", "*"
+                "FOR EACH customer NO-LOCK WHERE company_cu = 'WTC' AND customer = '{$customerNumber}'", "customer"
         );
 
         if (sizeof($response) == 0) {

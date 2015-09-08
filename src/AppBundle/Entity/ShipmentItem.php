@@ -2,78 +2,22 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-
-/**
- * ShipmentItem
- *
- * @ORM\Table(name="shipment_item")
- * @ORM\Entity
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
-class ShipmentItem {
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+class ShipmentItem extends OrderItem {
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Shipment")
-     * @ORM\JoinColumn(name="shipment_id", referencedColumnName="id")
-     * */
-    private $shipment;
+    private $quantityShipped;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="sku", type="string", length=255)
-     */
-    private $sku;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="quantity", type="integer")
-     */
-    private $quantity;
-
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId() {
-        return $this->id;
+    public function getQuantityShipped() {
+        return $this->quantityShipped;
     }
 
-    public function getShipment() {
-        return $this->shipment;
-    }
-
-    public function getSku() {
-        return $this->sku;
-    }
-
-    public function getQuantity() {
-        return $this->quantity;
-    }
-
-    public function setShipment($shipment) {
-        $this->shipment = $shipment;
-        return $this;
-    }
-
-    public function setSku($sku) {
-        $this->sku = $sku;
-        return $this;
-    }
-
-    public function setQuantity($quantity) {
-        $this->quantity = $quantity;
+    public function setQuantityShipped($quantityShipped) {
+        $this->quantityShipped = $quantityShipped;
         return $this;
     }
 

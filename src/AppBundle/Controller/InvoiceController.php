@@ -2,14 +2,11 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\Invoice;
-use AppBundle\Service\InvoiceService;
-use DateTime;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/invoice")
@@ -41,7 +38,7 @@ class InvoiceController extends Controller {
                 
         $service = $this->get('app.invoice_service');
         
-        $invoice = $service->get($id);
+        $invoice = $service->find($id);
 
         $response = new Response();
         $engine = $this->container->get('templating');
@@ -57,15 +54,13 @@ class InvoiceController extends Controller {
 
         $page = $request->get('page', 1);
         $perPage = 50;
-        
-        $user = $this->getUser();
-
+                
         $service = $this->get('app.invoice_service');
         
         $offset = (($page - 1) * $perPage);
         
         if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
-            $invoices = $service->findByCustomerNumbers($user->getCustomerNumbers(), $offset, $perPage);
+            $invoices = $service->findByCustomerNumber($this->getUser()->getCustomerNumbers(), $offset, $perPage);
         } elseif ($this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             $invoices = $service->findAll($offset, $perPage);
         }

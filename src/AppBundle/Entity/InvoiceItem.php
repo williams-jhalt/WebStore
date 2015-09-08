@@ -2,78 +2,32 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-
-/**
- * InvoiceItem
- *
- * @ORM\Table(name="invoice_item")
- * @ORM\Entity
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
-class InvoiceItem {
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+class InvoiceItem extends OrderItem {
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Invoice")
-     * @ORM\JoinColumn(name="invoice_id", referencedColumnName="id")
-     * */
-    private $invoice;
+    private $price;
+    private $quantityBilled;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="sku", type="string", length=255)
-     */
-    private $sku;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="quantity", type="integer")
-     */
-    private $quantity;
-
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId() {
-        return $this->id;
+    public function getPrice() {
+        return $this->price;
     }
 
-    public function getInvoice() {
-        return $this->invoice;
+    public function getQuantityBilled() {
+        return $this->quantityBilled;
     }
 
-    public function getSku() {
-        return $this->sku;
-    }
-
-    public function getQuantity() {
-        return $this->quantity;
-    }
-
-    public function setInvoice($invoice) {
-        $this->invoice = $invoice;
+    public function setPrice($price) {
+        $this->price = $price;
         return $this;
     }
 
-    public function setSku($sku) {
-        $this->sku = $sku;
-        return $this;
-    }
-
-    public function setQuantity($quantity) {
-        $this->quantity = $quantity;
+    public function setQuantityBilled($quantityBilled) {
+        $this->quantityBilled = $quantityBilled;
         return $this;
     }
 
