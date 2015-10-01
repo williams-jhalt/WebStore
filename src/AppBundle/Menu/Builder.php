@@ -153,7 +153,6 @@ class Builder extends ContainerAware {
 
         $menu->addChild('List', array('route' => 'admin_category_list'));
         $menu->addChild('Add', array('route' => 'admin_category_add'));
-        $menu->addChild('Import', array('route' => 'admin_category_import'));
         $menu->addChild('Show All', array('route' => 'admin_category_show_all'));
         $menu->addChild('Hide All', array('route' => 'admin_category_hide_all'));
 
@@ -166,7 +165,6 @@ class Builder extends ContainerAware {
 
         $menu->addChild('List', array('route' => 'admin_manufacturer_list'));
         $menu->addChild('Add', array('route' => 'admin_manufacturer_add'));
-        $menu->addChild('Import', array('route' => 'admin_manufacturer_import'));
         $menu->addChild('Show All', array('route' => 'admin_manufacturer_show_all'));
         $menu->addChild('Hide All', array('route' => 'admin_manufacturer_hide_all'));
 
@@ -179,7 +177,6 @@ class Builder extends ContainerAware {
 
         $menu->addChild('List', array('route' => 'admin_product_attachment_list'));
         $menu->addChild('Add', array('route' => 'admin_product_attachment_add'));
-        $menu->addChild('Import', array('route' => 'admin_product_attachment_import'));
 
         return $menu;
     }
@@ -190,7 +187,6 @@ class Builder extends ContainerAware {
 
         $menu->addChild('List', array('route' => 'admin_product_type_list'));
         $menu->addChild('Add', array('route' => 'admin_product_type_add'));
-        $menu->addChild('Import', array('route' => 'admin_product_type_import'));
         $menu->addChild('Show All', array('route' => 'admin_product_type_show_all'));
         $menu->addChild('Hide All', array('route' => 'admin_product_type_hide_all'));
 
@@ -202,15 +198,7 @@ class Builder extends ContainerAware {
         $menu = $factory->createItem("root");
 
         $menu->addChild('List', array('route' => 'admin_product_list'));
-        $menu->addChild('Add', array('route' => 'admin_product_add'));
-        
-        $importMenu = $menu->addChild('Import');
-        $importMenu->addChild('Products', array('route' => 'admin_product_import'));
-        $importMenu->addChild('Details', array('route' => 'admin_product_import_details'));
-        $importMenu->addChild('Descriptions', array('route' => 'admin_product_import_descriptions'));
-        
-        $menu->addChild('Syncronize', array('route' => 'admin_product_prepare_synchronize'));
-        
+        $menu->addChild('Add', array('route' => 'admin_product_add'));                
         $menu->addChild('Show All', array('route' => 'admin_product_show_all'));
         $menu->addChild('Hide All', array('route' => 'admin_product_hide_all'));
 
@@ -232,7 +220,6 @@ class Builder extends ContainerAware {
         $menu = $factory->createItem("root");
         
         $menu->addChild('List Orders', array('route' => 'weborders_index'));
-        $menu->addChild('Export Orders', array('route' => 'weborders_export'));
         
         return $menu;
         
@@ -243,7 +230,6 @@ class Builder extends ContainerAware {
         $menu = $factory->createItem("root");
         
         $menu->addChild('List Invoices', array('route' => 'invoice_index'));
-        $menu->addChild('Export Invoices', array('route' => 'invoice_export'));
         
         return $menu;
         
@@ -254,7 +240,6 @@ class Builder extends ContainerAware {
         $menu = $factory->createItem("root");
         
         $menu->addChild('List Shipments', array('route' => 'shipment_index'));
-        $menu->addChild('Export Shipments', array('route' => 'shipment_export'));
         
         return $menu;
         

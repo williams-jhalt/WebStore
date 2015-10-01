@@ -1,9 +1,13 @@
 {% for product in products %}
-    <tr>
-        <td><a href="{{ path('admin_product_edit', app.request.query.all|merge({id: product.id})) }}">{{ product.sku }}</a></td>
-        <td>{{ product.name }}</td>
-        <td><span title="{{ product.manufacturer.name }}">{{ product.manufacturer.code }}</span></td>
-        <td><span title="{{ product.productType.name }}">{{ product.productType.code }}</span></td>
-        <td class="text-center"><input class="toggleShowInMenu" type="checkbox" value="{{ product.id }}" {% if product.shown %}checked{% endif %}></td>
-    </tr>
+    <div class="row">
+        <span class="col-sm-2"><a href="{{ path('admin_product_edit', app.request.query.all|merge({id: product.id})) }}">{{ product.sku }}</a></span>
+        <span class="col-sm-7">{{ product.name }}</span>
+        <span class="col-sm-1"><span title="{{ product.manufacturer.name }}">{{ product.manufacturer.code }}</span></span>
+        <span class="col-sm-1"><span title="{{ product.productType.name }}">{{ product.productType.code }}</span></span>
+        <span class="col-sm-1 text-center"><input class="toggleShowInMenu" type="checkbox" value="{{ product.id }}" {% if product.shown %}checked{% endif %}></span>
+    </div>
 {% endfor %}
+
+{% if nextPage is defined %}
+    <p class="text-center"><a class="jscroll-next" href="{{ nextPage }}">Load More Results</a></p>
+{% endif %}

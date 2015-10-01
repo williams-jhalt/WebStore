@@ -2,23 +2,23 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var pageOptions = {{pageOptions|json_encode|raw}};
-
-            $.get(Routing.generate('admin_product_list', pageOptions), function (data) {
-                $("#catalogBody").html(data);
-            });
-
-            $(window).scroll(function () {
-                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 300) {
-                    pageOptions.page++;
-                    $.get(Routing.generate('admin_product_list', pageOptions), function (data) {
-                        $("#catalogBody").append(data);
+            pageOptions = {{pageOptions|json_encode|raw}};
+            
+            updateCatalog = function() {       
+                $('#catalogBody').load(Routing.generate('admin_product_list', pageOptions), function(data) {
+                    $('#catalogBody').data('jscroll', null);
+                    $('#catalogBody').jscroll({
+                        loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                        autoTrigger: true,
+                        padding: 20,
+                        nextSelector: 'a.jscroll-next:last'
                     });
-                }
-            });
+                });
+            };
 
             {#$('#catalogBody').on('click', 'a.view-product', function (e) {
                 $.get(Routing.generate('admin_product_ajax_view', {itemNumber: e.target.dataset.id}), function (data) {
@@ -36,6 +36,8 @@
                             }
                         }, "json");
             });
+            
+            updateCatalog();
 
         });
     </script>
@@ -44,18 +46,15 @@
 {% block admin_body %}
 
     {{ include('AppBundle:Admin/Product:nav.html.twig') }}
-
-    <table class="table table-condensed table-striped">
-        <thead>
-            <tr>
-                <th style="width:10%;">SKU</th>
-                <th style="width:60%">Name</th>
-                <th style="width:5%;">Mfgr.</th>
-                <th style="width:5%;">Type</th>
-                <th class="text-center" style="width:10%;">Shown</th>
-            </tr>
-        </thead>
-        <tbody id="catalogBody"></tbody>
-    </table>
+    
+    <div class="row">
+        <span class="col-sm-2"><strong>SKU</strong></span>
+        <span class="col-sm-7"><strong>Name</strong></span>
+        <span class="col-sm-1"><strong>Mfgr.</strong></span>
+        <span class="col-sm-1"><strong>Type</strong></span>
+        <span class="col-sm-1 text-center"><strong>Shown</strong></span>
+    </div>
+    
+    <div id="catalogBody"></div>
 
 {% endblock %}

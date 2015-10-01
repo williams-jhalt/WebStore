@@ -38,15 +38,16 @@ class ProductController extends Controller {
 
             $response = new Response();
             $engine = $this->container->get('templating');
-            $response->setContent($engine->render('AppBundle:Admin/Product:list.html.twig', array('products' => $products)));
+            $nextPage = $this->generateUrl('admin_product_list', array(
+                'searchTerms' => $searchTerms,
+                'page' => $page + 1
+            ));
+            $response->setContent($engine->render('AppBundle:Admin/Product:list.html.twig', array('products' => $products, 'nextPage' => $nextPage)));
             return $response;
-            
         } else {
-            
+
             return $this->render('AppBundle:Admin/Product:index.html.twig', array('pageOptions' => array('page' => $page, 'searchTerms' => $searchTerms)));
-            
         }
-        
     }
 
     /**
