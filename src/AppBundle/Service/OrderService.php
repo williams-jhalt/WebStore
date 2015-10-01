@@ -610,7 +610,7 @@ class OrderService {
             $output->writeln("There must be at least one record loaded into the database before this task can be run");
         }
 
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order > '{$latestOrder->getOrderNumber()}'";
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND opn = yes AND order > '{$latestOrder->getOrderNumber()}'";
 
         $response = $this->_erp->read($query, "*");
         
