@@ -10,12 +10,10 @@ class ProductAttachmentService {
 
     private $_em;
     private $_storageLocation;
-    private $_webLocation;
 
     public function __construct(EntityManager $em, $storageLocation) {
         $this->_em = $em;
         $this->_storageLocation = $storageLocation;
-        $this->_webLocation = $webLocation;
     }
 
     public function upload(ProductAttachment $productAttachment) {
