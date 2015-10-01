@@ -119,3 +119,9 @@ braincrafted_bootstrap:
 #        class: Snc\RedisBundle\Doctrine\Cache\RedisCache
 #        calls: 
 #            - [setRedis, ["@snc_redis.default"]]
+
+jmose_command_scheduler:
+
+    # Default directory where scheduler will write output files
+    #  This default value assume that php app/console is launched from project's root and that the directory is writable
+    log_path: %kernel.root_dir%/logs/
