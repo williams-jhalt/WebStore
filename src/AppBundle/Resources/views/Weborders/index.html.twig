@@ -11,6 +11,15 @@
             var thread = null;
 
             pageOptions = {{pageOptions|json_encode|raw}};
+            
+            if (pageOptions['open']) {
+                $("#openOrdersButton").addClass('active');
+                $("#closedOrdersButton").removeClass('active');               
+            } else {
+                $("#closedOrdersButton").addClass('active');
+                $("#openOrdersButton").removeClass('active');
+            }
+            
             updateWeborders = function () {
                 $('#weborderBody').load(Routing.generate('weborders_ajax_list', pageOptions), function (data) {
                     $('#weborderBody').data('jscroll', null);
@@ -31,7 +40,7 @@
                 return false;
             });
 
-            $("#searchForm").on('change keyup paste', ":input", function (e) {
+{#            $("#searchForm").on('change keyup paste', ":input", function (e) {
                 clearTimeout(thread);
                 thread = setTimeout(function () {
                     pageOptions['searchTerms'] = $("input[name='searchTerms']").val();
@@ -43,6 +52,14 @@
                     console.log(pageOptions);
                     updateWeborders();
                 },1000);
+            });#}
+            
+            $("#searchForm").on('click', "button.open", function () {
+                $("button.open").each(function() {
+                    $(this).removeClass('active')});
+                pageOptions['open'] = $(this).val();
+                $(this).addClass('active');
+                updateWeborders();
             });
 
             updateWeborders();
@@ -59,8 +76,8 @@
             <div class="form-group">
                 <input class="form-control" type="text" placeholder="Search..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
             </div>
-            <button class="btn btn-default" type="submit" name="action" value="search">Search</button>
-            <button class="btn btn-default" type="submit" name="action" value="clear">Clear</button>
+            <button class="btn btn-default" type="button" name="action" value="search">Search</button>
+            <button class="btn btn-default" type="button" name="action" value="clear">Clear</button>
             {% if app.user.customerNumbers|length > 1 %}
                 <select class="form-control" name="customerNumber">
                     <option value="">All Accounts</option>
@@ -69,15 +86,20 @@
                     {% endfor %}
                 </select>
             {% endif %}
+            <div class="btn-group pull-right">
+                <button class="btn btn-default open" id="openOrdersButton" type="button" name="open" value="1">Open Orders</button>
+                <button class="btn btn-default open" id="closedOrdersButton" type="button" name="open" value="0">Closed Orders</button>
+            </div>
         </form>
     </div>
 
     <div class="row">
         <span class="col-sm-2"><strong>Order Number</strong></span>
+        <span class="col-sm-2"><strong>Order Number (Old)</strong></span>
         <span class="col-sm-2"><strong>Order Date</strong></span>
         <span class="col-sm-3"><strong>Customer PO / Reference</strong></span>
-        <span class="col-sm-2"><strong>Status</strong></span>
-        <span class="col-sm-3"><strong>Customer Number</strong></span>
+        <span class="col-sm-1"><strong>Status</strong></span>
+        <span class="col-sm-2"><strong>Customer Number</strong></span>
     </div>
 
     <div id="weborderBody"></div>

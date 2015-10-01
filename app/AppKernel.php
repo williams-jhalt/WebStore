@@ -27,7 +27,8 @@ class AppKernel extends Kernel {
             new FOS\RestBundle\FOSRestBundle(),
             new Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle(),
             new Doctrine\Bundle\DoctrineCacheBundle\DoctrineCacheBundle(),
-            new Snc\RedisBundle\SncRedisBundle(),
+//            new Snc\RedisBundle\SncRedisBundle(),
+            new JMose\CommandSchedulerBundle\JMoseCommandSchedulerBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

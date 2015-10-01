@@ -10,20 +10,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ErpOneSyncCommand extends ContainerAwareCommand {
 
     protected function configure() {
-        $this->setName('app:erpone:load')
-                ->setDescription('Load all items from ERP-ONE');
+        $this->setName('app:erpone:refresh')
+                ->setDescription('Refresh open orders and load new records');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
         
-        $startDate = new DateTime();
-        $startDate->modify("-1 day");
-        $endDate = new DateTime();
-        
-        $service2 = $this->getContainer()->get('app.erp_order_service');
-        $output->write("Beginning erp order load...\n");
-        $service2->loadFromErpOne($startDate, $endDate, $output);
+        $service = $this->getContainer()->get('app.order_service');
+        $output->write("Beginning erp order refresh...\n");
+        $service->refreshOrders($output);
         $output->write("Finished!\n\n");
+        
     }
 
 }

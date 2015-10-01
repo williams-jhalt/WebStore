@@ -2,6 +2,7 @@
 
 namespace AppBundle\Service;
 
+use AppBundle\Entity\Order;
 use AppBundle\Entity\Package;
 
 class PackageService {
@@ -40,6 +41,30 @@ class PackageService {
         }
 
         return $packages;
+    }
+    
+    public function findByOrder(Order $order) {
+
+        $response = $this->_erp->read(
+                "FOR EACH oe_ship_pack NO-LOCK "
+                . "WHERE company_oe = '{$this->_company}' "
+                . "AND rec_type = 'S' "
+                . "AND order = '{$order->getOrderNumber()}' "
+                . "AND NOT ( tracking_no BEGINS 'Verify' ) ", "*"
+        );
+
+        $packages = array();
+
+        if (sizeof($response) == 0) {
+            return $packages;
+        }
+
+        foreach ($response as $item) {
+            $packages[] = $this->_loadFromErp($item);
+        }
+
+        return $packages;
+        
     }
 
     public function findByOrderNumber($orderNumber, $offset = 0, $limit = 100) {

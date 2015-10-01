@@ -12,7 +12,7 @@ services:
     # helper services
     app.product_service:
         class: AppBundle\Service\ProductService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%", "@erp_cache"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
     
     app.manufacturer_service:
         class: AppBundle\Service\ManufacturerService
@@ -28,15 +28,15 @@ services:
         
     app.order_service:
         class: AppBundle\Service\OrderService
-        arguments: ["@app.erp_connector_service", "%erp_company%", "@erp_cache"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
         
     app.invoice_service:
         class: AppBundle\Service\InvoiceService
-        arguments: ["@app.erp_connector_service", "%erp_company%", "@erp_cache"]
+        arguments: ["@app.erp_connector_service", "%erp_company%"]
         
     app.customer_service:
         class: AppBundle\Service\CustomerService
-        arguments: ["@app.erp_connector_service", "%erp_company%"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
         
     app.shipment_service:
         class: AppBundle\Service\ShipmentService
@@ -48,7 +48,7 @@ services:
     
     app.product_attachment_service:
         class: AppBundle\Service\ProductAttachmentService
-        arguments: ["@doctrine.orm.entity_manager"]
+        arguments: ["@doctrine.orm.entity_manager", "%product_attachment_path%"]
     
     app.category_service:
         class: AppBundle\Service\CategoryService

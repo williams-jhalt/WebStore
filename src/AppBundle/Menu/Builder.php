@@ -24,10 +24,7 @@ class Builder extends ContainerAware {
         }
         
         if ($checker->isGranted(array('ROLE_CUSTOMER', 'ROLE_ADMIN'))) {
-            $weborders = $menu->addChild('Weborders');
-            $weborders->addChild('Orders', array('route' => 'weborders_index'));
-            $weborders->addChild('Invoices', array('route' => 'invoice_index'));
-            $weborders->addChild('Shipments', array('route' => 'shipment_index'));
+            $menu->addChild('Weborders', array('route' => 'weborders_index'));
         }
         
         if ($checker->isGranted('ROLE_ADMIN')) {
@@ -145,6 +142,7 @@ class Builder extends ContainerAware {
         $menu->addChild('Categories', array('route' => 'admin_category_list'));
         $menu->addChild('Product Types', array('route' => 'admin_product_type_list'));
         $menu->addChild('Users', array('route' => 'admin_user_list'));
+        $menu->addChild('Scheduled Tasks', array('route' => 'jmose_command_scheduler_list'));
 
         return $menu;
     }
@@ -257,6 +255,17 @@ class Builder extends ContainerAware {
         
         $menu->addChild('List Shipments', array('route' => 'shipment_index'));
         $menu->addChild('Export Shipments', array('route' => 'shipment_export'));
+        
+        return $menu;
+        
+    }
+    
+    public function schedulerMenu(FactoryInterface $factory, array $options) {
+        
+        $menu = $factory->createItem('root');
+        
+        $menu->addChild('List', array('route' => 'jmose_command_scheduler_list'));
+        $menu->addChild('Add', array('route' => 'jmose_command_scheduler_detail_new'));
         
         return $menu;
         

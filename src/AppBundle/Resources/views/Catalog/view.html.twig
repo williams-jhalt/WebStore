@@ -5,11 +5,11 @@
         <div class="text-center">
             {% if product.productAttachments|length > 0 %}
                 <div class="zoom text-center" id="zoom">
-                    <img src="{{ image(product.productAttachment.absolutePath).resize(300,300) }}" alt="image">
+                    <img src="{{ image(product.productAttachment.path).resize(300,300) }}" alt="image">
                 </div>
                 <script>
                     $(document).ready(function () {
-                        $('#zoom').zoom({url: '{{ image(product.productAttachment.absolutePath).resize(800,800) }}'});
+                        $('#zoom').zoom({url: '{{ image(product.productAttachment.path).resize(800,800) }}'});
                         $(document).on('click', 'a.replace-image', function (e) {
                             $('#zoom img').attr('src', this.dataset.imgsrc);
                             $('#zoom').zoom({url: this.dataset.zoomsrc});
@@ -20,8 +20,8 @@
                 {% if product.productAttachments|length > 1 %}
                     <div style="padding-top:10px;">
                         {% for attachment in product.productAttachments %}
-                            <a class="replace-image" href="#" data-imgsrc="{{ image(attachment.absolutePath).resize(300,300) }}" data-zoomsrc="{{ image(attachment.absolutePath).resize(800,800) }}">
-                                <img src="{{ image(attachment.absolutePath).resize(80,80) }}">
+                            <a class="replace-image" href="#" data-imgsrc="{{ image(attachment.path).resize(300,300) }}" data-zoomsrc="{{ image(attachment.path).resize(800,800) }}">
+                                <img src="{{ image(attachment.path).resize(80,80) }}">
                             </a>
                         {% endfor %}
                     </div>

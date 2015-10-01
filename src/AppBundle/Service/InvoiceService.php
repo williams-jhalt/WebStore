@@ -4,6 +4,7 @@ namespace AppBundle\Service;
 
 use AppBundle\Entity\Invoice;
 use AppBundle\Entity\InvoiceItem;
+use AppBundle\Entity\Order;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 
@@ -17,12 +18,10 @@ class InvoiceService {
 
     private $_erp;
     private $_company;
-    private $_cache;
 
-    public function __construct(ErpOneConnectorService $erp, $company, $cache) {
+    public function __construct(ErpOneConnectorService $erp, $company) {
         $this->_erp = $erp;
         $this->_company = $company;
-        $this->_cache = $cache;
     }
 
     private function _loadItemsFromErp($orderNumber, $recordSequence) {
@@ -37,7 +36,8 @@ class InvoiceService {
             $itemObj = new InvoiceItem();
             $itemObj->setItemNumber($item->item)
                     ->setLineNumber($item->line)
-                    ->setOrderedQuantity($item->q_ord);
+                    ->setQuantityBilled($item->q_itd)
+                    ->setPrice($item->price);
             $items[] = $itemObj;
         }
 
@@ -45,9 +45,9 @@ class InvoiceService {
     }
 
     private function _loadFromErp($item) {
-        
-        $order = new Invoice();
-        $order->setCustomerPO($item->cu_po)
+
+        $invoice = new Invoice();
+        $invoice->setCustomerPO($item->cu_po)
                 ->setOpen($item->opn)
                 ->setOrderDate(new DateTime($item->ord_date))
                 ->setOrderGrossAmount($item->o_tot_gross)
@@ -66,141 +66,122 @@ class InvoiceService {
                 ->setStatus($item->stat)
                 ->setItems($this->_loadItemsFromErp($item->order, $item->rec_seq));
 
-        return $order;
+        return $invoice;
+    }
+
+    public function findByOrder(Order $order) {
+        
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND order = '{$order->getOrderNumber()}'";
+
+        $response = $this->_erp->read($query, "*");
+
+        $invoices = array();
+
+        foreach ($response as $item) {
+            $invoices[] = $this->_loadFromErp($item);
+        }
+
+        return $invoices;
+        
     }
 
     public function findAll($offset, $limit) {
 
-        $key = md5("AppBundle:InvoiceService:findAll:{$offset}:{$limit}");
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I'";
 
-        if (($orders = $this->_cache->fetch($key)) === false) {
+        $response = $this->_erp->read($query, "*", $offset, $limit);
 
-            $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I'";
+        $invoices = array();
 
-            $response = $this->_erp->read($query, "*", $offset, $limit);
-
-            $orders = array();
-
-            foreach ($response as $item) {
-                $orders[] = $this->_loadFromErp($item);
-            }
-
-            $this->_cache->save($key, $orders, 300);
+        foreach ($response as $item) {
+            $invoices[] = $this->_loadFromErp($item);
         }
 
-        return $orders;
+        return $invoices;
     }
 
     public function findBySearchTerms($searchTerms, $offset, $limit) {
 
-        $key = md5("AppBundle:InvoiceService:findBySearchTerms:{$searchTerms}:{$offset}:{$limit}");
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND sy_lookup MATCHES '*{$searchTerms}*'";
 
-        if (($orders = $this->_cache->fetch($key)) === false) {
+        $response = $this->_erp->read($query, "*", $offset, $limit);
 
-            $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND sy_lookup MATCHES '*{$searchTerms}*'";
+        $invoices = array();
 
-            $response = $this->_erp->read($query, "*", $offset, $limit);
-
-            $orders = array();
-
-            foreach ($response as $item) {
-                $orders[] = $this->_loadFromErp($item);
-            }
-
-            $this->_cache->save($key, $orders, 300);
+        foreach ($response as $item) {
+            $invoices[] = $this->_loadFromErp($item);
         }
 
-        return $orders;
+        return $invoices;
     }
 
     public function findByCustomerNumber($customerNumber, $offset, $limit) {
 
-        $key = md5("AppBundle:InvoiceService:findByCustomerNumber:" . serialize($customerNumber) . ":{$offset}:{$limit}");
-
-        if (($orders = $this->_cache->fetch($key)) === false) {
-
-            if (is_array($customerNumber)) {
-                $customerNumberWhere = " (";
-                for ($i = 0; $i < length($customerNumber); $i++) {
-                    $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
-                    if ($i < (length($customerNumber) - 1)) {
-                        $customerNumberWhere .= " OR ";
-                    }
+        if (is_array($customerNumber)) {
+            $customerNumberWhere = " (";
+            for ($i = 0; $i < length($customerNumber); $i++) {
+                $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
+                if ($i < (length($customerNumber) - 1)) {
+                    $customerNumberWhere .= " OR ";
                 }
-                $customerNumberWhere .= ") ";
-            } else {
-                $customerNumberWhere = " customer = '{$customerNumber}' ";
             }
-
-            $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND {$customerNumberWhere}";
-
-            $response = $this->_erp->read($query, "*", $offset, $limit);
-
-            $orders = array();
-
-            foreach ($response as $item) {
-                $orders[] = $this->_loadFromErp($item);
-            }
-
-            $this->_cache->save($key, $orders, 300);
+            $customerNumberWhere .= ") ";
+        } else {
+            $customerNumberWhere = " customer = '{$customerNumber}' ";
         }
 
-        return $orders;
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND {$customerNumberWhere}";
+
+        $response = $this->_erp->read($query, "*", $offset, $limit);
+
+        $invoices = array();
+
+        foreach ($response as $item) {
+            $invoices[] = $this->_loadFromErp($item);
+        }
+
+        return $invoices;
     }
 
     public function findByCustomerNumberAndSearchTerms($customerNumber, $searchTerms, $offset, $limit) {
 
-        $key = md5("AppBundle:InvoiceService:findByCustomerNumberAndSearchTerms:" . serialize($customerNumber) . ":{$searchTerms}:{$offset}:{$limit}");
-
-        if (($orders = $this->_cache->fetch($key)) === false) {
-
-            if (is_array($customerNumber)) {
-                $customerNumberWhere = " (";
-                for ($i = 0; $i < length($customerNumber); $i++) {
-                    $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
-                    if ($i < (length($customerNumber) - 1)) {
-                        $customerNumberWhere .= " OR ";
-                    }
+        if (is_array($customerNumber)) {
+            $customerNumberWhere = " (";
+            for ($i = 0; $i < length($customerNumber); $i++) {
+                $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
+                if ($i < (length($customerNumber) - 1)) {
+                    $customerNumberWhere .= " OR ";
                 }
-                $customerNumberWhere .= ") ";
-            } else {
-                $customerNumberWhere = " customer = '{$customerNumber}' ";
             }
-
-            $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND sy_lookup MATCHES '*{$searchTerms}*' AND {$customerNumberWhere}";
-
-            $response = $this->_erp->read($query, "*", $offset, $limit);
-
-            $orders = array();
-
-            foreach ($response as $item) {
-                $orders[] = $this->_loadFromErp($item);
-            }
-
-            $this->_cache->save($key, $orders, 300);
+            $customerNumberWhere .= ") ";
+        } else {
+            $customerNumberWhere = " customer = '{$customerNumber}' ";
         }
 
-        return $orders;
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND sy_lookup MATCHES '*{$searchTerms}*' AND {$customerNumberWhere}";
+
+        $response = $this->_erp->read($query, "*", $offset, $limit);
+
+        $invoices = array();
+
+        foreach ($response as $item) {
+            $invoices[] = $this->_loadFromErp($item);
+        }
+
+        return $invoices;
     }
 
     public function find($orderNumber) {
 
-        $key = md5("AppBundle:InvoiceService:find:{$orderNumber}");
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND order = '{$orderNumber}'";
 
-        if (($orders = $this->_cache->fetch($key)) === false) {
+        $response = $this->_erp->read($query, "*");
 
-            $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND order = '{$orderNumber}'";
-
-            $response = $this->_erp->read($query, "*");
-
-            if (sizeof($response) > 0) {
-                $order = $this->_loadFromErp($response[0]);
-            }
-
-            $this->_cache->save($key, $order, 300);
+        if (sizeof($response) > 0) {
+            $invoice = $this->_loadFromErp($response[0]);
         }
 
-        return $order;
+        return $invoice;
     }
 
 }

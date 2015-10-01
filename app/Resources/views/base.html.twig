@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+
+        <!-- Bootstrap CSS -->
+        <link href="{{ asset('css/bootstrap.css') }}" rel="stylesheet" media="screen">
+        <!-- HTML5 Shim and Respond.js add IE8 support of HTML5 elements and media queries -->
+        {% include 'BraincraftedBootstrapBundle::ie8-support.html.twig' %}
+
+        <style type="text/css">
+            body {
+            }
+            #pageLayout {
+                margin-top: 75px;
+            }
+        </style>
+
+        <!-- jQuery (necessary for Bootstraps JavaScript plugins) -->
+        <script src="{{ asset('js/jquery.js') }}"></script>
+        <!-- Include all JavaScripts, compiled by Assetic -->
+        <script src="{{ asset('js/bootstrap.js') }}"></script>
+
+        <!-- JavaScript Routing -->
+        <script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
+        <script src="{{ path('fos_js_routing_js', {"callback": "fos.Router.setData"}) }}"></script>
+
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ path('homepage') }}">Williams Trading</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+
+                {{ knp_menu_render('AppBundle:Builder:accountMenu', { 'style': 'navbar-right' }) }}
+                {{ knp_menu_render('AppBundle:Builder:mainMenu', { 'style': 'navbar' }) }}
+                
+            </div>
+        </div>
+    </nav>
+
+    <div id="pageLayout" class="container-fluid">
+
+        {% for flashMessage in app.session.flashbag.get('messages') %}
+            <div class="alert alert-info">
+                {{ flashMessage }}
+            </div>
+        {% endfor %}
+
+        {% for flashMessage in app.session.flashbag.get('notices') %}
+            <div class="alert alert-warning">
+                {{ flashMessage }}
+            </div>
+        {% endfor %}
+
+    {% block body %}{% endblock %}
+
+</div>
+
+{% block javascripts %}
+{% endblock %}
+
+</body>
+</html>

@@ -24,6 +24,4 @@ parameters:
     erp_password: password
     erp_company: d1
 
-    redis_cache_dsn: redis://localhost
-
-    
+    product_attachment_path: ~

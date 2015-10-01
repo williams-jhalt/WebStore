@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+{% trans_default_domain 'JMoseCommandScheduler' %}
+
+
+{% block body -%}
+
+    <div class="row-fluid">
+
+        <div class="col-sm-3">
+
+            {{ knp_menu_render('AppBundle:Builder:adminMenu', { 'style': 'stacked-pills' }) }}
+
+        </div>
+
+        <div class="col-sm-9">
+
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    
+                    {{ knp_menu_render('AppBundle:Builder:schedulerMenu', { 'style': 'navbar' }) }}
+
+                </div>
+            </nav>
+
+            {# Succes flash messages #}
+            {% for flashMessage in app.session.flashbag.get('success') %}
+                <div class="alert alert-success" role="alert">
+                    {{ flashMessage }}
+                </div>
+            {% endfor %}
+
+            {# Errors flash messages #}
+            {% for flashMessage in app.session.flashbag.get('error') %}
+                <div class="alert alert-danger" role="alert">
+                    {{ flashMessage }}
+                </div>
+            {% endfor %}
+            
+            {% block content %}{% endblock content %}
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block javascripts -%}
+    {{ parent() }}
+    <script type="text/javascript" src="{{ asset('bundles/jmosecommandscheduler/js/bootstrap-tooltip.js') }}" ></script>
+    <script type="text/javascript" src="{{ asset('bundles/jmosecommandscheduler/js/bootstrap-confirmation.js') }}" ></script>
+
+    <script type="text/javascript" >
+        // Enable bootstrap-confirmation
+        $(document).ready(function () {
+            //$('[data-toggle="confirmation"]').confirmation();
+            $('[data-toggle="confirmation"]').confirmation({
+                singleton: true,
+                popout: true,
+                placement: 'left'
+            });
+        });
+    </script>
+
+{% endblock %}

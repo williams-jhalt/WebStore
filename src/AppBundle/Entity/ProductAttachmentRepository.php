@@ -12,8 +12,8 @@ class ProductAttachmentRepository extends EntityRepository {
         if (null === $entity) {
             $entity = new ProductAttachment();
             $entity->setProduct($parameters['product']);
-            $entity->setPath($product['path']);
-            $entity->setExplicit($product['explicit']);
+            $entity->setPath($parameters['path']);
+            $entity->setExplicit($parameters['explicit']);
             $this->_em->persist($entity);
             $this->_em->flush();
         }

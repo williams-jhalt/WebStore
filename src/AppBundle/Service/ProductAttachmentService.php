@@ -9,9 +9,29 @@ use SplFileObject;
 class ProductAttachmentService {
 
     private $_em;
+    private $_storageLocation;
+    private $_webLocation;
 
-    public function __construct(EntityManager $em) {
+    public function __construct(EntityManager $em, $storageLocation) {
         $this->_em = $em;
+        $this->_storageLocation = $storageLocation;
+        $this->_webLocation = $webLocation;
+    }
+
+    public function upload(ProductAttachment $productAttachment) {
+
+        if ($productAttachment->getFile() !== null) {
+            $loc = $this->_storageLocation . DIRECTORY_SEPARATOR . $productAttachment->getProduct()->getSku();
+            if (!file_exists($loc)) {
+                mkdir($loc, 0777, true);
+            }
+            $filename = hash_file("md5", $productAttachment->getProduct()->getSku() . ":" . $productAttachment->getFile()->getClientOriginalName()) . "." . $productAttachment->getFile()->getExtension();
+            $productAttachment->getFile()->move($loc, $filename);
+            $productAttachment->setPath($loc . DIRECTORY_SEPARATOR . $filename);
+            $productAttachment->setFile(null);
+            $this->_em->persist($productAttachment);
+            $this->_em->flush();
+        }
     }
 
     /**
@@ -34,8 +54,6 @@ class ProductAttachmentService {
         $batchSize = 500;
         $i = 0;
 
-        $this->_em->beginTransaction();
-
         while (!$file->eof()) {
 
             $row = $file->fgetcsv(",");
@@ -47,29 +65,31 @@ class ProductAttachmentService {
 
             if (sizeof($row) > 1) {
 
-                $product = $productRepository->findOrCreate(array(
-                    'sku' => $row[$mapping['sku']]));
+                $product = $productRepository->findOneBySku($row[$mapping['sku']]);
 
-                if ($product) {
+                if ($product !== null) {
 
-                    $repository->findOrCreate(array(
-                        'product' => $product,
-                        'path' => "http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']],
-                        'explicit' => false
-                    ));
+                    $path = "http://images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']];
+                    $attachment = $repository->findOneBy(array('product' => $product, 'path' => $path));
+                    
+                    if ($attachment === null) {
+                        $attachment = new ProductAttachment();
+                        $attachment->setProduct($product)
+                                ->setExplicit(false)
+                                ->setPath($path);
+                        $this->_em->persist($attachment);
+                    }
+                    
                 }
             }
 
             if (($i % $batchSize) === 0) {
-                $this->_em->commit();
+                $this->_em->flush();
                 $this->_em->clear();
-                $this->_em->beginTransaction();
             }
 
             $i++;
         }
-
-        $this->_em->commit();
     }
 
     public function exportCsv($filename) {

@@ -19,6 +19,10 @@ fos_user_change_password:
     
 fos_js_routing:
     resource: "@FOSJsRoutingBundle/Resources/config/routing/routing.xml"
+    
+mose_command_scheduler:
+    resource: "@JMoseCommandSchedulerBundle/Resources/config/routing.yml"
+    prefix:   /admin/
 
 app:
     resource: @AppBundle/Controller/

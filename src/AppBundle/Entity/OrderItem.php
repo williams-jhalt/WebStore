@@ -2,52 +2,31 @@
 
 namespace AppBundle\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 
-class OrderItem {
+/**
+ * @ORM\Entity() 
+ */
+class OrderItem extends BaseItem {
 
-    private $lineNumber;
-    private $itemNumber;
-    private $name;
-    private $orderedQuantity;
+    /**
+     * @ORM\ManyToOne(targetEntity="Order", inversedBy="items")
+     * @ORM\JoinColumn(name="order_id", referencedColumnName="id")
+     * */
+    private $order;
 
-    public function getName() {
-        return $this->name;
+    public function getOrder() {
+        return $this->order;
     }
 
-    public function setName($name) {
-        $this->name = $name;
-        return $this;
-    }
-
-    public function getLineNumber() {
-        return $this->lineNumber;
-    }
-
-    public function getItemNumber() {
-        return $this->itemNumber;
-    }
-
-    public function getOrderedQuantity() {
-        return $this->orderedQuantity;
-    }
-
-    public function setLineNumber($lineNumber) {
-        $this->lineNumber = $lineNumber;
-        return $this;
-    }
-
-    public function setItemNumber($itemNumber) {
-        $this->itemNumber = $itemNumber;
-        return $this;
-    }
-
-    public function setOrderedQuantity($orderedQuantity) {
-        $this->orderedQuantity = $orderedQuantity;
+    public function setOrder($order) {
+        $this->order = $order;
         return $this;
     }
 

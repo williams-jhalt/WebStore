@@ -2,6 +2,7 @@
 
 namespace AppBundle\Service;
 
+use AppBundle\Entity\Order;
 use AppBundle\Entity\Shipment;
 use AppBundle\Entity\ShipmentItem;
 use DateTime;
@@ -35,7 +36,7 @@ class ShipmentService {
             $itemObj = new ShipmentItem();
             $itemObj->setItemNumber($item->item)
                     ->setLineNumber($item->line)
-                    ->setOrderedQuantity($item->q_ord);
+                    ->setQuantityShipped($item->q_comm);
             $items[] = $itemObj;
         }
 
@@ -44,8 +45,8 @@ class ShipmentService {
 
     private function _loadFromErp($item) {
 
-        $order = new Shipment();
-        $order->setCustomerPO($item->cu_po)
+        $shipment = new Shipment();
+        $shipment->setCustomerPO($item->cu_po)
                 ->setOpen($item->opn)
                 ->setOrderDate(new DateTime($item->ord_date))
                 ->setOrderGrossAmount($item->o_tot_gross)
@@ -63,7 +64,23 @@ class ShipmentService {
                 ->setManifestId($item->Manifest_id)
                 ->setItems($this->_loadItemsFromErp($item->order, $item->rec_seq));
 
-        return $order;
+        return $shipment;
+    }
+
+    public function findByOrder(Order $order) {
+        
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'S' AND order = '{$order->getOrderNumber()}'";
+
+        $response = $this->_erp->read($query, "*");
+
+        $shipments = array();
+
+        foreach ($response as $item) {
+            $shipments[] = $this->_loadFromErp($item);
+        }
+
+        return $shipments;
+        
     }
 
     public function findAll($offset, $limit) {
@@ -72,13 +89,13 @@ class ShipmentService {
 
         $response = $this->_erp->read($query, "*", $offset, $limit);
 
-        $orders = array();
+        $shipments = array();
 
         foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
+            $shipments[] = $this->_loadFromErp($item);
         }
 
-        return $orders;
+        return $shipments;
     }
 
     public function findBySearchTerms($searchTerms, $offset, $limit) {
@@ -87,13 +104,13 @@ class ShipmentService {
 
         $response = $this->_erp->read($query, "*", $offset, $limit);
 
-        $orders = array();
+        $shipments = array();
 
         foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
+            $shipments[] = $this->_loadFromErp($item);
         }
 
-        return $orders;
+        return $shipments;
     }
 
     public function findByCustomerNumber($customerNumber, $offset, $limit) {
@@ -115,13 +132,13 @@ class ShipmentService {
 
         $response = $this->_erp->read($query, "*", $offset, $limit);
 
-        $orders = array();
+        $shipments = array();
 
         foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
+            $shipments[] = $this->_loadFromErp($item);
         }
 
-        return $orders;
+        return $shipments;
     }
 
     public function findByCustomerNumberAndSearchTerms($customerNumber, $searchTerms, $offset, $limit) {
@@ -143,18 +160,18 @@ class ShipmentService {
 
         $response = $this->_erp->read($query, "*", $offset, $limit);
 
-        $orders = array();
+        $shipments = array();
 
         foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
+            $shipments[] = $this->_loadFromErp($item);
         }
 
-        return $orders;
+        return $shipments;
     }
 
-    public function find($orderNumber) {
+    public function find($shipmentNumber) {
 
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'S' AND order = '{$orderNumber}'";
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'S' AND shipment = '{$shipmentNumber}'";
 
         $response = $this->_erp->read($query, "*");
 

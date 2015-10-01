@@ -13,13 +13,13 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity()
  */
-class InvoiceItem extends BaseItem {
+class CreditItem extends BaseItem {
 
     /**
-     * @ORM\ManyToOne(targetEntity="Invoice", inversedBy="items")
-     * @ORM\JoinColumn(name="invoice_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="Credit", inversedBy="items")
+     * @ORM\JoinColumn(name="credit_id", referencedColumnName="id")
      * */
-    private $invoice;
+    private $credit;
 
     /**
      * @var string
@@ -31,25 +31,25 @@ class InvoiceItem extends BaseItem {
     /**
      * @var string
      *
-     * @ORM\Column(name="quantity_billed", type="integer")
+     * @ORM\Column(name="quantity_credited", type="integer")
      */
-    private $quantityBilled; // q_itd
+    private $quantityCredited; // q_comm
 
-    public function getInvoice() {
-        return $this->invoice;
-    }
-
-    public function setInvoice($invoice) {
-        $this->invoice = $invoice;
-        return $this;
+    public function getCredit() {
+        return $this->credit;
     }
 
     public function getPrice() {
         return $this->price;
     }
 
-    public function getQuantityBilled() {
-        return $this->quantityBilled;
+    public function getQuantityCredited() {
+        return $this->quantityCredited;
+    }
+
+    public function setCredit($credit) {
+        $this->credit = $credit;
+        return $this;
     }
 
     public function setPrice($price) {
@@ -57,8 +57,8 @@ class InvoiceItem extends BaseItem {
         return $this;
     }
 
-    public function setQuantityBilled($quantityBilled) {
-        $this->quantityBilled = $quantityBilled;
+    public function setQuantityCredited($quantityCredited) {
+        $this->quantityCredited = $quantityCredited;
         return $this;
     }
 

@@ -14,10 +14,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity()
  */
-class Shipment extends BaseOrder {
+class Credit extends BaseOrder {
 
     /**
-     * @ORM\ManyToOne(targetEntity="Order", inversedBy="shipments")
+     * @ORM\ManyToOne(targetEntity="Order", inversedBy="credits")
      * @ORM\JoinColumn(name="order_id", referencedColumnName="id")
      * */
     private $order;
@@ -26,23 +26,16 @@ class Shipment extends BaseOrder {
      *
      * @var ArrayCollection
      * 
-     * @ORM\OneToMany(targetEntity="ShipmentItem", mappedBy="shipment")
+     * @ORM\OneToMany(targetEntity="CreditItem", mappedBy="credit")
      */
     private $items;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="manifest_id", type="string", length=255, nullable=true)
+     * @ORM\Column(name="credit_date", type="date", nullable=true)
      */
-    private $manifestId; // Manifest_id
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="ship_date", type="date", nullable=true)
-     */
-    private $shipDate; // ship_date
+    private $creditDate; // invc_date
 
     public function __construct() {
         $this->items = new ArrayCollection();
@@ -56,6 +49,10 @@ class Shipment extends BaseOrder {
         return $this->items;
     }
 
+    public function getCreditDate() {
+        return $this->creditDate;
+    }
+
     public function setOrder($order) {
         $this->order = $order;
         return $this;
@@ -66,21 +63,8 @@ class Shipment extends BaseOrder {
         return $this;
     }
 
-    public function getManifestId() {
-        return $this->manifestId;
-    }
-
-    public function getShipDate() {
-        return $this->shipDate;
-    }
-
-    public function setManifestId($manifestId) {
-        $this->manifestId = $manifestId;
-        return $this;
-    }
-
-    public function setShipDate($shipDate) {
-        $this->shipDate = $shipDate;
+    public function setCreditDate($creditDate) {
+        $this->creditDate = $creditDate;
         return $this;
     }
 

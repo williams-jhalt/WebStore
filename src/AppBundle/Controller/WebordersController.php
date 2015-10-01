@@ -3,8 +3,8 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Weborder;
+use AppBundle\Service\OrderSearchOptions;
 use DateTime;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -30,7 +30,8 @@ class WebordersController extends Controller {
 
         return $this->render('AppBundle:Weborders:index.html.twig', array('pageOptions' => array(
                         'page' => $page,
-                        'searchTerms' => $searchTerms
+                        'searchTerms' => $searchTerms,
+            'open' => true
         )));
     }
 
@@ -63,12 +64,22 @@ class WebordersController extends Controller {
      * @Route("/ajax-view/{id}", name="weborders_ajax_view", options={"expose": true})
      */
     public function ajaxViewAction($id) {
-        
-        $service = $this->get('app.order_service');
-        
-        $order = $service->find($id);
 
         $response = new Response();
+
+        $service = $this->get('app.order_service');
+
+        $order = $service->find($id);
+        
+        $user = $this->getUser();
+        
+        if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
+            if ((array_search($order->getCustomerNumber(), $user->getCustomerNumbers())) === FALSE) {
+                $response->setStatusCode(403);
+                return $response;
+            }
+        }
+
         $engine = $this->container->get('templating');
         $response->setContent($engine->render('AppBundle:Weborders:view.html.twig', array(
                     'order' => $order
@@ -84,6 +95,7 @@ class WebordersController extends Controller {
         $page = $request->get('page', 1);
         $searchTerms = $request->get('searchTerms');
         $customerNumber = $request->get('customerNumber');
+        $openOrders = (boolean) $request->get('open', true);
         $perPage = 50;
 
         $user = $this->getUser();
@@ -92,27 +104,24 @@ class WebordersController extends Controller {
 
         $offset = (($page - 1) * $perPage);
 
+        $searchOptions = new OrderSearchOptions();
+        $searchOptions->setOpen($openOrders);
+
         if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
-            if (!empty($customerNumber)) {
-                if (!empty($searchTerms)) {
-                    $weborders = $service->findByCustomerAndSearchTerms($customerNumber, $searchTerms, $offset, $perPage);
-                } else {
-                    $weborders = $service->findByCustomer($customerNumber, $offset, $perPage);
-                }
+
+            if (empty($customerNumber)) {
+                $searchOptions->setCustomerNumber($user->getCustomerNumbers());
             } else {
-                if (!empty($searchTerms)) {
-                    $weborders = $service->findByCustomerNumbersAndSearchTerms($user->getCustomerNumbers(), $searchTerms, $offset, $perPage);
-                } else {
-                    $weborders = $service->findByCustomerNumbers($user->getCustomerNumbers(), $offset, $perPage);
-                }
+                $searchOptions->setCustomerNumber($customerNumber);
             }
         } elseif ($this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+
             if (!empty($searchTerms)) {
-                $weborders = $service->findBySearchTerms($searchTerms, $offset, $perPage);
-            } else {
-                $weborders = $service->findAll($offset, $perPage);
+                $searchOptions->setSearchTerms($searchTerms);
             }
         }
+
+        $weborders = $service->findBySearchOptions($searchOptions, $offset, $perPage);
 
         if ($request->isXmlHttpRequest()) {
             $response = new Response();

@@ -13,11 +13,11 @@
             <div class="col-sm-2">
                 {% if product.productAttachment %}
                     <div class="zoom" id="zoom-{{product.productAttachment.id}}">
-                        <img src="{{ image(product.productAttachment.absolutePath).resize(100,100) }}" alt="image">
+                        <img src="{{ image(product.productAttachment.path).resize(100,100) }}" alt="image">
                     </div>
                     <script>
                         $(document).ready(function () {
-                            $('#zoom-{{product.productAttachment.id}}').zoom({url: '{{ image(product.productAttachment.absolutePath).resize(300,300) }}'});
+                            $('#zoom-{{product.productAttachment.id}}').zoom({url: '{{ image(product.productAttachment.path).resize(300,300) }}'});
                         });
                     </script>
                 {% else %}
