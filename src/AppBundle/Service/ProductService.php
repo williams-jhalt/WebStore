@@ -148,7 +148,7 @@ class ProductService {
 
         $response = $this->_erp->read(
                 "FOR EACH item NO-LOCK "
-                . "WHERE company_it = '{$this->_company}' AND web_item = yes AND sy_lookup MATCHES(*'{$searchTerms}*')", "*", $offset, $limit
+                . "WHERE company_it = '{$this->_company}' AND web_item = yes AND sy_lookup MATCHES '*{$searchTerms}*'", "*", $offset, $limit
         );
 
         $products = array();
