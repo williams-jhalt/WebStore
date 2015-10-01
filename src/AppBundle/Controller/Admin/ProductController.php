@@ -38,10 +38,13 @@ class ProductController extends Controller {
 
             $response = new Response();
             $engine = $this->container->get('templating');
-            $nextPage = $this->generateUrl('admin_product_list', array(
-                'searchTerms' => $searchTerms,
-                'page' => $page + 1
-            ));
+            $nextPage = null;
+            if (!empty($products)) {
+                $nextPage = $this->generateUrl('admin_product_list', array(
+                    'searchTerms' => $searchTerms,
+                    'page' => $page + 1
+                ));
+            }
             $response->setContent($engine->render('AppBundle:Admin/Product:list.html.twig', array('products' => $products, 'nextPage' => $nextPage)));
             return $response;
         } else {
