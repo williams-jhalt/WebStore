@@ -44,8 +44,10 @@ class ProductController extends Controller {
                     'searchTerms' => $searchTerms,
                     'page' => $page + 1
                 ));
+                $response->setContent($engine->render('AppBundle:Admin/Product:list.html.twig', array('products' => $products, 'nextPage' => $nextPage)));
+            } else {
+                $response->setContent("<p>NO MORE RECORDS</p>");
             }
-            $response->setContent($engine->render('AppBundle:Admin/Product:list.html.twig', array('products' => $products, 'nextPage' => $nextPage)));
             return $response;
         } else {
 

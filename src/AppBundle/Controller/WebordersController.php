@@ -96,7 +96,7 @@ class WebordersController extends Controller {
         $searchTerms = $request->get('searchTerms');
         $customerNumber = $request->get('customerNumber');
         $openOrders = (boolean) $request->get('open', true);
-        $perPage = 50;
+        $perPage = 25;
 
         $user = $this->getUser();
 
