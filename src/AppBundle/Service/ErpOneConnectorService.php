@@ -90,6 +90,7 @@ class ErpOneConnectorService {
         curl_close($ch);
 
         if (isset($response->_errors)) {
+            $this->_cache->delete('erp_token');
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
         }
 
