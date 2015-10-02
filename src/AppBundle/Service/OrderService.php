@@ -64,9 +64,9 @@ class OrderService {
 
         $items = new ArrayCollection();
 
-        $query = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'S' AND order = '{$orderNumber}' AND rec_seq = '{$recordSequence}'";
+        $query = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'C' AND order = '{$orderNumber}' AND rec_seq = '{$recordSequence}'";
 
-        $response = $this->_erp->read($query, "*");
+        $response = $this->_erp->read($query, "item,line,descr,q_ord,q_comm,order,req_seq");
 
         foreach ($response as $item) {
 
@@ -142,7 +142,7 @@ class OrderService {
 
         $query = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'S' AND order = '{$orderNumber}' AND rec_seq = '{$recordSequence}'";
 
-        $response = $this->_erp->read($query, "*");
+        $response = $this->_erp->read($query, "item,line,descr,q_ord,q_comm,order,rec_seq");
 
         foreach ($response as $item) {
 
@@ -219,7 +219,7 @@ class OrderService {
 
         $query = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND order = '{$orderNumber}' AND rec_seq = '{$recordSequence}'";
 
-        $response = $this->_erp->read($query, "*");
+        $response = $this->_erp->read($query, "item,line,descr,q_itd,q_ord,price,order,rec_seq");
 
         foreach ($response as $item) {
 
@@ -299,7 +299,7 @@ class OrderService {
 
         $query = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order = '{$orderNumber}' AND rec_seq = '{$recordSequence}'";
 
-        $response = $this->_erp->read($query, "*");
+        $response = $this->_erp->read($query, "item,line,descr,q_ord,order,rec_seq");
 
         foreach ($response as $item) {
             $itemObj = $rep->findOneBy(array('orderNumber' => $item->order, 'recordSequence' => $item->rec_seq, 'lineNumber' => $item->line));
@@ -373,7 +373,7 @@ class OrderService {
 
         $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'C' AND order = '{$order->getOrderNumber()}'";
 
-        $response = $this->_erp->read($query, "*");
+        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat");
 
         $credits = new ArrayCollection();
 
@@ -388,7 +388,7 @@ class OrderService {
 
         $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'I' AND order = '{$order->getOrderNumber()}'";
 
-        $response = $this->_erp->read($query, "*");
+        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,invc_date,invoice,customer,stat");
 
         $invoices = new ArrayCollection();
 
@@ -403,7 +403,7 @@ class OrderService {
 
         $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'S' AND order = '{$order->getOrderNumber()}'";
 
-        $response = $this->_erp->read($query, "*");
+        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,Manifest_id");
 
         $shipments = new ArrayCollection();
 
@@ -421,7 +421,7 @@ class OrderService {
                 . "WHERE company_oe = '{$this->_company}' "
                 . "AND rec_type = 'S' "
                 . "AND order = '{$order->getOrderNumber()}' "
-                . "AND NOT ( tracking_no BEGINS 'Verify' ) ", "*"
+                . "AND NOT ( tracking_no BEGINS 'Verify' ) ", "Manifest_id,order,rec_seq,tracking_no,pkg_chg"
         );
 
         $packages = new ArrayCollection();
@@ -472,7 +472,7 @@ class OrderService {
 
         $query .= " USE-INDEX order_d";
 
-        $response = $this->_erp->read($query, "*", $offset, $limit);
+        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext", $offset, $limit);
 
         $orders = array();
 

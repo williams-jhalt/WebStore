@@ -67,7 +67,7 @@ class ProductAttachmentService {
 
                 if ($product !== null) {
 
-                    $path = "http://images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']];
+                    $path = "http://s3.amazonaws.com/images.williams-trading.com/product_images/" . $product->getSku() . "/" . $row[$mapping['filename']];
                     $attachment = $repository->findOneBy(array('product' => $product, 'path' => $path));
                     
                     if ($attachment === null) {
