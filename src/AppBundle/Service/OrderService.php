@@ -66,7 +66,7 @@ class OrderService {
 
         $query = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'C' AND order = '{$orderNumber}' AND rec_seq = '{$recordSequence}'";
 
-        $response = $this->_erp->read($query, "item,line,descr,q_ord,q_comm,order,req_seq");
+        $response = $this->_erp->read($query, "item,line,descr,q_ord,q_comm,order,rec_seq");
 
         foreach ($response as $item) {
 
