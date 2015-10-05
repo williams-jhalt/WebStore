@@ -542,9 +542,11 @@ class OrderService {
             try {
                 $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order = '{$order->getOrderNumber()}'";
                 $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
-                $this->_loadFromErp($response[0]);
+                foreach ($response as $item) {
+                    $this->_loadFromErp($item);
+                }
                 $output->writeln("Order {$order->getOrderNumber()} updated");
-            } catch (ErpOneException $e) {
+            } catch (Exception $e) {
                 $output->writeln("Could not find order {$order->getOrderNumber()}");
             }
             
