@@ -337,7 +337,7 @@ class OrderService {
         } elseif (!$order->getOpen() || $order->getUpdatedOn() > $now->sub(new DateInterval('PT15M'))) {
             return $order;
         }
-        
+
         $order->setCustomerPO($item->cu_po)
                 ->setOpen($item->opn)
                 ->setOrderDate(new DateTime($item->ord_date))
@@ -502,77 +502,6 @@ class OrderService {
         return $orders;
     }
 
-    public function findBySearchTerms($searchTerms, $offset, $limit) {
-
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND sy_lookup MATCHES '*{$searchTerms}*' USE-INDEX order_d";
-
-        $response = $this->_erp->read($query, "*", $offset, $limit);
-
-        $orders = array();
-
-        foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
-        }
-
-        return $orders;
-    }
-
-    public function findByCustomerNumber($customerNumber, $offset, $limit) {
-
-        if (is_array($customerNumber)) {
-            $customerNumberWhere = " (";
-            for ($i = 0; $i < length($customerNumber); $i++) {
-                $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
-                if ($i < (length($customerNumber) - 1)) {
-                    $customerNumberWhere .= " OR ";
-                }
-            }
-            $customerNumberWhere .= ") ";
-        } else {
-            $customerNumberWhere = " customer = '{$customerNumber}' ";
-        }
-
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND {$customerNumberWhere} USE-INDEX order_d";
-
-        $response = $this->_erp->read($query, "*", $offset, $limit);
-
-        $orders = array();
-
-        foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
-        }
-
-        return $orders;
-    }
-
-    public function findByCustomerNumberAndSearchTerms($customerNumber, $searchTerms, $offset, $limit) {
-
-        if (is_array($customerNumber)) {
-            $customerNumberWhere = " (";
-            for ($i = 0; $i < length($customerNumber); $i++) {
-                $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
-                if ($i < (length($customerNumber) - 1)) {
-                    $customerNumberWhere .= " OR ";
-                }
-            }
-            $customerNumberWhere .= ") ";
-        } else {
-            $customerNumberWhere = " customer = '{$customerNumber}' ";
-        }
-
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND sy_lookup MATCHES '*{$searchTerms}*' AND {$customerNumberWhere} USE-INDEX order_d";
-
-        $response = $this->_erp->read($query, "*", $offset, $limit);
-
-        $orders = array();
-
-        foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
-        }
-
-        return $orders;
-    }
-
     public function find($orderNumber) {
 
         $rep = $this->_em->getRepository('AppBundle:Order');
@@ -602,6 +531,28 @@ class OrderService {
 
         $rep = $this->_em->getRepository('AppBundle:Order');
 
+        $output->writeln("Refreshing current open order status...");
+
+        $openOrders = $rep->findBy(array('open' => true));
+
+        $this->_em->beginTransaction();
+
+        foreach ($openOrders as $order) {
+
+            try {
+                $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order = '{$order->getOrderNumber()}'";
+                $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
+                $this->_loadFromErp($response[0]);
+                $output->writeln("Order {$order->getOrderNumber()} updated");
+            } catch (ErpOneException $e) {
+                $output->writeln("Could not find order {$order->getOrderNumber()}");
+            }
+            
+            
+        }
+
+        $output->writeln("Finished refreshing orders");
+
         $output->writeln("Loading new records...");
 
         $latestOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
@@ -612,19 +563,18 @@ class OrderService {
 
         $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND opn = yes AND order > '{$latestOrder->getOrderNumber()}'";
 
-        $response = $this->_erp->read($query, "*");
-        
+        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
+
         $this->_em->beginTransaction();
-        
+
         foreach ($response as $item) {
             $output->writeln("Loading: {$item->order}");
             $this->_loadFromErp($item);
         }
-        
+
         $this->_em->commit();
 
         $output->writeln("New records loaded");
-        
     }
 
 }

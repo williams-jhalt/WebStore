@@ -28,10 +28,10 @@ class ProductTypeService {
      * @param type $skipFirstRow
      */
     public function importFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
+        
+        $repository = $this->_em->getRepository('AppBundle:ProductType');
 
         $i = 0;
-
-        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -43,20 +43,25 @@ class ProductTypeService {
             }
 
             if (sizeof($row) > 1) {
-
-                $productType = $this->_em->getRepository('AppBundle:ProductType')->findOrCreateByCode($row[$mapping['code']]);
+                
+                $productType = $repository->findOneByCode($row[$mapping['code']]);
+                
+                if ($productType === null) {
+                    $productType = new ProductType();
+                }
 
                 $productType->setCode($row[$mapping['code']]);
                 $productType->setName($row[$mapping['name']]);
 
                 $this->_em->persist($productType);
-                $this->_em->flush();
+                
             }
 
             $i++;
         }
-
-        $this->_em->commit();
+        
+        $this->_em->flush();
+        
     }
 
     public function exportCsv($filename) {

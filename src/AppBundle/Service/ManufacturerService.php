@@ -29,9 +29,9 @@ class ManufacturerService {
      */
     public function importFromCSV(SplFileObject $file, array $mapping, $skipFirstRow = false) {
 
-        $i = 0;
+        $repository = $this->_em->getRepository('AppBundle:Manufacturer');
 
-        $this->_em->beginTransaction();
+        $i = 0;
 
         while (!$file->eof()) {
 
@@ -44,19 +44,22 @@ class ManufacturerService {
 
             if (sizeof($row) > 1) {
 
-                $manufacturer = $this->_em->getRepository('AppBundle:Manufacturer')->findOrCreateByCode($row[$mapping['code']]);
+                $manufacturer = $repository->findOneByCode($row[$mapping['code']]);
+
+                if ($manufacturer === null) {
+                    $manufacturer = new Manufacturer();
+                }
 
                 $manufacturer->setCode($row[$mapping['code']]);
                 $manufacturer->setName($row[$mapping['name']]);
 
                 $this->_em->persist($manufacturer);
-                $this->_em->flush();
             }
 
             $i++;
         }
 
-        $this->_em->commit();
+        $this->_em->flush();
     }
 
     public function exportCsv($filename) {

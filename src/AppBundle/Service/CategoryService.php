@@ -31,8 +31,6 @@ class CategoryService {
         $i = 0;
         
         $repository = $this->_em->getRepository('AppBundle:Category');
-        
-        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -45,25 +43,46 @@ class CategoryService {
 
             if (sizeof($row) > 1) {
 
-                $category = $repository->findOrCreateByCode($row[$mapping['code']]);
+                $category = $repository->findOneByCode($row[$mapping['code']]);
+                
+                if ($category === null) {
+                    $category = new Category();
+                }
 
                 $category->setCode($row[$mapping['code']]);
                 $category->setName($row[$mapping['name']]);
                 
                 if ($row[$mapping['parent']] != 0) {
-                    $category->setParent($repository->findOrCreateByCode($row[$mapping['parent']]));
+                    
+                    $parent = $repository->findOneByCode($row[$mapping['parent']]);
+                    
+                    if ($parent === null) {
+                        
+                        $parent = new Category();
+                        
+                        $parent->setCode($row[$mapping['parent']]);
+                        $parent->setName($row[$mapping['parent']]);
+                        
+                        $this->_em->persist($parent);
+                        
+                    }
+                    
+                    $category->setParent($parent);
+                    
                 } else {
+                    
                     $category->setParent(null);
+                    
                 }
 
                 $this->_em->persist($category);
-                $this->_em->flush();
+                
             }
 
             $i++;
         }
         
-        $this->_em->commit();
+        $this->_em->flush();
         
     }
     
