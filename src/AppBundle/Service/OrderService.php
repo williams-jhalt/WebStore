@@ -15,6 +15,7 @@ use DateInterval;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
+use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /*
