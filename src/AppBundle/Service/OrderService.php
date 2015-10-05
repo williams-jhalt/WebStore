@@ -439,50 +439,68 @@ class OrderService {
 
     public function findBySearchOptions(OrderSearchOptions $searchOptions, $offset, $limit) {
 
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O'";
+        if ($searchOptions->getSearchTerms() === null) {
 
-        if ($searchOptions->getOpen() !== null) {
-            if ($searchOptions->getOpen() === false) {
-                $query .= " AND opn = no";
-            } else {
-                $query .= " AND opn = yes";
+            $rep = $this->_em->getRepository('AppBundle:Order');
+
+            $params = array();
+
+            if ($searchOptions->getOpen() !== null) {
+                $params['open'] = $searchOptions->getOpen();
             }
-        }
 
-        if ($searchOptions->getCustomerNumber() !== null) {
-            $customerNumber = $searchOptions->getCustomerNumber();
-            if (is_array($customerNumber)) {
-                $customerNumberWhere = " AND (";
-                for ($i = 0; $i < sizeof($customerNumber); $i++) {
-                    $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
-                    if ($i < (sizeof($customerNumber) - 1)) {
-                        $customerNumberWhere .= " OR ";
-                    }
+            if ($searchOptions->getCustomerNumber() !== null) {
+                $params['customerNumber'] = $searchOptions->getCustomerNumber();
+            }
+
+            $orders = $rep->findBy($params, array('orderNumber' => 'DESC'), $limit, $offset);
+        } else {
+
+            $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O'";
+
+            if ($searchOptions->getOpen() !== null) {
+                if ($searchOptions->getOpen() === false) {
+                    $query .= " AND opn = no";
+                } else {
+                    $query .= " AND opn = yes";
                 }
-                $customerNumberWhere .= ") ";
-            } else {
-                $customerNumberWhere = " AND customer = '{$customerNumber}' ";
             }
-            $query .= $customerNumberWhere;
+
+            if ($searchOptions->getCustomerNumber() !== null) {
+                $customerNumber = $searchOptions->getCustomerNumber();
+                if (is_array($customerNumber)) {
+                    $customerNumberWhere = " AND (";
+                    for ($i = 0; $i < sizeof($customerNumber); $i++) {
+                        $customerNumberWhere .= " customer = '{$customerNumber[$i]}' ";
+                        if ($i < (sizeof($customerNumber) - 1)) {
+                            $customerNumberWhere .= " OR ";
+                        }
+                    }
+                    $customerNumberWhere .= ") ";
+                } else {
+                    $customerNumberWhere = " AND customer = '{$customerNumber}' ";
+                }
+                $query .= $customerNumberWhere;
+            }
+
+            if ($searchOptions->getSearchTerms() !== null) {
+                $query .= " AND sy_lookup MATCHES '*{$searchOptions->getSearchTerms()}*'";
+            }
+
+            $query .= " USE-INDEX order_d";
+
+            $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext", $offset, $limit);
+
+            $orders = array();
+
+            $this->_em->beginTransaction();
+
+            foreach ($response as $item) {
+                $orders[] = $this->_loadFromErp($item);
+            }
+
+            $this->_em->commit();
         }
-
-        if ($searchOptions->getSearchTerms() !== null) {
-            $query .= " AND sy_lookup MATCHES '*{$searchOptions->getSearchTerms()}*'";
-        }
-
-        $query .= " USE-INDEX order_d";
-
-        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext", $offset, $limit);
-
-        $orders = array();
-
-        $this->_em->beginTransaction();
-
-        foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
-        }
-
-        $this->_em->commit();
 
         return $orders;
     }
@@ -541,8 +559,8 @@ class OrderService {
         $timeCheck->sub(new DateInterval('PT15M'));
 
         foreach ($openOrders as $order) {
-            
-            if ($order->getUpdatedOn() > $timeCheck) {                
+
+            if ($order->getUpdatedOn() > $timeCheck) {
                 continue;
             }
 
