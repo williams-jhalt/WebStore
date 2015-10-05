@@ -537,7 +537,14 @@ class OrderService {
 
         $this->_em->beginTransaction();
 
+        $timeCheck = new DateTime();
+        $timeCheck->sub(new DateInterval('PT15M'));
+
         foreach ($openOrders as $order) {
+            
+            if ($order->getUpdatedOn() > $timeCheck) {                
+                continue;
+            }
 
             try {
                 $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order = '{$order->getOrderNumber()}'";
@@ -549,8 +556,6 @@ class OrderService {
             } catch (Exception $e) {
                 $output->writeln("Could not find order {$order->getOrderNumber()}");
             }
-            
-            
         }
 
         $output->writeln("Finished refreshing orders");
