@@ -2,7 +2,7 @@
 
 namespace AppBundle\Command;
 
-use DateTime;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
