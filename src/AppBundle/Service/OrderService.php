@@ -550,31 +550,22 @@ class OrderService {
 
         $rep = $this->_em->getRepository('AppBundle:Order');
 
-        $output->writeln("Refreshing current open order status...");
+        $output->writeln("Refreshing current open order status...");        
 
-        $openOrders = $rep->findBy(array('open' => true));
+        $oldestOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
 
         $this->_em->beginTransaction();
 
         $timeCheck = new DateTime();
-        $timeCheck->sub(new DateInterval('PT15M'));
+        $timeCheck->sub(new DateInterval('PT15M'));        
 
-        foreach ($openOrders as $order) {
+        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order > '{$oldestOpenOrder->getOrderNumber()}'";
 
-            if ($order->getUpdatedOn() > $timeCheck) {
-                continue;
-            }
+        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
 
-            try {
-                $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order = '{$order->getOrderNumber()}'";
-                $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
-                foreach ($response as $item) {
-                    $this->_loadFromErp($item);
-                }
-                $output->writeln("Order {$order->getOrderNumber()} updated");
-            } catch (Exception $e) {
-                $output->writeln("Could not find order {$order->getOrderNumber()}");
-            }
+        foreach ($response as $item) {
+            $output->writeln("Updating: {$item->order}");
+            $this->_loadFromErp($item);
         }
 
         $output->writeln("Finished refreshing orders");
