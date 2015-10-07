@@ -554,8 +554,6 @@ class OrderService {
 
         $oldestOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
 
-        $this->_em->beginTransaction();
-
         $timeCheck = new DateTime();
         $timeCheck->sub(new DateInterval('PT15M'));        
 
