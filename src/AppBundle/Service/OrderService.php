@@ -363,8 +363,7 @@ class OrderService {
         $order->setShipments($this->_findShipments($order));
         $order->setInvoices($this->_findInvoices($order));
         $order->setCredits($this->_findCredits($order));
-
-        $this->_em->persist($order);
+        
         $this->_em->flush();
 
         return $order;
