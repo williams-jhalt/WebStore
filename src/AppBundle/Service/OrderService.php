@@ -550,7 +550,7 @@ class OrderService {
 
         $rep = $this->_em->getRepository('AppBundle:Order');
 
-        $output->writeln("Refreshing current open order status...");        
+        $output->writeln("Refreshing current open order status and fetching new orders...");        
 
         $oldestOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
 
@@ -562,36 +562,18 @@ class OrderService {
         $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order > '{$oldestOpenOrder->getOrderNumber()}'";
 
         $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
+        
+        $count = sizeof($response);
+        
+        $output->writeln("There are {$count} orders to be imported...");
 
         foreach ($response as $item) {
-            $output->writeln("Updating: {$item->order}");
+            $output->write(".");
             $this->_loadFromErp($item);
         }
 
         $output->writeln("Finished refreshing orders");
-
-        $output->writeln("Loading new records...");
-
-        $latestOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
-
-        if ($latestOrder === null) {
-            $output->writeln("There must be at least one record loaded into the database before this task can be run");
-        }
-
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND opn = yes AND order > '{$latestOrder->getOrderNumber()}'";
-
-        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
-
-        $this->_em->beginTransaction();
-
-        foreach ($response as $item) {
-            $output->writeln("Loading: {$item->order}");
-            $this->_loadFromErp($item);
-        }
-
-        $this->_em->commit();
-
-        $output->writeln("New records loaded");
+        
     }
 
 }
