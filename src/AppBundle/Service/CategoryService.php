@@ -2,7 +2,6 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Category;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
 
@@ -32,6 +31,8 @@ class CategoryService {
         $i = 0;
         
         $repository = $this->_em->getRepository('AppBundle:Category');
+        
+        $this->_em->beginTransaction();
 
         while (!$file->eof()) {
 
@@ -44,48 +45,25 @@ class CategoryService {
 
             if (sizeof($row) > 1) {
 
-                $category = $repository->findOneByCode($row[$mapping['code']]);
-                
-                if ($category === null) {
-                    $category = new Category();
-                }
+                $category = $repository->findOrCreateByCode($row[$mapping['code']]);
 
                 $category->setCode($row[$mapping['code']]);
                 $category->setName($row[$mapping['name']]);
                 
                 if ($row[$mapping['parent']] != 0) {
-                    
-                    $parent = $repository->findOneByCode($row[$mapping['parent']]);
-                    
-                    if ($parent === null) {
-                        
-                        $parent = new Category();
-                        
-                        $parent->setCode($row[$mapping['parent']]);
-                        $parent->setName($row[$mapping['parent']]);
-                        
-                        $this->_em->persist($parent);
-        
-                        $this->_em->flush();
-                        
-                    }
-                    
-                    $category->setParent($parent);
-                    
+                    $category->setParent($repository->findOrCreateByCode($row[$mapping['parent']]));
                 } else {
-                    
                     $category->setParent(null);
-                    
                 }
 
                 $this->_em->persist($category);
-                
+                $this->_em->flush();
             }
 
             $i++;
         }
         
-        $this->_em->flush();
+        $this->_em->commit();
         
     }
     
