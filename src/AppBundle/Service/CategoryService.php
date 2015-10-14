@@ -65,6 +65,8 @@ class CategoryService {
                         $parent->setName($row[$mapping['parent']]);
                         
                         $this->_em->persist($parent);
+        
+                        $this->_em->flush();
                         
                     }
                     
