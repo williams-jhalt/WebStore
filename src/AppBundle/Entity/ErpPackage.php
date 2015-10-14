@@ -5,44 +5,29 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="package")
+ * @ORM\Table(name="erp_package")
  * @ORM\Entity()
  */
-class Package {
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="SalesOrder", inversedBy="items")
-     * @ORM\JoinColumn(name="sales_order_id", referencedColumnName="id")
-     * */
-    private $salesOrder;
+class ErpPackage {
 
     /**
      * @var string
      *
-     * @ORM\Column(name="order_number", type="string", length=255)
+     * @ORM\Id @ORM\Column(name="order_number", type="string", length=255)
      */
     private $orderNumber; // order
 
     /**
      * @var string
      *
-     * @ORM\Column(name="record_sequence", type="string", length=255)
+     * @ORM\Id @ORM\Column(name="record_sequence", type="string", length=255)
      */
     private $recordSequence; // rec_seq
 
     /**
      * @var string
      *
-     * @ORM\Column(name="tracking_number", type="string", length=255)
+     * @ORM\Id @ORM\Column(name="tracking_number", type="string", length=255)
      */
     private $trackingNumber; // tracking_no
 
@@ -94,13 +79,11 @@ class Package {
      * @ORM\Column(name="width", type="decimal", nullable=true)
      */
     private $width; // pack_width
-
-    public function getId() {
-        return $this->id;
-    }
-
-    public function getSalesOrder() {
-        return $this->salesOrder;
+    
+    public function __construct($orderNumber, $recordSequence, $trackingNumber) {
+        $this->orderNumber = $orderNumber;
+        $this->recordSequence = $recordSequence;
+        $this->trackingNumber = $trackingNumber;
     }
 
     public function getOrderNumber() {
@@ -141,16 +124,6 @@ class Package {
 
     public function getWidth() {
         return $this->width;
-    }
-
-    public function setId($id) {
-        $this->id = $id;
-        return $this;
-    }
-
-    public function setSalesOrder($salesOrder) {
-        $this->salesOrder = $salesOrder;
-        return $this;
     }
 
     public function setOrderNumber($orderNumber) {

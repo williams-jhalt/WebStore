@@ -5,10 +5,10 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="invoice_item")
+ * @ORM\Table(name="sales_order_item")
  * @ORM\Entity()
  */
-class InvoiceItem {
+class SalesOrderItem {
 
     /**
      * @var integer
@@ -20,10 +20,10 @@ class InvoiceItem {
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Invoice", inversedBy="items")
-     * @ORM\JoinColumn(name="invoice_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="SalesOrder", inversedBy="items")
+     * @ORM\JoinColumn(name="sales_order_id", referencedColumnName="id")
      * */
-    private $invoice;
+    private $salesOrder;
 
     /**
      * @var integer
@@ -60,26 +60,12 @@ class InvoiceItem {
      */
     protected $quantityOrdered; // q_ord
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="quantity_shipped", type="integer")
-     */
-    protected $quantityShipped; // q_ord
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="quantity_billed", type="integer")
-     */
-    protected $quantityBilled; // q_ord
-
     public function getId() {
         return $this->id;
     }
 
-    public function getInvoice() {
-        return $this->invoice;
+    public function getSalesOrder() {
+        return $this->salesOrder;
     }
 
     public function getLineNumber() {
@@ -98,8 +84,8 @@ class InvoiceItem {
         return $this->price;
     }
 
-    public function getQuantityBilled() {
-        return $this->quantityBilled;
+    public function getQuantityOrdered() {
+        return $this->quantityOrdered;
     }
 
     public function setId($id) {
@@ -107,8 +93,8 @@ class InvoiceItem {
         return $this;
     }
 
-    public function setInvoice($invoice) {
-        $this->invoice = $invoice;
+    public function setSalesOrder($salesOrder) {
+        $this->salesOrder = $salesOrder;
         return $this;
     }
 
@@ -132,28 +118,9 @@ class InvoiceItem {
         return $this;
     }
 
-    public function setQuantityBilled($quantityBilled) {
-        $this->quantityBilled = $quantityBilled;
-        return $this;
-    }
-    public function getQuantityOrdered() {
-        return $this->quantityOrdered;
-    }
-
-    public function getQuantityShipped() {
-        return $this->quantityShipped;
-    }
-
     public function setQuantityOrdered($quantityOrdered) {
         $this->quantityOrdered = $quantityOrdered;
         return $this;
     }
-
-    public function setQuantityShipped($quantityShipped) {
-        $this->quantityShipped = $quantityShipped;
-        return $this;
-    }
-
-
 
 }

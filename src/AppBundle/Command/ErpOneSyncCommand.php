@@ -16,11 +16,12 @@ class ErpOneSyncCommand extends ContainerAwareCommand {
 
     protected function execute(InputInterface $input, OutputInterface $output) {
 
-        $service = $this->getContainer()->get('app.order_service');
+        $service = $this->getContainer()->get('app.order_service2');
         $output->write("Beginning erp order refresh...\n");
         try {
-            $service->refreshOrders($output);
+            $service->loadFromErp($output);
         } catch (Exception $e) {
+            echo $e;
             $output->writeln("There was an error refreshing the order status");
         }
         $output->write("Finished!\n\n");

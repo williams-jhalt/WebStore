@@ -2,25 +2,14 @@
 
 namespace AppBundle\Entity;
 
-use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @ORM\Table(name="erp_order")
- * @ORM\Entity() 
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="recordType", type="string")
- * @ORM\DiscriminatorMap({"O" = "Order", "I" = "Invoice", "S" = "Shipment", "C" = "Credit"})
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\Table(name="sales_order")
+ * @ORM\Entity()
  */
-abstract class BaseOrder {
+class SalesOrder {
 
     /**
      * @var integer
@@ -29,21 +18,17 @@ abstract class BaseOrder {
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    private $id;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="order_number", type="string", length=255)
+     * @ORM\Column(name="order_number", type="string")
      */
-    protected $orderNumber; // order
+    private $orderNumber; // order
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="record_sequence", type="string", length=255)
+     * @ORM\Column(name="record_sequence", type="integer")
      */
-    protected $recordSequence; // rec_seq
+    private $recordSequence; // rec_seq
 
     /**
      * @var string
@@ -158,14 +143,37 @@ abstract class BaseOrder {
     protected $externalOrderNumber; // ord_ext
 
     /**
-     * @ORM\Column(name="created_on", type="datetime", nullable=true)
-     */
-    protected $createdOn;
+     * @ORM\OneToMany(targetEntity="SalesOrderItem", mappedBy="salesOrder", cascade={"persist", "remove"})
+     * */
+    private $items;
 
     /**
-     * @ORM\Column(name="updated_on", type="datetime", nullable=true)
-     */
-    protected $updatedOn;
+     * @ORM\OneToMany(targetEntity="Invoice", mappedBy="salesOrder", cascade={"persist", "remove"})
+     * */
+    private $invoices;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Shipment", mappedBy="salesOrder", cascade={"persist", "remove"})
+     * */
+    private $shipments;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Credit", mappedBy="salesOrder", cascade={"persist", "remove"})
+     * */
+    private $credits;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Package", mappedBy="salesOrder", cascade={"persist", "remove"})
+     * */
+    private $packages;
+
+    public function __construct() {
+        $this->items = new ArrayCollection();
+        $this->invoices = new ArrayCollection();
+        $this->shipments = new ArrayCollection();
+        $this->credits = new ArrayCollection();
+        $this->packages = new ArrayCollection();
+    }
 
     public function getId() {
         return $this->id;
@@ -243,12 +251,24 @@ abstract class BaseOrder {
         return $this->externalOrderNumber;
     }
 
-    public function getCreatedOn() {
-        return $this->createdOn;
+    public function getItems() {
+        return $this->items;
     }
 
-    public function getUpdatedOn() {
-        return $this->updatedOn;
+    public function getInvoices() {
+        return $this->invoices;
+    }
+
+    public function getShipments() {
+        return $this->shipments;
+    }
+
+    public function getCredits() {
+        return $this->credits;
+    }
+
+    public function getPackages() {
+        return $this->packages;
     }
 
     public function setId($id) {
@@ -346,29 +366,29 @@ abstract class BaseOrder {
         return $this;
     }
 
-    public function setCreatedOn($createdOn) {
-        $this->createdOn = $createdOn;
+    public function setItems($items) {
+        $this->items = $items;
         return $this;
     }
 
-    public function setUpdatedOn($updatedOn) {
-        $this->updatedOn = $updatedOn;
+    public function setInvoices($invoices) {
+        $this->invoices = $invoices;
         return $this;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function prePersist() {
-        $this->createdOn = new DateTime();
-        $this->updatedOn = new DateTime();
+    public function setShipments($shipments) {
+        $this->shipments = $shipments;
+        return $this;
     }
 
-    /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate() {
-        $this->updatedOn = new DateTime();
+    public function setCredits($credits) {
+        $this->credits = $credits;
+        return $this;
+    }
+
+    public function setPackages($packages) {
+        $this->packages = $packages;
+        return $this;
     }
 
 }

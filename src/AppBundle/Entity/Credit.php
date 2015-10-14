@@ -2,69 +2,123 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
+ * @ORM\Table(name="credit")
  * @ORM\Entity()
  */
-class Credit extends BaseOrder {
+class Credit {
 
     /**
-     * @ORM\ManyToOne(targetEntity="Order", inversedBy="credits")
-     * @ORM\JoinColumn(name="order_id", referencedColumnName="id")
-     * */
-    private $order;
-
-    /**
+     * @var integer
      *
-     * @var ArrayCollection
-     * 
-     * @ORM\OneToMany(targetEntity="CreditItem", mappedBy="credit")
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $items;
+    private $id;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="SalesOrder", inversedBy="items")
+     * @ORM\JoinColumn(name="sales_order_id", referencedColumnName="id")
+     * */
+    private $salesOrder;
+
+    /**
+     * @ORM\Column(name="order_number", type="string")
+     */
+    private $orderNumber; // order
+
+    /**
+     * @ORM\Column(name="record_sequence", type="integer")
+     */
+    private $recordSequence; // rec_seq
 
     /**
      * @var string
      *
-     * @ORM\Column(name="credit_date", type="date", nullable=true)
+     * @ORM\Column(name="open", type="boolean", nullable=true)
      */
-    private $creditDate; // invc_date
+    protected $open; // opn
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="status", type="string", length=255, nullable=true)
+     */
+    protected $status; // stat
+
+    /**
+     * @ORM\OneToMany(targetEntity="CreditItem", mappedBy="credit", cascade={"persist", "remove"})
+     * */
+    private $items;
 
     public function __construct() {
         $this->items = new ArrayCollection();
     }
 
-    public function getOrder() {
-        return $this->order;
+    public function getId() {
+        return $this->id;
+    }
+
+    public function getSalesOrder() {
+        return $this->salesOrder;
+    }
+
+    public function getOrderNumber() {
+        return $this->orderNumber;
+    }
+
+    public function getRecordSequence() {
+        return $this->recordSequence;
+    }
+
+    public function getOpen() {
+        return $this->open;
+    }
+
+    public function getStatus() {
+        return $this->status;
     }
 
     public function getItems() {
         return $this->items;
     }
 
-    public function getCreditDate() {
-        return $this->creditDate;
-    }
-
-    public function setOrder($order) {
-        $this->order = $order;
+    public function setId($id) {
+        $this->id = $id;
         return $this;
     }
 
-    public function setItems(ArrayCollection $items) {
+    public function setSalesOrder($salesOrder) {
+        $this->salesOrder = $salesOrder;
+        return $this;
+    }
+
+    public function setOrderNumber($orderNumber) {
+        $this->orderNumber = $orderNumber;
+        return $this;
+    }
+
+    public function setRecordSequence($recordSequence) {
+        $this->recordSequence = $recordSequence;
+        return $this;
+    }
+
+    public function setOpen($open) {
+        $this->open = $open;
+        return $this;
+    }
+
+    public function setStatus($status) {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function setItems($items) {
         $this->items = $items;
-        return $this;
-    }
-
-    public function setCreditDate($creditDate) {
-        $this->creditDate = $creditDate;
         return $this;
     }
 

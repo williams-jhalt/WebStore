@@ -26,6 +26,10 @@ services:
         class: AppBundle\Service\OrderService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
         
+    app.order_service2:
+        class: AppBundle\Service\OrderService2
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
+        
     app.customer_service:
         class: AppBundle\Service\CustomerService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
