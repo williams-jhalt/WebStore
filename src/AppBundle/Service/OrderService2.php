@@ -83,7 +83,7 @@ class OrderService2 {
 
         $this->_output->writeln("Loading header information...");
 
-        $fields = "*";
+        $fields = "order,rec_seq,rec_type,name,adr,state,postal_code,country_code,ship_via_code,cu_po,ord_date,opn,o_tot_gross,stat,customer,ord_ext,invoice,c_tot_code_amt,c_tot_gross,c_tot_net_ar,invc_date,Manifest_id,ship_date";
 
         $offset = 0;
         $limit = 1000;
@@ -110,7 +110,7 @@ class OrderService2 {
 
         $this->_output->writeln("Loading detail information...");
 
-        $fields = "*";
+        $fields = "order,rec_seq,line,rec_type,item,descr,price,q_ord,q_itd,q_comm";
 
         $offset = 0;
         $limit = 1000;
@@ -137,7 +137,7 @@ class OrderService2 {
 
         $this->_output->writeln("Loading package information...");
 
-        $fields = "*";
+        $fields = "order,rec_seq,tracking_no,Manifest_id,ship_via_code,pkg_chg,pack_weight,pack_height,pack_length,pack_width";
 
         $offset = 0;
         $limit = 1000;
