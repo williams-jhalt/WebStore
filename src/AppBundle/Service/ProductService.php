@@ -1,13 +1,11 @@
 <?php
 
-namespace AppBundle\Service;
-
 use AppBundle\Entity\Product;
 use AppBundle\Entity\ProductDetail;
-use DateTime;
+use AppBundle\Service\ErpOneConnectorService;
 use Doctrine\ORM\EntityManager;
-use SplFileObject;
-use XMLWriter;
+
+namespace AppBundle\Service;
 
 class ProductService {
 

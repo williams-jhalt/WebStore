@@ -2,6 +2,7 @@
 
 namespace AppBundle\Service;
 
+use AppBundle\Entity\Manufacturer;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
 
