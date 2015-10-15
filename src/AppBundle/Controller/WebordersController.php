@@ -130,6 +130,7 @@ class WebordersController extends Controller {
                 $nextPage = $this->generateUrl('weborders_ajax_list', array(
                     'searchTerms' => $searchTerms,
                     'customerNumber' => $customerNumber,
+                    'open' => $openOrders,
                     'page' => $page + 1
                 ));
                 $response->setContent($engine->render('AppBundle:Weborders:list.html.twig', array('weborders' => $weborders, 'nextPage' => $nextPage)));

@@ -16,6 +16,9 @@
         #spinner {
             display: none;
         }
+        .sidebar.affix {
+            width: 375px;
+        }
     </style>
 {% endblock %}
 
@@ -70,18 +73,20 @@
                 });
                 return false;
             });
-                        
-            $('body').on('submit', '.search-form', function(e) {
+
+            $('body').on('submit', '.search-form', function (e) {
                 pageOptions['searchTerms'] = $(".search-form input").val();
+                $('#catalogBody').text('Loading...');
                 updateCatalog();
                 e.preventDefault();
-            });     
-            
-            $('.choose-manufacturer').on('change', 'select', function(e) {
+            });
+
+            $('.choose-manufacturer').on('change', 'select', function (e) {
                 pageOptions['manufacturer'] = $(this).val();
+                $('#catalogBody').text('Loading...');
                 updateCatalog();
                 e.preventDefault();
-            });            
+            });
 
             $("body").on('submit', ".add-to-cart", function (e) {
                 $.get(this.action, $(this).serialize(), function (data) {
@@ -89,7 +94,7 @@
                 });
                 e.preventDefault();
             });
-            
+
             $("#choose-manufacturer-select").select2();
 
         });
@@ -98,7 +103,7 @@
 
 {% block body %}
 
-    <div class="col-md-3">
+    <div class="col-md-4">
 
         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
             <div class="panel panel-default">
@@ -127,7 +132,7 @@
                     <div class="panel-body">
                         <form class="choose-manufacturer" action="#" method="get">
                             <select class="form-control" name="manufacturer" id="choose-manufacturer-select">
-                                    <option value="">All Manufacturers</option>
+                                <option value="">All Manufacturers</option>
                                 {% for manufacturer in manufacturers %}
                                     <option value="{{ manufacturer.code }}">{{ manufacturer.name }}</option>
                                 {% endfor %}
@@ -137,9 +142,10 @@
                 </div>
             </div>
         </div>
+
     </div>
 
-    <div class="col-md-9">
+    <div class="col-md-8">
 
         <div class="row">
 
