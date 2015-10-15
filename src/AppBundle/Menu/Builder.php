@@ -16,7 +16,7 @@ class Builder extends ContainerAware {
         $checker = $this->container->get('security.authorization_checker');
 
         if ($checker->isGranted('ROLE_USER')) {
-            $menu->addChild('Catalog', array('route' => 'catalog_list'));
+            $menu->addChild('Catalog', array('route' => 'catalog_index'));
         }
 
         if ($checker->isGranted('ROLE_CUSTOMER')) {

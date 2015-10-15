@@ -3,6 +3,8 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('bundles/app/js/select2/select2.css') }}" rel="stylesheet">
+    <link href="{{ asset('bundles/app/js/select2/select2-bootstrap.css') }}" rel="stylesheet">
     <style type="text/css">
         .hide-overflow {
             overflow: hidden;
@@ -22,15 +24,14 @@
     <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
     <script src="{{ asset('bundles/app/js/jstree/jstree.min.js') }}"></script>
     <script src="{{ asset('bundles/app/js/zoom-master/jquery.zoom.min.js') }}"></script>
+    <script src="{{ asset('bundles/app/js/select2/select2.js') }}"></script>
     <script type="text/javascript">
         $(document).ready(function ($) {
 
-            var thread = null;
+            pageOptions = {};
 
-            pageOptions = $.parseJSON('{{ pageOptions|json_encode|raw }}');
-            
-            updateCatalog = function() {       
-                $('#catalogBody').load(Routing.generate('catalog_list', pageOptions), function(data) {
+            updateCatalog = function () {
+                $('#catalogBody').load(Routing.generate('catalog_list', pageOptions), function (data) {
                     $('#catalogBody').data('jscroll', null);
                     $('#catalogBody').jscroll({
                         loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
@@ -40,7 +41,7 @@
                     });
                 });
             };
-            
+
             $('#categoryTree').jstree({
                 "plugins": ["wholerow"],
                 'core': {
@@ -58,27 +59,30 @@
                     }
                 }
             }).on('changed.jstree', function (e, jstreeData) {
-                var categoryId = jstreeData.node.id;
-                pageOptions['categoryId'] = categoryId;
+                pageOptions['category_id'] = jstreeData.node.id;
                 $('#catalogBody').text('Loading...');
                 updateCatalog();
             });
 
             $('#catalogBody').on('click', 'a.view-product', function (e) {
-                $('.modal-body').load(Routing.generate('catalog_view', {id: e.target.dataset.id}), {}, function() {
+                $('.modal-body').load(Routing.generate('catalog_view', {id: e.target.dataset.id}), {}, function () {
                     $('#myModal').modal('show');
                 });
                 return false;
             });
-
-            $("body").on('submit', ".ajax-form", function (e) {
-                pageOptions['searchTerms'] = $("input[name='searchTerms']").val();
-                pageOptions['sortBy'] = $("select[name='sortBy']").val();
-                $('#catalogBody').text('Loading...');
+                        
+            $('body').on('submit', '.search-form', function(e) {
+                pageOptions['searchTerms'] = $(".search-form input").val();
                 updateCatalog();
                 e.preventDefault();
-            });
+            });     
             
+            $('.choose-manufacturer').on('change', 'select', function(e) {
+                pageOptions['manufacturer'] = $(this).val();
+                updateCatalog();
+                e.preventDefault();
+            });            
+
             $("body").on('submit', ".add-to-cart", function (e) {
                 $.get(this.action, $(this).serialize(), function (data) {
                     $(e.target).html(data);
@@ -86,38 +90,63 @@
                 e.preventDefault();
             });
             
-            $(".ajax-form").on('change keyup paste', ":input", function(e) {
-                clearTimeout(thread);
-                var $this = $(this);
-                thread = setTimeout(function () {
-                    $this.submit();
-                }, 500);
-            });
-            
+            $("#choose-manufacturer-select").select2();
+
         });
     </script>
 {% endblock %}
 
 {% block body %}
 
-    <div class="col-md-4">
+    <div class="col-md-3">
 
-        <div id="categoryTree" class="well well-sm hide-overflow"></div>
-
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingOne">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Browse By Category
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        <div id="categoryTree" class="hide-overflow"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingTwo">
+                    <h4 class="panel-title">
+                        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Browse by Manufacturer
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                    <div class="panel-body">
+                        <form class="choose-manufacturer" action="#" method="get">
+                            <select class="form-control" name="manufacturer" id="choose-manufacturer-select">
+                                    <option value="">All Manufacturers</option>
+                                {% for manufacturer in manufacturers %}
+                                    <option value="{{ manufacturer.code }}">{{ manufacturer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-8">
+    <div class="col-md-9">
 
         <div class="row">
 
             <div class="well well-sm">
-                <form class="ajax-form form-inline" action="#" method="get">
-                    <input class="form-control" type="text" name="searchTerms" value="{{ pageOptions['searchTerms'] }}" placeholder="Filter...">
-                    <label for="sortBy">Sort By</label>
-                    <select class="form-control" name="sortBy">
-                        <option {% if pageOptions['sortBy'] == 'sku' %}selected{% endif %} value="sku">SKU</option>
-                        <option {% if pageOptions['sortBy'] == 'name' %}selected{% endif %} value="name">Name</option>
-                    </select>
+                <form class="search-form form-inline" action="#" method="get">
+                    <input class="form-control" type="text" name="searchTerms" placeholder="Search...">
+                    <button class="btn btn-default" type="submit">Go</button>
                 </form>
             </div>
 

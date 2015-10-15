@@ -1,0 +1,105 @@
+{% extends 'AppBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
+    <style type="text/css">
+        .hide-overflow {
+            overflow: hidden;
+            -ms-text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        #spinner {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
+    <script src="{{ asset('bundles/app/js/zoom-master/jquery.zoom.min.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function ($) {
+
+            updateCatalog = function () {
+                $('#catalogBody').load(Routing.generate('catalog_list', {searchTerms: '{{searchTerms}}'}), function (data) {
+                    $('#catalogBody').data('jscroll', null);
+                    $('#catalogBody').jscroll({
+                        loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                        autoTrigger: true,
+                        padding: 20,
+                        nextSelector: 'a.jscroll-next:last'
+                    });
+                });
+            };
+
+            $('#catalogBody').on('click', 'a.view-product', function (e) {
+                $('.modal-body').load(Routing.generate('catalog_view', {id: e.target.dataset.id}), {}, function () {
+                    $('#myModal').modal('show');
+                });
+                return false;
+            });
+
+            $("body").on('submit', ".add-to-cart", function (e) {
+                $.get(this.action, $(this).serialize(), function (data) {
+                    $(e.target).html(data);
+                });
+                e.preventDefault();
+            });
+
+            updateCatalog();
+
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    
+    <div class="col-md-4">
+        
+        <div class="well well-sm">
+            <form class="ajax-form" action="#"
+        
+    </div>
+
+    <div class="col-md-8">
+
+        <div class="row">
+
+            <div class="well well-sm">
+                <form class="ajax-form form-inline" action="{{ path('catalog_search') }}" method="get">
+                    <input class="form-control" type="text" name="searchTerms" value="{{ searchTerms }}" placeholder="Search...">
+                    <button class="btn btn-default" type="submit">Go</button>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div id="catalogBody"></div>
+
+        </div>
+
+    </div>
+
+    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Product</h4>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

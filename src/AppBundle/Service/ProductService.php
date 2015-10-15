@@ -91,20 +91,20 @@ class ProductService {
 
             $qb = $repository->createQueryBuilder('p');
 
-            if (isset($params['search_terms'])) {
+            if (isset($params['search_terms']) && !empty($params['search_terms'])) {
                 $qb->andWhere('p.sku LIKE :searchTerms OR p.name LIKE :searchTerms')->setParameter('searchTerms', '%' . $params['search_terms'] . '%');
             }
 
-            if (isset($params['category_id'])) {
+            if (isset($params['category_id']) && !empty($params['category_id'])) {
                 $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $params['category_id']);
             }
 
-            if (isset($params['manufacturer'])) {
+            if (isset($params['manufacturer']) && !empty($params['manufacturer'])) {
                 $manufacturer = $this->_em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
                 $qb->andWhere('p.manufacturer = :manufacturer')->setParameter('manufacturer', $manufacturer);
             }
 
-            if (isset($params['product_line'])) {
+            if (isset($params['product_line']) && !empty($params['product_line'])) {
                 $productType = $this->_em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
                 $qb->andWhere('p.productType = :productType')->setParameter('productType', $productType);
             }
@@ -115,6 +115,7 @@ class ProductService {
             $query = $qb->getQuery();
 
             $products = $query->getResult();
+            
         } else {
 
             $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes";

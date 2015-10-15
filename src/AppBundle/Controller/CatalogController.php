@@ -17,116 +17,73 @@ use Symfony\Component\HttpFoundation\Response;
 class CatalogController extends Controller {
 
     /**
-     * @Route("/", name="catalog_list", options={"expose": true})
-     * @Cache(expires="+5 minute")
+     * @Route("/", name="catalog_index")
      */
-    public function indexAction(Request $request) {        
+    public function indexAction() {
         
-        $perPage = 10;
+        $rep = $this->getDoctrine()->getRepository('AppBundle:Manufacturer');
         
-        $page = $request->get('page', 1);
+        $manufacturers = $rep->findBy(array('showInMenu' => true), array('name' => 'ASC'));
+        
+        return $this->render('AppBundle:Catalog:index.html.twig', array(
+            'manufacturers' => $manufacturers
+        ));
+    }
+
+    /**
+     * @Route("/search", name="catalog_search")
+     */
+    public function searchAction(Request $request) {
+
         $searchTerms = $request->get('searchTerms');
-        $categoryId = $request->get('categoryId');
-        $manufacturerId = $request->get('manufacturerId');
-        $productTypeId = $request->get('productTypeId');
-        $sortBy = $request->get('sortBy', 'p.sku');
-        
-        $service = $this->get('app.product_service');        
-        
-        $options = array();
-        
-        if ($manufacturerId) {
-            $options['manufacturer'] = $this->getDoctrine()->getRepository('AppBundle:Manufacturer')->find($manufacturerId)->getCode();
-        }
-        
-        if ($productTypeId) {
-            $options['product_line'] = $this->getDoctrine()->getRepository('AppBundle:ProductType')->find($productTypeId)->getCode();
-        }
-        
-        if ($categoryId) {
-            $options['category_id'] = $this->getDoctrine()->getRepository('AppBundle:Category')->find($categoryId)->getId();
-        }
-        
-        if ($searchTerms) {
-            $options['search_terms'] = $searchTerms;
-        }
-        
+
+        return $this->render('AppBundle:Catalog:search.html.twig', array('searchTerms' => $searchTerms));
+    }
+
+    /**
+     * @Route("/list", name="catalog_list", options={"expose": true})
+     */
+    public function listAction(Request $request) {
+
+        $category = $request->get('category_id', null);
+        $manufacturer = $request->get('manufacturer', null);
+        $type = $request->get('type', null);
+        $searchTerms = $request->get('searchTerms', null);
+        $page = $request->get('page', 1);
+
+        $perPage = 10;
+
+        $service = $this->get('app.product_service');
+
+        $options = array(
+            'category_id' => $category,
+            'manufacturer' => $manufacturer,
+            'product_line' => $type,
+            'search_terms' => $searchTerms
+        );
+
         $products = $service->findBy($options, (($page - 1) * $perPage), $perPage);
 
         $params = array(
             'products' => $products,
-            'pageOptions' => array(
-                'searchTerms' => $searchTerms,
-                'categoryId' => $categoryId,
-                'manufacturerId' => $manufacturerId,
-                'productTypeId' => $productTypeId,
-                'sortBy' => $sortBy,
-                'page' => $page
-            )
+            'category_id' => $category,
+            'manufacturer' => $manufacturer,
+            'type' => $type,
+            'searchTerms' => $searchTerms,
+            'page' => $page
         );
 
-        if ($request->isXmlHttpRequest()) {
-            $response = new Response();
-            $engine = $this->container->get('templating');
-            if (!empty($products)) {
-                $params['nextPage'] = $this->generateUrl('catalog_list', array(
-                    'searchTerms' => $searchTerms,
-                    'categoryId' => $categoryId,
-                    'manufacturerId' => $manufacturerId,
-                    'productTypeId' => $productTypeId,
-                    'sortBy' => $sortBy,
-                    'page' => $page + 1
-                ));
-            }
-            $response->setContent($engine->render('AppBundle:Catalog:list.html.twig', $params));
-            return $response;
-        } else {            
-            return $this->render('AppBundle:Catalog:index.html.twig', $params);
-        }
-    }
-
-    public function getFiltersAction() {
-
-        if ($categoryId || $productTypeId) {
-            $qb = $this->getDoctrine()->getRepository("AppBundle:Manufacturer")
-                    ->createQueryBuilder('m')
-                    ->where('m.showInMenu = 1')
-                    ->join('m.products', 'p');
-
-            if ($categoryId) {
-                $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')
-                        ->setParameter('categoryId', $categoryId);
-            }
-
-            if ($productTypeId) {
-                $qb->join('p.productType', 't', 'WITH', 't.id = :productTypeId')
-                        ->setParameter('productTypeId', $productTypeId);
-            }
-
-            $manufacturers = $qb->getQuery()->getResult();
-        } else {
-            $manufacturers = $this->getDoctrine()->getRepository("AppBundle:Manufacturer")->findByShowInMenu(true);
+        if (!empty($products)) {
+            $params['nextPage'] = $this->generateUrl('catalog_list', array(
+                'category_id' => $category,
+                'manufacturer' => $manufacturer,
+                'type' => $type,
+                'searchTerms' => $searchTerms,
+                'page' => $page + 1
+            ));
         }
 
-        if ($categoryId || $manufacturerId) {
-            $qb = $this->getDoctrine()->getRepository("AppBundle:ProductType")
-                    ->createQueryBuilder('t')
-                    ->where('t.showInMenu = 1')
-                    ->join('t.products', 'p');
-
-            if ($categoryId) {
-                $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')
-                        ->setParameter('categoryId', $categoryId);
-            }
-
-            if ($manufacturerId) {
-                $qb->join('p.manufacturer', 'm', 'WITH', 'm.id = :manufacturerId')
-                        ->setParameter('manufacturerId', $manufacturerId);
-            }
-            $productTypes = $qb->getQuery()->getResult();
-        } else {
-            $productTypes = $this->getDoctrine()->getRepository("AppBundle:ProductType")->findByShowInMenu(true);
-        }
+        return $this->render('AppBundle:Catalog:list.html.twig', $params);
     }
 
     /**
@@ -167,59 +124,33 @@ class CatalogController extends Controller {
     }
 
     /**
-     * @Route("/search", name="catalog_search")
-     * @Template("AppBundle:Catalog:search.html.twig")
-     */
-    public function searchAction(Request $request) {
-
-        $page = $request->get('page', 1);
-        $searchTerms = $request->get('searchTerms');
-
-        $repository = $this->getDoctrine()->getRepository("AppBundle:Product");
-
-        $qb = $repository->createQueryBuilder('p')
-                ->where('p.name LIKE :searchTerms AND p.shown = 1')
-                ->setParameter('searchTerms', "%{$searchTerms}%");
-
-        $paginator = $this->get('knp_paginator');
-
-        $pagination = $paginator->paginate(
-                $qb->getQuery(), $page, 25
-        );
-
-        return array('pagination' => $pagination);
-    }
-
-    /**
      * @Route("/price/{sku}", name="catalog_item_price")
      */
     public function itemPriceAjaxAction($sku) {
-        
+
         $service = $this->get('app.product_service');
-        
+
         $data = $service->getPrice($sku);
 
         $response = new Response();
         $response->setContent(json_encode($data));
         $response->headers->set('Content-Type', 'application/json');
         return $response;
-        
     }
 
     /**
      * @Route("/stock/{sku}", name="catalog_item_stock")
      */
     public function itemStockAjaxAction($sku) {
-        
+
         $service = $this->get('app.product_service');
-        
+
         $data = $service->getStock($sku);
 
         $response = new Response();
         $response->setContent(json_encode($data));
         $response->headers->set('Content-Type', 'application/json');
         return $response;
-        
     }
 
     /**

@@ -77,7 +77,9 @@
             <tr>
                 <th>SKU</th>
                 <th>Name</th>
+                <th>Price</th>
                 <th>Quantity Ordered</th>
+                <th>Ext. Price</th>
             </tr>
         </thead>
         <tbody>
@@ -85,7 +87,9 @@
                 <tr>
                     <td>{{ item.itemNumber }}</td>
                     <td>{{ item.name }}</td>
+                    <td class="text-right">${{ item.price|number_format(2) }}</td>
                     <td class="text-right">{{ item.quantityOrdered }}</td>
+                    <td class="text-right">${{ (item.price * item.quantityOrdered)|number_format(2) }}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -100,8 +104,10 @@
                 <tr>
                     <th>SKU</th>
                     <th>Name</th>
+                    <th>Price</th>
                     <th>Quantity Ordered</th>
                     <th>Quantity Shipped</th>
+                    <th>Ext. Price</th>
                 </tr>
             </thead>
             <tbody>
@@ -109,8 +115,10 @@
                     <tr>
                         <td>{{ item.itemNumber }}</td>
                         <td>{{ item.name }}</td>
+                        <td class="text-right">${{ item.price|number_format(2) }}</td>
                         <td class="text-right">{{ item.quantityOrdered }}</td>
                         <td class="text-right">{{ item.quantityShipped }}</td>
+                        <td class="text-right">${{ (item.price * item.quantityShipped)|number_format(2) }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -134,26 +142,17 @@
                 </tr>
             </thead>
             <tbody>
-                {% set total = 0 %}
                 {% for item in invoice.items %}
-                    {% set extPrice = (item.price * item.quantityBilled) %}
-                    {% set total = total + extPrice %}
                     <tr>
                         <td>{{ item.itemNumber }}</td>
                         <td>{{ item.name }}</td>
                         <td class="text-right">{{ item.quantityOrdered }}</td>
                         <td class="text-right">${{ item.price|number_format(2) }}</td>
                         <td class="text-right">{{ item.quantityBilled }}</td>
-                        <td class="text-right">${{ extPrice|number_format(2) }}</td>
+                        <td class="text-right">${{ (item.price * item.quantityBilled)|number_format(2) }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="5" class="text-right">Total:</td>
-                    <td class="text-right">${{ total|number_format(2) }}</td>
-                </tr>
-            </tfoot>
         </table>
 
     {% endfor %}
