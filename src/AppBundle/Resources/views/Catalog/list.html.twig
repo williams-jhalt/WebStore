@@ -17,7 +17,7 @@
                     </div>
                     <script>
                         $(document).ready(function () {
-                            $('#zoom-{{product.productAttachment.id}}').zoom({url: '{{ path('display_product_image', {path: product.productAttachment.path, width: 300, height: 300}) }}'});
+                            $('#zoom-{{product.productAttachment.id}}').zoom({url: '{{ path('display_product_image', {path: product.productAttachment.path, width: 300, height: 300})|raw }}'});
                         });
                     </script>
                 {% else %}

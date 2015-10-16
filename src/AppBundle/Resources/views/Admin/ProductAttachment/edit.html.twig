@@ -4,7 +4,7 @@
 
     {{ include('AppBundle:Admin/ProductAttachment:nav.html.twig') }}
     
-    <img src="{{ image(productAttachment.path).resize(80,80) }}">
+    <img src="{{ path('display_product_image', {path: productAttachment.path, width: 80, height: 80}) }}">
 
     {{ form(form) }}
 
