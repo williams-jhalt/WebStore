@@ -132,6 +132,12 @@ knp_gaufrette:
             local:
                 directory: '%kernel.root_dir%/../web/media'
                 create: true
+        media_s3:
+            aws_s3:
+                service_id: 'aws.s3'
+                bucket_name: 'webstore-williams-trading'
+                options:
+                    create: true
     filesystems:
         media:
             adapter: media_local

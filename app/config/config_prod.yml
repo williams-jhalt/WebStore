@@ -28,18 +28,6 @@ monolog:
             type:  console
             
 knp_gaufrette:
-    adapters:
-        product_images_adapter:
-            aws_s3:
-                service_id: 'aws.s3'
-                bucket_name: 'webstore-williams-trading'
-                options:
-                    create: true
-                    directory: 'product_images'
-        user_downloads_adapter:
-            aws_s3:
-                service_id: 'aws.s3'
-                bucket_name: 'webstore-williams-trading'
-                options:
-                    create: true
-                    directory: 'user_downloads'
+    filesystems:
+        media:
+            adapter: media_s3
