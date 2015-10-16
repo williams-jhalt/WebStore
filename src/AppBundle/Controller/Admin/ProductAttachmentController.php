@@ -91,7 +91,9 @@ class ProductAttachmentController extends Controller {
 
             $attachment->setProduct($product);
             
-            $attachment->upload();
+            $service = $this->get('app.product_attachment_service');
+            
+            $service->upload($attachment);
 
             $em->persist($attachment);
             $em->flush();
@@ -144,6 +146,7 @@ class ProductAttachmentController extends Controller {
         $em = $this->getDoctrine()->getManager();
         $em->remove($product);
         $em->flush();
+        
         return $this->redirectToRoute('admin_product_attachment_list', $request->query->all());
     }
 

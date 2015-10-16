@@ -2,10 +2,13 @@
 
 namespace AppBundle\Service;
 
+use AppBundle\Entity\Manufacturer;
 use AppBundle\Entity\Product;
 use AppBundle\Entity\ProductDetail;
+use AppBundle\Entity\ProductType;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
+use Symfony\Component\Console\Output\OutputInterface;
 use XMLWriter;
 
 class ProductService {
@@ -26,8 +29,51 @@ class ProductService {
         $this->_erp = $erp;
         $this->_company = $company;
     }
+    
+    private function _loadFromErp2($item) {
+        
+        $prep = $this->_em->getRepository('AppBundle:Product');
+        $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
+        $trep = $this->_em->getRepository('AppBundle:ProductType');
+        
+        $manufacturer = $mrep->findOneByCode($item->manufacturer);
+        
+        if ($manufacturer === null) {
+            $manufacturer = new Manufacturer();
+            $manufacturer->setCode($item->manufacturer);
+            $manufacturer->setName($item->manufacturer);
+            $manufacturer->setShowInMenu(true);
+            $this->_em->persist($manufacturer);
+            $this->_em->flush($manufacturer);
+        }
+        
+        $type = $trep->findOneByCode($item->product_line);
+        
+        if ($type === null) {
+            $type = new ProductType();
+            $type->setCode($item->product_line);
+            $type->setName($item->product_line);
+            $type->setShowInMenu(true);
+            $this->_em->persist($type);
+            $this->_em->flush($type);
+        }
+        
+        $product = $prep->findOneBySku($item->item);
+        
+        if ($product === null) {
+            $product = new Product();
+            $product->setSku($item->item);
+        }
+        
+        $product->setName(implode(" ", $item->descr));
+        $product->setManufacturer($manufacturer);
+        $product->setProductType($type);
+        
+        $this->_em->persist($product);        
+        
+    }
 
-    public function _loadFromErp($item) {
+    private function _loadFromErp($item) {
 
         $repository = $this->_em->getRepository('AppBundle:Product');
         $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
@@ -37,7 +83,7 @@ class ProductService {
                     'sku' => $item->item,
                     'name' => $item->descr[0] . " " . $item->descr[1],
                     'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
-                    'productType' => $trep->findOrCreateByCode($item->manufacturer)
+                    'productType' => $trep->findOrCreateByCode($item->product_line)
         ));
     }
 
@@ -83,65 +129,37 @@ class ProductService {
      */
     public function findBy(array $params, $offset = 0, $limit = 100) {
 
-        $products = null;
+        $repository = $this->_em->getRepository("AppBundle:Product");
 
-        if (isset($params['search_terms']) || isset($params['category_id'])) {
+        $qb = $repository->createQueryBuilder('p');
 
-            $repository = $this->_em->getRepository("AppBundle:Product");
-
-            $qb = $repository->createQueryBuilder('p');
-
-            if (isset($params['search_terms']) && !empty($params['search_terms'])) {
-                $qb->andWhere('p.sku LIKE :searchTerms OR p.name LIKE :searchTerms')->setParameter('searchTerms', '%' . $params['search_terms'] . '%');
-            }
-
-            if (isset($params['category_id']) && !empty($params['category_id'])) {
-                $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $params['category_id']);
-            }
-
-            if (isset($params['manufacturer']) && !empty($params['manufacturer'])) {
-                $manufacturer = $this->_em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
-                $qb->andWhere('p.manufacturer = :manufacturer')->setParameter('manufacturer', $manufacturer);
-            }
-
-            if (isset($params['product_line']) && !empty($params['product_line'])) {
-                $productType = $this->_em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
-                $qb->andWhere('p.productType = :productType')->setParameter('productType', $productType);
-            }
-
-            $qb->setFirstResult($offset);
-            $qb->setMaxResults($limit);
-
-            $query = $qb->getQuery();
-
-            $products = $query->getResult();
-            
-        } else {
-
-            $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes";
-
-            if (isset($params['manufacturer'])) {
-                $query .= " AND manufacturer = '{$params['manufacturer']}'";
-            }
-
-            if (isset($params['product_line'])) {
-                $query .= " AND product_line = '{$params['product_line']}'";
-            }
-
-            $response = $this->_erp->read($query, "*", $offset, $limit);
-
-            $products = array();
-
-            $this->_em->beginTransaction();
-
-            foreach ($response as $item) {
-                $products[] = $this->_loadFromErp($item);
-            }
-
-            $this->_em->commit();
+        if (isset($params['search_terms']) && !empty($params['search_terms'])) {
+            $qb->andWhere('p.sku LIKE :searchTerms OR p.name LIKE :searchTerms')->setParameter('searchTerms', '%' . $params['search_terms'] . '%');
         }
 
+        if (isset($params['category_id']) && !empty($params['category_id'])) {
+            $qb->join('p.categories', 'c', 'WITH', 'c.id = :categoryId')->setParameter('categoryId', $params['category_id']);
+        }
+
+        if (isset($params['manufacturer']) && !empty($params['manufacturer'])) {
+            $manufacturer = $this->_em->getRepository("AppBundle:Manufacturer")->findOneByCode($params['manufacturer']);
+            $qb->andWhere('p.manufacturer = :manufacturer')->setParameter('manufacturer', $manufacturer);
+        }
+
+        if (isset($params['product_line']) && !empty($params['product_line'])) {
+            $productType = $this->_em->getRepository("AppBundle:ProductType")->findOneByCode($params['product_line']);
+            $qb->andWhere('p.productType = :productType')->setParameter('productType', $productType);
+        }
+
+        $qb->setFirstResult($offset);
+        $qb->setMaxResults($limit);
+
+        $query = $qb->getQuery();
+
+        $products = $query->getResult();
+
         return $products;
+        
     }
 
     public function findBySearchTerms($searchTerms, $offset = 0, $limit = 100) {
@@ -165,16 +183,10 @@ class ProductService {
     }
 
     public function get($itemNumber) {
-
-        $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes AND item = '{$itemNumber}'";
-
-        $response = $this->_erp->read($query);
-
-        if (sizeof($response) == 0) {
-            return null;
-        }
-
-        $product = $this->_loadFromErp($response[0]);
+        
+        $rep = $this->_em->getRepository('AppBundle:Product');
+        
+        $product = $rep->findOneBy(array('sku' => $itemNumber));
 
         return $product;
     }
@@ -671,6 +683,31 @@ class ProductService {
 
             $file->fputcsv($data);
         }
+    }
+    
+    public function loadFromErp(OutputInterface $output) {
+        
+        $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes";
+        
+        $batch = 0;
+        $batchSize = 1000;
+        
+        do {
+            
+            $result = $this->_erp->read($query, "*", $batch, $batchSize);
+            
+            foreach ($result as $item) {
+                $this->_loadFromErp2($item);
+            }
+            
+            $batch += $batchSize;
+            
+            $output->writeln("Loaded {$batch} items");
+            
+            $this->_em->flush();
+            
+        } while (!empty($result));
+        
     }
 
 }

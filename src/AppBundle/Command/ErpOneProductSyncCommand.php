@@ -7,24 +7,25 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ErpOneSyncCommand extends ContainerAwareCommand {
+class ErpOneProductSyncCommand extends ContainerAwareCommand {
 
     protected function configure() {
-        $this->setName('app:erpone:refresh')
+        $this->setName('app:erpone:product_sync')
                 ->setDescription('Refresh open orders and load new records');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
 
-        $service = $this->getContainer()->get('app.order_service2');
-        $output->write("Beginning erp order refresh...\n");
+        $service = $this->getContainer()->get('app.product_service');
+        $output->write("Beginning erp product refresh...\n");
         try {
             $service->loadFromErp($output);
         } catch (Exception $e) {
             echo $e;
-            $output->writeln("There was an error refreshing the order status");
+            $output->writeln("There was an error refreshing the product status");
         }
         $output->write("Finished!\n\n");
+        
     }
 
 }

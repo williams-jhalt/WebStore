@@ -101,6 +101,9 @@ class OrderService2 {
             $this->_em->flush();
 
             $offset = $offset + $limit;
+            
+            $this->_output->writeln("Loaded {$offset} items");
+            
         } while (!empty($response));
 
         $this->_output->writeln("\nHeader information loaded!");
@@ -127,6 +130,9 @@ class OrderService2 {
             $this->_em->flush();
 
             $offset = $offset + $limit;
+            
+            $this->_output->writeln("Loaded {$offset} items");
+            
         } while (!empty($response));
 
 

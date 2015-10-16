@@ -19,14 +19,10 @@ class ProductAttachmentService {
     public function upload(ProductAttachment $productAttachment) {
 
         if ($productAttachment->getFile() !== null) {
-            $loc = $this->_storageLocation . DIRECTORY_SEPARATOR . $productAttachment->getProduct()->getSku();
-            if (!file_exists($loc)) {
-                mkdir($loc, 0777, true);
-            }
-            $filename = hash_file("md5", $productAttachment->getProduct()->getSku() . ":" . $productAttachment->getFile()->getClientOriginalName()) . "." . $productAttachment->getFile()->getExtension();
-            $productAttachment->getFile()->move($loc, $filename);
-            $productAttachment->setPath($loc . DIRECTORY_SEPARATOR . $filename);
-            $productAttachment->setFile(null);
+            $loc = $this->_storageLocation . '/' . $productAttachment->getProduct()->getSku();
+            $filename = hash_file("md5", $productAttachment->getFile()->getRealPath()) . "." . $productAttachment->getFile()->getClientOriginalExtension();
+            move_uploaded_file($productAttachment->getFile()->getRealPath(), $loc . '/' . $filename);
+            $productAttachment->setPath($loc . '/' . $filename);
             $this->_em->persist($productAttachment);
             $this->_em->flush();
         }

@@ -29,6 +29,8 @@ class AppKernel extends Kernel {
             new Doctrine\Bundle\DoctrineCacheBundle\DoctrineCacheBundle(),
 //            new Snc\RedisBundle\SncRedisBundle(),
             new JMose\CommandSchedulerBundle\JMoseCommandSchedulerBundle(),
+            new \Aws\Symfony\AwsBundle(),
+            new Knp\Bundle\GaufretteBundle\KnpGaufretteBundle()
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
