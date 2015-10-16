@@ -15,6 +15,7 @@
 /web/cache/*
 /web/components/*
 /web/uploads/*
+/web/media/*
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
