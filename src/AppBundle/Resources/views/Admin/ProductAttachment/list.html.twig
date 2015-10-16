@@ -31,7 +31,7 @@
         <tbody>
             {% for attachment in pagination %}
                 <tr>
-                    <td><a href="{{ path('admin_product_attachment_edit', app.request.query.all|merge({id: attachment.id})) }}"><img src="{{ image(attachment.path).resize(100,100) }}"></a></td>
+                    <td><a href="{{ path('admin_product_attachment_edit', app.request.query.all|merge({id: attachment.id})) }}"><img src="{{ path('display_product_image', {path: attachment.path, width: 100, height: 100}) }}"></a></td>
                     <td>{{ attachment.product.sku }}</td>
                     <td class="text-center"><input class="toggleExplicit" type="checkbox" value="{{ attachment.id }}" {% if attachment.explicit %}checked{% endif %}></td>
                     <td>

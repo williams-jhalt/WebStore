@@ -49,5 +49,23 @@ class DefaultController extends Controller {
 
         return $response;
     }
+    
+    /**
+     * @Route("/display_product_image/{path}/{width}/{height}", name="display_product_image")
+     */
+    public function displayProductImage($path, $width, $height) {
+        
+        $response = new Response();
+        
+        $data = $this->get('image.handling')->open($path)
+                ->resize($width, $height)
+                ->get('jpg');
+        
+        $response->headers->set('Content-Type', 'image/jpeg');
+        $response->setContent($data);
+        
+        return $response;
+        
+    }
 
 }

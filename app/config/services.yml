@@ -36,7 +36,7 @@ services:
     
     app.product_attachment_service:
         class: AppBundle\Service\ProductAttachmentService
-        arguments: ["@doctrine.orm.entity_manager", 'gaufrette://media']
+        arguments: ["@doctrine.orm.entity_manager", 'gaufrette://media/product_attachments']
     
     app.category_service:
         class: AppBundle\Service\CategoryService
