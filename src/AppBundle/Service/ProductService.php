@@ -694,7 +694,7 @@ class ProductService {
         
         do {
             
-            $result = $this->_erp->read($query, "*", $batch, $batchSize);
+            $result = $this->_erp->read($query, "item,manufacturer,product_line,descr", $batch, $batchSize);
             
             foreach ($result as $item) {
                 $this->_loadFromErp2($item);

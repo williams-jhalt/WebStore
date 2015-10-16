@@ -35,3 +35,7 @@ knp_gaufrette:
     filesystems:
         media:
             adapter: media_s3
+            
+gregwar_image:
+    cache_dir: 'gaufrette://media/image_cache'
+    web_dir: 'http://webstore-williams-trading.s3.amazonaws.com/image_cache'
