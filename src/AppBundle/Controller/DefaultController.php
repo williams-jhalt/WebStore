@@ -51,9 +51,13 @@ class DefaultController extends Controller {
     }
     
     /**
-     * @Route("/display_product_image/{path}/{width}/{height}", name="display_product_image")
+     * @Route("/display_product_image", name="display_product_image")
      */
-    public function displayProductImage($path, $width, $height) {
+    public function displayProductImage(Request $request) {
+        
+        $path = $request->get('path');
+        $width = $request->get('width');
+        $height = $request->get('height');
         
         $response = new Response();
         
