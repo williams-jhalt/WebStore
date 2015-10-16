@@ -27,6 +27,10 @@ monolog:
         console:
             type:  console
             
+aws:
+    version: latest
+    region: us-east-1    
+            
 knp_gaufrette:
     filesystems:
         media:
