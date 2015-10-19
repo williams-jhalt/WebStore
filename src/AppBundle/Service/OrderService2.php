@@ -54,7 +54,7 @@ class OrderService2 {
 
         $rep = $this->_em->getRepository('AppBundle:ErpOrder');
 
-        $firstOpenOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
+        $firstOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
 
         if ($firstOpenOrder === null) {
 
@@ -276,6 +276,8 @@ class OrderService2 {
 
             if ($so === null) {
                 $so = new SalesOrder();
+            } elseif (!$so->getOpen()) {
+                continue;
             }
 
             $so->setOrderNumber($t->getOrderNumber())
@@ -357,6 +359,8 @@ class OrderService2 {
 
             if ($invoice === null) {
                 $invoice = new Invoice();
+            } elseif (!$invoice->getOpen()) {
+                continue;
             }
 
             $invoice->setOrderNumber($t->getOrderNumber())
@@ -409,6 +413,8 @@ class OrderService2 {
 
             if ($shipment === null) {
                 $shipment = new Shipment();
+            } elseif (!$shipment->getOpen()) {
+                continue;
             }
 
             $shipment->setOrderNumber($t->getOrderNumber())
@@ -460,6 +466,8 @@ class OrderService2 {
 
             if ($credit === null) {
                 $credit = new Credit();
+            } elseif (!$credit->getOpen()) {
+                continue;
             }
 
             $credit->setOrderNumber($t->getOrderNumber())
