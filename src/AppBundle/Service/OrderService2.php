@@ -54,20 +54,20 @@ class OrderService2 {
 
         $rep = $this->_em->getRepository('AppBundle:ErpOrder');
 
-        $firstOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
+        $firstOpenOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
 
         if ($firstOpenOrder === null) {
 
-            // if this is a new database, only get the last 15 days of open orders
-            $firstRecentOpenOrderRes = $this->_erp->read("FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND opn = yes AND order > 0 AND INTERVAL(NOW, ord_date, 'days') < 15", "order", 0, 1);
+            // if this is a new database, only get the last 5 days of open orders
+            $firstRecentOpenOrderRes = $this->_erp->read("FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND opn = yes AND order > 0 AND INTERVAL(NOW, ord_date, 'days') < 5", "order", 0, 1);
 
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND opn = yes AND order > {$firstRecentOpenOrderRes[0]->order}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND opn = yes AND order > {$firstRecentOpenOrderRes[0]->order}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstRecentOpenOrderRes[0]->order}";
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
         } else {
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND AND order > {$firstOpenOrder->getOrderNumber()}";
         }
 
         $this->_output = $output;
