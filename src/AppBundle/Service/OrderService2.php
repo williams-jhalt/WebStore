@@ -175,6 +175,8 @@ class OrderService2 {
 
         if ($order === null) {
             $order = new ErpOrder($row->order, $row->rec_seq, $row->rec_type);
+        } elseif (!$order->getOpen()) {
+            return;
         }
 
         $order->setShipToName($row->name)
@@ -213,16 +215,16 @@ class OrderService2 {
 
         if ($item === null) {
             $item = new ErpItem($row->order, $row->rec_seq, $row->line, $row->rec_type);
+
+            $item->setItemNumber($row->item)
+                    ->setName(implode(" ", $row->descr))
+                    ->setPrice($row->price)
+                    ->setQuantityOrdered($row->q_ord)
+                    ->setQuantityBilled($row->q_itd)
+                    ->setQuantityShipped($row->q_comm);
+
+            $this->_em->persist($item);
         }
-
-        $item->setItemNumber($row->item)
-                ->setName(implode(" ", $row->descr))
-                ->setPrice($row->price)
-                ->setQuantityOrdered($row->q_ord)
-                ->setQuantityBilled($row->q_itd)
-                ->setQuantityShipped($row->q_comm);
-
-        $this->_em->persist($item);
     }
 
     private function _loadPackageRecord($row) {
@@ -233,17 +235,16 @@ class OrderService2 {
 
         if ($item === null) {
             $item = new ErpPackage($row->order, $row->rec_seq, $row->tracking_no);
+            $item->setManifestId($row->Manifest_id)
+                    ->setShipViaCode($row->ship_via_code)
+                    ->setPackageCharge($row->pkg_chg)
+                    ->setWeight($row->pack_weight)
+                    ->setHeight($row->pack_height)
+                    ->setLength($row->pack_length)
+                    ->setWidth($row->pack_width);
+
+            $this->_em->persist($item);
         }
-
-        $item->setManifestId($row->Manifest_id)
-                ->setShipViaCode($row->ship_via_code)
-                ->setPackageCharge($row->pkg_chg)
-                ->setWeight($row->pack_weight)
-                ->setHeight($row->pack_height)
-                ->setLength($row->pack_length)
-                ->setWidth($row->pack_width);
-
-        $this->_em->persist($item);
     }
 
     private function _generateSalesOrders() {
