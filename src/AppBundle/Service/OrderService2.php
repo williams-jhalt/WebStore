@@ -471,7 +471,7 @@ class OrderService2 {
 
             foreach ($erpItems as $x) {
 
-                $soi = $itemRep->findOneBy(array('credit' => $credit, 'lineNumber' => $t->getLineNumber()));
+                $soi = $itemRep->findOneBy(array('credit' => $credit, 'lineNumber' => $x->getLineNumber()));
 
                 if ($soi === null) {
                     $soi = new CreditItem();
