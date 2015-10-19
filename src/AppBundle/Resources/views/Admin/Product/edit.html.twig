@@ -96,7 +96,7 @@
 
         <div class="col-sm-3">
             {% for attachment in product.productAttachments %}
-                <img src="{{ web_image(attachment.path).resize(80,80) }}"><br>
+                <img src="{{ image(attachment.path).resize(80,80) }}"><br>
                 <div class="control-group">
                     <label class="control-label">Primary 
                         <input type="checkbox" 
