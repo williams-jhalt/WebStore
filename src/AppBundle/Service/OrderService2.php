@@ -67,7 +67,7 @@ class OrderService2 {
         } else {
             $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
             $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND AND order > {$firstOpenOrder->getOrderNumber()}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
         }
 
         $this->_output = $output;
