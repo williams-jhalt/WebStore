@@ -99,6 +99,7 @@ class OrderService2 {
             }
 
             $this->_em->flush();
+            $this->_em->clear();
 
             $offset = $offset + $limit;
 
@@ -127,6 +128,7 @@ class OrderService2 {
             }
 
             $this->_em->flush();
+            $this->_em->clear();
 
             $offset = $offset + $limit;
 
@@ -156,6 +158,7 @@ class OrderService2 {
             }
 
             $this->_em->flush();
+            $this->_em->clear();
 
             $offset = $offset + $limit;
         } while (!empty($response));
