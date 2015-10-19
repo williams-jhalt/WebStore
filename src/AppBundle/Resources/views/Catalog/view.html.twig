@@ -9,7 +9,7 @@
                 </div>
                 <script>
                     $(document).ready(function () {
-                        $('#zoom').zoom({url: '{{ path('display_product_image', {path: product.productAttachment.path, width: 800, height: 800})|raw }}'});
+                        $('#zoom').zoom({url: '{{ web_image(product.productAttachment.path).resize(800,800) }}'});
                         $(document).on('click', 'a.replace-image', function (e) {
                             $('#zoom img').attr('src', this.dataset.imgsrc);
                             $('#zoom').zoom({url: this.dataset.zoomsrc});
@@ -20,8 +20,8 @@
                 {% if product.productAttachments|length > 1 %}
                     <div style="padding-top:10px;">
                         {% for attachment in product.productAttachments %}
-                            <a class="replace-image" href="#" data-imgsrc="{{ path('display_product_image', {path: attachment.path, width: 300, height: 300}) }}" data-zoomsrc="{{ path('display_product_image', {path: attachment.path, width: 800, height: 800}) }}">
-                                <img src="{{ path('display_product_image', {path: attachment.path, width: 80, height: 80}) }}">
+                            <a class="replace-image" href="#" data-imgsrc="{{ web_image(attachment.path).resize(300,300) }}" data-zoomsrc="{{ web_image(attachment.path).resize(800,800) }}">
+                                <img src="{{ web_image(attachment.path).resize(80,80) }}">
                             </a>
                         {% endfor %}
                     </div>
