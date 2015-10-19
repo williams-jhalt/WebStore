@@ -334,6 +334,7 @@ class OrderService2 {
             }
         }
 
+        $this->_em->flush();
 
         $this->_output->writeln("\nDone updating sales orders");
     }
@@ -462,7 +463,7 @@ class OrderService2 {
                     ->setRecordSequence($t->getRecordSequence())
                     ->setOpen($t->getOpen())
                     ->setStatus($t->getStatus())
-                    ->setSalesOrder($credit);
+                    ->setSalesOrder($salesOrder);
 
             $erpItems = $erpItemRep->findBy(array(
                 'orderNumber' => $t->getOrderNumber(),
