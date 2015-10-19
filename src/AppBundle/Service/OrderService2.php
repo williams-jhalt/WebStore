@@ -330,6 +330,7 @@ class OrderService2 {
             $count++;
 
             if (($count % $blockSize) == 0) {
+                $this->_output->writeln("{$count} Sales Orders Updated");
                 $this->_em->flush();
             }
         }
