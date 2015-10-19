@@ -38,4 +38,4 @@ knp_gaufrette:
             
 gregwar_image:
     web_dir: "gaufrette://media/cache"
-    cache_dir: "http://webstore-williams-trading/cache"
+    cache_dir: "http://webstore-williams-trading.s3.amazonaws.com/cache"
