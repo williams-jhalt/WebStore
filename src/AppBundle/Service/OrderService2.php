@@ -101,9 +101,8 @@ class OrderService2 {
             $this->_em->flush();
 
             $offset = $offset + $limit;
-            
+
             $this->_output->writeln("Loaded {$offset} items");
-            
         } while (!empty($response));
 
         $this->_output->writeln("\nHeader information loaded!");
@@ -130,9 +129,8 @@ class OrderService2 {
             $this->_em->flush();
 
             $offset = $offset + $limit;
-            
+
             $this->_output->writeln("Loaded {$offset} items");
-            
         } while (!empty($response));
 
 
@@ -269,6 +267,9 @@ class OrderService2 {
                     ->getResult();
         }
 
+        $count = 0;
+        $blockSize = 100;
+
         foreach ($erpOrders as $t) {
 
             $so = $rep->findOneBy(array('orderNumber' => $t->getOrderNumber(), 'recordSequence' => $t->getRecordSequence()));
@@ -325,9 +326,14 @@ class OrderService2 {
             }
 
             $this->_em->persist($so);
+
+            $count++;
+
+            if (($count % $blockSize) == 0) {
+                $this->_em->flush();
+            }
         }
 
-        $this->_em->flush();
 
         $this->_output->writeln("\nDone updating sales orders");
     }
@@ -338,8 +344,6 @@ class OrderService2 {
         $erpItemRep = $this->_em->getRepository('AppBundle:ErpItem');
         $rep = $this->_em->getRepository('AppBundle:Invoice');
         $itemRep = $this->_em->getRepository('AppBundle:InvoiceItem');
-
-        $this->_output->writeln("Updating invoices for {$salesOrder->getOrderNumber()}");
 
         $erpOrders = $erpRep->findBy(array('recordType' => 'I', 'orderNumber' => $salesOrder->getOrderNumber()));
 
@@ -393,8 +397,6 @@ class OrderService2 {
         $rep = $this->_em->getRepository('AppBundle:Shipment');
         $itemRep = $this->_em->getRepository('AppBundle:ShipmentItem');
 
-        $this->_output->writeln("Updating shipments for {$salesOrder->getOrderNumber()}");
-
         $erpOrders = $erpRep->findBy(array('recordType' => 'S', 'orderNumber' => $salesOrder->getOrderNumber()));
 
         foreach ($erpOrders as $t) {
@@ -446,8 +448,6 @@ class OrderService2 {
         $rep = $this->_em->getRepository('AppBundle:Credit');
         $itemRep = $this->_em->getRepository('AppBundle:CreditItem');
 
-        $this->_output->writeln("Updating credits for {$salesOrder->getOrderNumber()}");
-
         $erpOrders = $erpRep->findBy(array('recordType' => 'C', 'orderNumber' => $salesOrder->getOrderNumber()));
 
         foreach ($erpOrders as $t) {
@@ -496,8 +496,6 @@ class OrderService2 {
 
         $erpRep = $this->_em->getRepository('AppBundle:ErpPackage');
         $rep = $this->_em->getRepository('AppBundle:Package');
-
-        $this->_output->writeln("Updating packages for {$salesOrder->getOrderNumber()}");
 
         $erpOrders = $erpRep->findBy(array('orderNumber' => $salesOrder->getOrderNumber()));
 
