@@ -268,7 +268,7 @@ class OrderService2 {
         }
 
         $count = 0;
-        $blockSize = 100;
+        $blockSize = 1000;
 
         foreach ($erpOrders as $t) {
 
@@ -332,10 +332,12 @@ class OrderService2 {
             if (($count % $blockSize) == 0) {
                 $this->_output->writeln("{$count} Sales Orders Updated");
                 $this->_em->flush();
+                $this->_em->clear();
             }
         }
 
         $this->_em->flush();
+        $this->_em->clear();
 
         $this->_output->writeln("\nDone updating sales orders");
     }
