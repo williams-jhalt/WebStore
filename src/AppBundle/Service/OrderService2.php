@@ -52,59 +52,80 @@ class OrderService2 {
 
     public function loadFromErp(OutputInterface $output) {
 
-        $this->_output = $output;
+        $rep = $this->_em->getRepository('AppBundle:ErpOrder');       
+        
 
-        $rep = $this->_em->getRepository('AppBundle:ErpOrder');
+//        $openOrders = $rep->findBy(array('open' => true), array('orderNumber' => 'ASC'));
+//
+//        $groups = array();
+//        $first = $openOrders[0]->getOrderNumber();
+//        $last = $openOrders[0]->getOrderNumber();
+//
+//        foreach ($openOrders as $o) {
+//            if ($o->getOrderNumber() > $last + 1) {
+//                $groups[] = array($first, $last);
+//                $first = $o->getOrderNumber();
+//            }
+//            $last = $o->getOrderNumber();
+//        }
+//
+//        if (empty($openOrders)) {
+//            // if this is a new database, only get the last 5 days of open orders
+//            $firstRecentOpenOrderRes = $this->_erp->read("FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND opn = yes AND order > 0 AND INTERVAL(NOW, ord_date, 'days') < 5", "order", 0, 1);
+//            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
+//            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
+//            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
+//
+//            $this->_readHeaderFromErp($headerQuery);
+//            $this->_readDetailFromErp($detailQuery);
+//            $this->_readPackageFromErp($packageQuery);
+//        } else {
+//
+//            foreach ($groups as $group) {
+//
+//                $this->_output->writeln("Reading orders {$group[0]} to {$group[1]}");
+//
+//                $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$group[0]} AND order <= {$group[1]}";
+//                $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$group[0]} AND order <= {$group[1]}";
+//                $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$group[0]} AND order <= {$group[1]}";
+//
+//                $this->_readHeaderFromErp($headerQuery);
+//                $this->_readDetailFromErp($detailQuery);
+//                $this->_readPackageFromErp($packageQuery);
+//            }
+//
+//            $this->_output->writeln("Reading new orders after {$last}");
+//
+//            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$last}";
+//            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$last}";
+//            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$last}";
+//
+//            $this->_readHeaderFromErp($headerQuery);
+//            $this->_readDetailFromErp($detailQuery);
+//            $this->_readPackageFromErp($packageQuery);
+//        }
 
-        $openOrders = $rep->findBy(array('open' => true), array('orderNumber' => 'ASC'));
+        $firstOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
 
-        $groups = array();
-        $first = $openOrders[0]->getOrderNumber();
-        $last = $openOrders[0]->getOrderNumber();
+        if ($firstOpenOrder === null) {
 
-        foreach ($openOrders as $o) {
-            if ($o->getOrderNumber() > $last + 1) {
-                $groups[] = array($first, $last);
-                $first = $o->getOrderNumber();
-            }
-            $last = $o->getOrderNumber();
-        }
-
-        if (empty($openOrders)) {
             // if this is a new database, only get the last 5 days of open orders
             $firstRecentOpenOrderRes = $this->_erp->read("FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND opn = yes AND order > 0 AND INTERVAL(NOW, ord_date, 'days') < 5", "order", 0, 1);
+
             $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
             $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
             $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
-
-            $this->_readHeaderFromErp($headerQuery);
-            $this->_readDetailFromErp($detailQuery);
-            $this->_readPackageFromErp($packageQuery);
         } else {
-
-            foreach ($groups as $group) {
-
-                $this->_output->writeln("Reading orders {$group[0]} to {$group[1]}");
-
-                $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$group[0]} AND order <= {$group[1]}";
-                $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$group[0]} AND order <= {$group[1]}";
-                $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$group[0]} AND order <= {$group[1]}";
-
-                $this->_readHeaderFromErp($headerQuery);
-                $this->_readDetailFromErp($detailQuery);
-                $this->_readPackageFromErp($packageQuery);
-            }
-
-            $this->_output->writeln("Reading new orders after {$last}");
-
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$last}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$last}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$last}";
-
-            $this->_readHeaderFromErp($headerQuery);
-            $this->_readDetailFromErp($detailQuery);
-            $this->_readPackageFromErp($packageQuery);
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
         }
+
+        $this->_output = $output;
+
+        $this->_readHeaderFromErp($headerQuery);
+        $this->_readDetailFromErp($detailQuery);
+        $this->_readPackageFromErp($packageQuery);
 
         $this->_generateSalesOrders();
     }
