@@ -105,7 +105,7 @@ class OrderService2 {
 //            $this->_readPackageFromErp($packageQuery);
 //        }
 
-        $firstOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
+        $firstOpenOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
 
         if ($firstOpenOrder === null) {
 
@@ -116,9 +116,9 @@ class OrderService2 {
             $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
             $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
         } else {
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstOpenOrder->getOrderNumber()}";
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
         }
 
         $this->_output = $output;
