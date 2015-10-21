@@ -23,7 +23,7 @@ class ErpProductSyncService {
 
     public function updateProduct(Product $product) {
 
-        $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND item = '{$product->sku}'";
+        $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND item = '{$product->getSku()}'";
 
         $result = $this->_erp->read($query, "item,manufacturer,product_line,descr");
         
@@ -33,7 +33,6 @@ class ErpProductSyncService {
         
         $item = $result[0];
 
-        $prep = $this->_em->getRepository('AppBundle:Product');
         $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
         $trep = $this->_em->getRepository('AppBundle:ProductType');
 
