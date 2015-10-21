@@ -2,21 +2,9 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Credit;
-use AppBundle\Entity\CreditItem;
-use AppBundle\Entity\Invoice;
-use AppBundle\Entity\InvoiceItem;
-use AppBundle\Entity\Order;
-use AppBundle\Entity\OrderItem;
-use AppBundle\Entity\Package;
-use AppBundle\Entity\Shipment;
-use AppBundle\Entity\ShipmentItem;
 use DateInterval;
 use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
-use Exception;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -30,13 +18,13 @@ class OrderService {
     private $_erp;
     private $_company;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp, $company) {
+    public function __construct(EntityManager $em, ErpOrderSyncService $erp, $company) {
         $this->_em = $em;
         $this->_erp = $erp;
         $this->_company = $company;
     }
 
-    public function findBySearchOptions(OrderSearchOptions $searchOptions, $offset, $limit) {
+    public function findBySearchOptions(OrderSearchOptions $searchOptions, $offset = 0, $limit = 10) {
 
         $rep = $this->_em->getRepository('AppBundle:SalesOrder');
 
@@ -52,20 +40,31 @@ class OrderService {
 
         $orders = $rep->findBy($params, array('orderNumber' => 'DESC'), $limit, $offset);
 
+        $timeAgo = new DateTime();
+        $timeAgo->sub(new DateInterval("PT15M"));
+
+        foreach ($orders as $order) {
+            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
+                $this->_erp->updateOrder($order);
+            }
+        }
+
         return $orders;
-        
     }
 
-    public function findAll($offset, $limit) {
+    public function findAll($offset = 0, $limit = 10) {
 
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' USE-INDEX order_d";
+        $rep = $this->_em->getRepository('AppBundle:SalesOrder');
 
-        $response = $this->_erp->read($query, "*", $offset, $limit);
+        $orders = $rep->findBy(array(), array('orderNumber' => 'DESC'), $limit, $offset);
 
-        $orders = array();
+        $timeAgo = new DateTime();
+        $timeAgo->sub(new DateInterval("PT15M"));
 
-        foreach ($response as $item) {
-            $orders[] = $this->_loadFromErp($item);
+        foreach ($orders as $order) {
+            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
+                $this->_erp->updateOrder($order);
+            }
         }
 
         return $orders;
@@ -75,34 +74,16 @@ class OrderService {
 
         $rep = $this->_em->getRepository('AppBundle:SalesOrder');
 
-        return $rep->findOneBy(array('orderNumber' => $orderNumber));        
-    }
+        $order = $rep->findOneBy(array('orderNumber' => $orderNumber));
 
-    public function refreshOrders(OutputInterface $output) {
+        $timeAgo = new DateTime();
+        $timeAgo->sub(new DateInterval("PT15M"));
 
-        $rep = $this->_em->getRepository('AppBundle:Order');
-
-        $output->writeln("Refreshing current open order status and fetching new orders...");
-
-        $oldestOpenOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
-
-        $timeCheck = new DateTime();
-        $timeCheck->sub(new DateInterval('PT15M'));
-
-        $query = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND rec_type = 'O' AND order > '{$oldestOpenOrder->getOrderNumber()}'";
-
-        $response = $this->_erp->read($query, "cu_po,opn,ord_date,o_tot_gross,order,rec_seq,adr,country_code,postal_code,name,customer,stat,ord_ext");
-
-        $count = sizeof($response);
-
-        $output->writeln("There are {$count} orders to be imported...");
-
-        foreach ($response as $item) {
-            $output->write(".");
-            $this->_loadFromErp($item);
+        if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
+            $this->_erp->updateOrder($order);
         }
 
-        $output->writeln("Finished refreshing orders");
+        return $order;
     }
 
 }

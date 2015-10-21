@@ -16,7 +16,7 @@ class ErpOneProductSyncCommand extends ContainerAwareCommand {
 
     protected function execute(InputInterface $input, OutputInterface $output) {
 
-        $service = $this->getContainer()->get('app.product_service');
+        $service = $this->getContainer()->get('app.product_sync_service');
         $output->write("Beginning erp product refresh...\n");
         try {
             $service->loadFromErp($output);

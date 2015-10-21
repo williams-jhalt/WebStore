@@ -2,12 +2,14 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(name="sales_order")
  * @ORM\Entity()
+ * @ORM\HasLifecycleCallbacks()
  */
 class SalesOrder {
 
@@ -141,6 +143,16 @@ class SalesOrder {
      * @ORM\Column(name="external_order_number", type="string", length=255, nullable=true)
      */
     protected $externalOrderNumber; // ord_ext
+
+    /**
+     * @ORM\Column(name="created_on", type="datetime", nullable=true)
+     */
+    protected $createdOn;
+
+    /**
+     * @ORM\Column(name="updated_on", type="datetime", nullable=true)
+     */
+    protected $updatedOn;
 
     /**
      * @ORM\OneToMany(targetEntity="SalesOrderItem", mappedBy="salesOrder", cascade={"persist", "remove"})
@@ -389,6 +401,39 @@ class SalesOrder {
     public function setPackages($packages) {
         $this->packages = $packages;
         return $this;
+    }
+
+    public function getCreatedOn() {
+        return $this->createdOn;
+    }
+
+    public function getUpdatedOn() {
+        return $this->updatedOn;
+    }
+
+    public function setCreatedOn($createdOn) {
+        $this->createdOn = $createdOn;
+        return $this;
+    }
+
+    public function setUpdatedOn($updatedOn) {
+        $this->updatedOn = $updatedOn;
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist() {
+        $this->createdOn = new DateTime();
+        $this->updatedOn = new DateTime();
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function preUpdate() {
+        $this->updatedOn = new DateTime();
     }
 
 }

@@ -2,13 +2,12 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Manufacturer;
 use AppBundle\Entity\Product;
 use AppBundle\Entity\ProductDetail;
-use AppBundle\Entity\ProductType;
+use DateInterval;
+use DateTime;
 use Doctrine\ORM\EntityManager;
 use SplFileObject;
-use Symfony\Component\Console\Output\OutputInterface;
 use XMLWriter;
 
 class ProductService {
@@ -24,67 +23,10 @@ class ProductService {
     private $_erp;
     private $_company;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp, $company) {
+    public function __construct(EntityManager $em, ErpProductSyncService $erp, $company) {
         $this->_em = $em;
         $this->_erp = $erp;
         $this->_company = $company;
-    }
-    
-    private function _loadFromErp2($item) {
-        
-        $prep = $this->_em->getRepository('AppBundle:Product');
-        $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
-        $trep = $this->_em->getRepository('AppBundle:ProductType');
-        
-        $manufacturer = $mrep->findOneByCode($item->manufacturer);
-        
-        if ($manufacturer === null) {
-            $manufacturer = new Manufacturer();
-            $manufacturer->setCode($item->manufacturer);
-            $manufacturer->setName($item->manufacturer);
-            $manufacturer->setShowInMenu(true);
-            $this->_em->persist($manufacturer);
-            $this->_em->flush($manufacturer);
-        }
-        
-        $type = $trep->findOneByCode($item->product_line);
-        
-        if ($type === null) {
-            $type = new ProductType();
-            $type->setCode($item->product_line);
-            $type->setName($item->product_line);
-            $type->setShowInMenu(true);
-            $this->_em->persist($type);
-            $this->_em->flush($type);
-        }
-        
-        $product = $prep->findOneBySku($item->item);
-        
-        if ($product === null) {
-            $product = new Product();
-            $product->setSku($item->item);
-        }
-        
-        $product->setName(implode(" ", $item->descr));
-        $product->setManufacturer($manufacturer);
-        $product->setProductType($type);
-        
-        $this->_em->persist($product);        
-        
-    }
-
-    private function _loadFromErp($item) {
-
-        $repository = $this->_em->getRepository('AppBundle:Product');
-        $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
-        $trep = $this->_em->getRepository('AppBundle:ProductType');
-
-        return $repository->findOrCreate(array(
-                    'sku' => $item->item,
-                    'name' => $item->descr[0] . " " . $item->descr[1],
-                    'manufacturer' => $mrep->findOrCreateByCode($item->manufacturer),
-                    'productType' => $trep->findOrCreateByCode($item->product_line)
-        ));
     }
 
     /**
@@ -94,22 +36,20 @@ class ProductService {
      * @param integer $limit
      * @return array
      */
-    public function findAll($offset = 0, $limit = 100) {
+    public function findAll($offset = 0, $limit = 10) {
 
-        $response = $this->_erp->read(
-                "FOR EACH item NO-LOCK "
-                . "WHERE company_it = '{$this->_company}' AND web_item = yes", "*", $offset, $limit
-        );
+        $rep = $this->_em->getRepository('AppBundle:Product');
 
-        $products = array();
+        $products = $rep->findBy(array(), array('sku' => 'ASC'), $limit, $offset);
 
-        $this->_em->beginTransaction();
+        $timeAgo = new DateTime();
+        $timeAgo->sub(new DateInterval("PT15M"));
 
-        foreach ($response as $item) {
-            $products[] = $this->_loadFromErp($item);
+        foreach ($products as $product) {
+            if ($product->getUpdatedOn() < $timeAgo) {
+                $this->_erp->updateProduct($product);
+            }
         }
-
-        $this->_em->commit();
 
         return $products;
     }
@@ -158,35 +98,30 @@ class ProductService {
 
         $products = $query->getResult();
 
-        return $products;
-        
-    }
+        $timeAgo = new DateTime();
+        $timeAgo->sub(new DateInterval("PT15M"));
 
-    public function findBySearchTerms($searchTerms, $offset = 0, $limit = 100) {
-
-        $response = $this->_erp->read(
-                "FOR EACH item NO-LOCK "
-                . "WHERE company_it = '{$this->_company}' AND web_item = yes AND sy_lookup MATCHES '*{$searchTerms}*'", "*", $offset, $limit
-        );
-
-        $products = array();
-
-        $this->_em->beginTransaction();
-
-        foreach ($response as $item) {
-            $products[] = $this->_loadFromErp($item);
+        foreach ($products as $product) {
+            if ($product->getUpdatedOn() < $timeAgo) {
+                $this->_erp->updateProduct($product);
+            }
         }
-
-        $this->_em->commit();
 
         return $products;
     }
 
     public function get($itemNumber) {
-        
+
         $rep = $this->_em->getRepository('AppBundle:Product');
-        
+
         $product = $rep->findOneBy(array('sku' => $itemNumber));
+
+        $timeAgo = new DateTime();
+        $timeAgo->sub(new DateInterval("PT15M"));
+
+        if ($product->getUpdatedOn() < $timeAgo) {
+            $this->_erp->updateProduct($product);
+        }
 
         return $product;
     }
@@ -220,34 +155,6 @@ class ProductService {
         $stock = (int) $response[0]->qty_oh;
 
         return $stock;
-    }
-
-    public function prepareSynchronizeWithErp() {
-
-        $response = $this->_erp->read("FOR EACH item NO-LOCK WHERE company_it = 'WTC' AND web_item = yes", "item");
-
-        $allSkus = array();
-
-        foreach ($response as $item) {
-            $allSkus[] = $item->item;
-        }
-
-        $rep = $this->_em->getRepository('AppBundle:Product');
-        $qb = $rep->createQueryBuilder('p')
-                ->select('p.sku')
-                ->getQuery();
-        $res = $qb->getArrayResult();
-
-        $knownSkus = array();
-
-        foreach ($res as $t) {
-            $knownSkus[] = $t['sku'];
-        }
-
-        return array(
-            'added' => array_diff($allSkus, $knownSkus),
-            'removed' => array_diff($knownSkus, $allSkus)
-        );
     }
 
     /**
@@ -683,31 +590,6 @@ class ProductService {
 
             $file->fputcsv($data);
         }
-    }
-    
-    public function loadFromErp(OutputInterface $output) {
-        
-        $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes";
-        
-        $batch = 0;
-        $batchSize = 1000;
-        
-        do {
-            
-            $result = $this->_erp->read($query, "item,manufacturer,product_line,descr", $batch, $batchSize);
-            
-            foreach ($result as $item) {
-                $this->_loadFromErp2($item);
-            }
-            
-            $batch += $batchSize;
-            
-            $output->writeln("Loaded {$batch} items");
-            
-            $this->_em->flush();
-            
-        } while (!empty($result));
-        
     }
 
 }

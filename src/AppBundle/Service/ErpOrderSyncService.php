@@ -15,10 +15,11 @@ use AppBundle\Entity\SalesOrderItem;
 use AppBundle\Entity\Shipment;
 use AppBundle\Entity\ShipmentItem;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class OrderService2 {
+class ErpOrderSyncService {
 
     /**
      *
@@ -38,22 +39,29 @@ class OrderService2 {
      */
     private $_company;
 
-    /**
-     *
-     * @var OutputInterface
-     */
-    private $_output;
-
     public function __construct(EntityManager $em, ErpOneConnectorService $erp, $company) {
         $this->_em = $em;
         $this->_erp = $erp;
         $this->_company = $company;
     }
 
+    public function updateOrder(SalesOrder $so) {
+
+        $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order = {$so->getOrderNumber()}";
+        $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order = {$so->getOrderNumber()}";
+        $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order = {$so->getOrderNumber()}";
+
+        $this->_readHeaderFromErp($headerQuery);
+        $this->_readDetailFromErp($detailQuery);
+        $this->_readPackageFromErp($packageQuery);
+
+        $this->_updateSalesOrder($so);
+    }
+
     public function loadFromErp(OutputInterface $output) {
 
-        $rep = $this->_em->getRepository('AppBundle:ErpOrder');       
-        
+        $rep = $this->_em->getRepository('AppBundle:ErpOrder');
+
 
 //        $openOrders = $rep->findBy(array('open' => true), array('orderNumber' => 'ASC'));
 //
@@ -121,8 +129,6 @@ class OrderService2 {
             $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
         }
 
-        $this->_output = $output;
-
         $this->_readHeaderFromErp($headerQuery);
         $this->_readDetailFromErp($detailQuery);
         $this->_readPackageFromErp($packageQuery);
@@ -131,8 +137,6 @@ class OrderService2 {
     }
 
     private function _readHeaderFromErp($query) {
-
-        $this->_output->writeln("Loading header information...");
 
         $fields = "order,rec_seq,rec_type,name,adr,state,postal_code,country_code,ship_via_code,cu_po,ord_date,opn,o_tot_gross,stat,customer,ord_ext,invoice,c_tot_code_amt,c_tot_gross,c_tot_net_ar,invc_date,Manifest_id,ship_date";
 
@@ -146,23 +150,15 @@ class OrderService2 {
 
             foreach ($response as $row) {
                 $this->_loadHeaderRecord($row);
-                $this->_output->write(".");
             }
 
             $this->_em->flush();
-            $this->_em->clear();
 
             $offset = $offset + $limit;
-
-            $this->_output->writeln("Loaded {$offset} items");
         } while (!empty($response));
-
-        $this->_output->writeln("\nHeader information loaded!");
     }
 
     private function _readDetailFromErp($query) {
-
-        $this->_output->writeln("Loading detail information...");
 
         $fields = "order,rec_seq,line,rec_type,item,descr,price,q_ord,q_itd,q_comm";
 
@@ -175,24 +171,15 @@ class OrderService2 {
 
             foreach ($response as $row) {
                 $this->_loadDetailRecord($row);
-                $this->_output->write(".");
             }
 
             $this->_em->flush();
-            $this->_em->clear();
 
             $offset = $offset + $limit;
-
-            $this->_output->writeln("Loaded {$offset} items");
         } while (!empty($response));
-
-
-        $this->_output->writeln("\nDetail information loaded!");
     }
 
     private function _readPackageFromErp($query) {
-
-        $this->_output->writeln("Loading package information...");
 
         $fields = "order,rec_seq,tracking_no,Manifest_id,ship_via_code,pkg_chg,pack_weight,pack_height,pack_length,pack_width";
 
@@ -205,17 +192,12 @@ class OrderService2 {
 
             foreach ($response as $row) {
                 $this->_loadPackageRecord($row);
-                $this->_output->write(".");
             }
 
             $this->_em->flush();
-            $this->_em->clear();
 
             $offset = $offset + $limit;
         } while (!empty($response));
-
-
-        $this->_output->writeln("\nDetail information loaded!");
     }
 
     private function _loadHeaderRecord($row) {
@@ -305,11 +287,9 @@ class OrderService2 {
         $rep = $this->_em->getRepository('AppBundle:SalesOrder');
         $itemRep = $this->_em->getRepository('AppBundle:SalesOrderItem');
 
-        $this->_output->writeln("Updating sales orders");
+        $lastKnownSalesOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
 
-        $firstOpenSalesOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
-
-        if ($firstOpenSalesOrder === null) {
+        if ($lastKnownSalesOrder === null) {
 
             $erpOrders = $erpRep->findBy(array('recordType' => 'O'));
         } else {
@@ -317,13 +297,15 @@ class OrderService2 {
             $erpOrders = $erpRep->createQueryBuilder('e')
                     ->where("e.recordType = 'O'")
                     ->andWhere('e.orderNumber > :orderNumber')
-                    ->setParameter('orderNumber', $firstOpenSalesOrder->getOrderNumber())
+                    ->setParameter('orderNumber', $lastKnownSalesOrder->getOrderNumber())
                     ->getQuery()
                     ->getResult();
         }
 
         $count = 0;
         $blockSize = 1000;
+
+        $salesOrders = new ArrayCollection();
 
         foreach ($erpOrders as $t) {
 
@@ -354,15 +336,17 @@ class OrderService2 {
                     ->setCustomerNumber($t->getCustomerNumber())
                     ->setExternalOrderNumber($t->getExternalOrderNumber());
 
-            $this->_generateInvoices($so);
-            $this->_generateShipments($so);
-            $this->_generateCredits($so);
-            $this->_generatePackages($so);
+            $so->setInvoices($this->_generateInvoices($so));
+            $so->setShipments($this->_generateShipments($so));
+            $so->setCredits($this->_generateCredits($so));
+            $so->setPackages($this->_generatePackages($so));
 
             $erpItems = $erpItemRep->findBy(array(
                 'orderNumber' => $t->getOrderNumber(),
                 'recordSequence' => $t->getRecordSequence(),
                 'recordType' => 'O'));
+
+            $items = new ArrayCollection();
 
             foreach ($erpItems as $x) {
 
@@ -380,23 +364,24 @@ class OrderService2 {
                         ->setSalesOrder($so);
 
                 $this->_em->persist($soi);
+
+                $items[] = $soi;
             }
 
+            $so->setItems($items);
+
             $this->_em->persist($so);
+
+            $salesOrders[] = $so;
 
             $count++;
 
             if (($count % $blockSize) == 0) {
-                $this->_output->writeln("{$count} Sales Orders Updated");
                 $this->_em->flush();
-                $this->_em->clear();
             }
         }
 
         $this->_em->flush();
-        $this->_em->clear();
-
-        $this->_output->writeln("\nDone updating sales orders");
     }
 
     private function _generateInvoices(SalesOrder $salesOrder) {
@@ -407,6 +392,8 @@ class OrderService2 {
         $itemRep = $this->_em->getRepository('AppBundle:InvoiceItem');
 
         $erpOrders = $erpRep->findBy(array('recordType' => 'I', 'orderNumber' => $salesOrder->getOrderNumber()));
+
+        $invoices = new ArrayCollection();
 
         foreach ($erpOrders as $t) {
 
@@ -429,6 +416,8 @@ class OrderService2 {
                 'recordSequence' => $t->getRecordSequence(),
                 'recordType' => 'I'));
 
+            $items = new ArrayCollection();
+
             foreach ($erpItems as $x) {
 
                 $soi = $itemRep->findOneBy(array('invoice' => $invoice, 'lineNumber' => $x->getLineNumber()));
@@ -447,10 +436,18 @@ class OrderService2 {
                         ->setInvoice($invoice);
 
                 $this->_em->persist($soi);
+
+                $items[] = $soi;
             }
 
+            $invoice->setItems($items);
+
             $this->_em->persist($invoice);
+
+            $invoices[] = $invoice;
         }
+
+        return $invoices;
     }
 
     private function _generateShipments(SalesOrder $salesOrder) {
@@ -461,6 +458,8 @@ class OrderService2 {
         $itemRep = $this->_em->getRepository('AppBundle:ShipmentItem');
 
         $erpOrders = $erpRep->findBy(array('recordType' => 'S', 'orderNumber' => $salesOrder->getOrderNumber()));
+
+        $shipments = new ArrayCollection();
 
         foreach ($erpOrders as $t) {
 
@@ -483,6 +482,8 @@ class OrderService2 {
                 'recordSequence' => $t->getRecordSequence(),
                 'recordType' => 'S'));
 
+            $items = new ArrayCollection();
+
             foreach ($erpItems as $x) {
 
                 $soi = $itemRep->findOneBy(array('shipment' => $shipment, 'lineNumber' => $x->getLineNumber()));
@@ -500,10 +501,18 @@ class OrderService2 {
                         ->setShipment($shipment);
 
                 $this->_em->persist($soi);
+
+                $items[] = $soi;
             }
 
+            $shipment->setItems($items);
+
             $this->_em->persist($shipment);
+
+            $shipments[] = $shipment;
         }
+
+        return $shipments;
     }
 
     private function _generateCredits(SalesOrder $salesOrder) {
@@ -514,6 +523,8 @@ class OrderService2 {
         $itemRep = $this->_em->getRepository('AppBundle:CreditItem');
 
         $erpOrders = $erpRep->findBy(array('recordType' => 'C', 'orderNumber' => $salesOrder->getOrderNumber()));
+
+        $credits = new ArrayCollection();
 
         foreach ($erpOrders as $t) {
 
@@ -536,6 +547,8 @@ class OrderService2 {
                 'recordSequence' => $t->getRecordSequence(),
                 'recordType' => 'C'));
 
+            $items = new ArrayCollection();
+
             foreach ($erpItems as $x) {
 
                 $soi = $itemRep->findOneBy(array('credit' => $credit, 'lineNumber' => $x->getLineNumber()));
@@ -553,10 +566,18 @@ class OrderService2 {
                         ->setCredit($credit);
 
                 $this->_em->persist($soi);
+
+                $items[] = $soi;
             }
 
+            $credit->setItems($items);
+
             $this->_em->persist($credit);
+
+            $credits[] = $credit;
         }
+
+        return $credits;
     }
 
     private function _generatePackages(SalesOrder $salesOrder) {
@@ -565,6 +586,8 @@ class OrderService2 {
         $rep = $this->_em->getRepository('AppBundle:Package');
 
         $erpOrders = $erpRep->findBy(array('orderNumber' => $salesOrder->getOrderNumber()));
+
+        $packages = new ArrayCollection();
 
         foreach ($erpOrders as $t) {
 
@@ -589,8 +612,89 @@ class OrderService2 {
                         ->setSalesOrder($salesOrder);
 
                 $this->_em->persist($package);
+
+                $packages[] = $package;
             }
         }
+
+        return $packages;
+    }
+
+    private function _updateSalesOrder(SalesOrder $so) {
+
+        $erpRep = $this->_em->getRepository('AppBundle:ErpOrder');
+        $erpItemRep = $this->_em->getRepository('AppBundle:ErpItem');
+        $itemRep = $this->_em->getRepository('AppBundle:SalesOrderItem');
+
+        $erpOrder = $erpRep->createQueryBuilder('e')
+                ->where("e.recordType = 'O'")
+                ->andWhere('e.orderNumber = :orderNumber')
+                ->andWhere('e.recordSequence = :recordSequence')
+                ->setParameter('orderNumber', $so->getOrderNumber())
+                ->setParameter('recordSequence', $so->getRecordSequence())
+                ->getQuery()
+                ->getOneOrNullResult();
+
+        if ($erpOrder === null) {
+            return;
+        }
+
+        $so->setShipToName($erpOrder->getShipToName())
+                ->setShipToAddress1($erpOrder->getShipToAddress1())
+                ->setShipToAddress2($erpOrder->getShipToAddress2())
+                ->setShipToAddress3($erpOrder->getShipToAddress3())
+                ->setShipToCity($erpOrder->getShipToCity())
+                ->setShipToState($erpOrder->getShipToState())
+                ->setShipToPostalCode($erpOrder->getShipToPostalCode())
+                ->setShipToCountryCode($erpOrder->getShipToCountryCode())
+                ->setShipViaCode($erpOrder->getShipViaCode())
+                ->setCustomerPO($erpOrder->getCustomerPO())
+                ->setOrderDate($erpOrder->getOrderDate())
+                ->setOpen($erpOrder->getOpen())
+                ->setOrderGrossAmount($erpOrder->getOrderGrossAmount())
+                ->setStatus($erpOrder->getStatus())
+                ->setCustomerNumber($erpOrder->getCustomerNumber())
+                ->setExternalOrderNumber($erpOrder->getExternalOrderNumber());
+
+        $this->_em->persist($so);
+
+        $so->setInvoices($this->_generateInvoices($so));
+        $so->setShipments($this->_generateShipments($so));
+        $so->setCredits($this->_generateCredits($so));
+        $so->setPackages($this->_generatePackages($so));
+
+        $erpItems = $erpItemRep->findBy(array(
+            'orderNumber' => $erpOrder->getOrderNumber(),
+            'recordSequence' => $erpOrder->getRecordSequence(),
+            'recordType' => 'O'));
+
+        $items = new ArrayCollection();
+
+        foreach ($erpItems as $x) {
+
+            $soi = $itemRep->findOneBy(array('salesOrder' => $so, 'lineNumber' => $x->getLineNumber()));
+
+            if ($soi === null) {
+                $soi = new SalesOrderItem();
+            }
+
+            $soi->setLineNumber($x->getLineNumber())
+                    ->setItemNumber($x->getItemNumber())
+                    ->setName($x->getName())
+                    ->setPrice($x->getPrice())
+                    ->setQuantityOrdered($x->getQuantityOrdered())
+                    ->setSalesOrder($so);
+
+            $this->_em->persist($soi);
+
+            $items[] = $soi;
+        }
+
+        $so->setItems($items);
+
+        $this->_em->persist($so);
+        
+        $this->_em->flush();
     }
 
 }

@@ -9,10 +9,18 @@ services:
         class: AppBundle\Service\ErpOneConnectorService    
         arguments: ["%erp_server%", "%erp_username%", "%erp_password%"]
     
-    # helper services
+    # helper services        
+    app.order_sync_service:
+        class: AppBundle\Service\ErpOrderSyncService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
+        
+    app.product_sync_service:
+        class: AppBundle\Service\ErpProductSyncService
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
+        
     app.product_service:
         class: AppBundle\Service\ProductService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.product_sync_service", "%erp_company%"]
     
     app.manufacturer_service:
         class: AppBundle\Service\ManufacturerService
@@ -24,11 +32,7 @@ services:
         
     app.order_service:
         class: AppBundle\Service\OrderService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
-        
-    app.order_service2:
-        class: AppBundle\Service\OrderService2
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.order_sync_service", "%erp_company%"]
         
     app.customer_service:
         class: AppBundle\Service\CustomerService

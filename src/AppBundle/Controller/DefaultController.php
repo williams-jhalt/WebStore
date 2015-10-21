@@ -15,6 +15,27 @@ class DefaultController extends Controller {
     public function indexAction() {
         return $this->render('AppBundle:Default:index.html.twig');
     }
+    
+    /**
+     * @Route("/search", name="default_search")
+     */
+    public function searchAction(Request $request) {
+        
+        $searchTerms = $request->get('searchTerms');
+        
+        $productService = $this->get('app.product_service');
+        $orderService = $this->get('app.order_service');
+        
+        $products = $productService->findBySearchTerms($searchTerms, 0, 10);
+        $orders = $orderService->findBySearchTerms($searchTerms, 0, 10);
+        
+        return $this->render('AppBundle:Default:search.html.twig', array(
+            'products' => $products,
+            'orders' => $orders,
+            'searchTerms' => $searchTerms
+        ));
+        
+    }
 
     /**
      * @Route("/display_invoice", name="display_invoice")

@@ -1,0 +1,78 @@
+{% extends 'AppBundle::layout.html.twig' %}
+
+{% block body %}
+
+    <div class="row-fluid">
+
+        <div class="col-sm-12">
+
+            <form class="form-inline" action="{{ path('default_search') }}" method="post">
+                <input class="form-control" type="text" name="searchTerms" value="{{ searchTerms }}" placeholder="Search...">
+                <button class="btn" type="submit">Go</button>
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <div class="row-fluid">
+
+        <div class="col-sm-6">
+
+            <h2>Products</h2>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item Number</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <td><a href="#viewProduct" data-id="{{ product.id }}">{{ product.sku }}</a></td>
+                            <td>{{ product.name }}</td>
+                            <td>${{ product.price|number_format(2) }}</td>
+                            <td>{{ product.stockQuantity }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <div class="col-sm-6">
+
+            <h2>Orders</h2>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Ext. Ref</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td><a href="#viewOrder" data-id="{{ order.id }}">{{ order.orderNumber }}</a></td>
+                            <td>{{ order.externalOrderNumber }}</td>
+                            <td>{{ order.orderDate|date('Y-m-d') }}</td>
+                            <td>{{ order.customerNumber }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+
+{% endblock %}

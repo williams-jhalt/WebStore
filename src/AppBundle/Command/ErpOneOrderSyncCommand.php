@@ -16,7 +16,7 @@ class ErpOneOrderSyncCommand extends ContainerAwareCommand {
 
     protected function execute(InputInterface $input, OutputInterface $output) {
 
-        $service2 = $this->getContainer()->get('app.order_service2');
+        $service2 = $this->getContainer()->get('app.order_sync_service');
         $output->write("Beginning erp order refresh...\n");
         try {
             $service2->loadFromErp($output);
