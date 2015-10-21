@@ -24,7 +24,7 @@ class ErpProductSyncService {
     public function updateProduct(Product $product) {
 
         $query = "FOR EACH item NO-LOCK WHERE "
-                . "item.company_it = '{$this->_company}' AND item.item = '{$product->getSku()}', "
+                . "item.company_it = '{$this->_company}' AND item.item = '{$product->getSku()}' AND item.web_item = yes, "
                 . "EACH wa_item NO-LOCK WHERE "
                 . "wa_item.company_it = item.company_it AND wa_item.item = item.item";
 
@@ -73,7 +73,10 @@ class ErpProductSyncService {
 
     public function loadFromErp(OutputInterface $output) {
 
-        $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND web_item = yes";
+        $query = "FOR EACH item NO-LOCK WHERE "
+                . "item.company_it = '{$this->_company}' AND item.web_item = yes, "
+                . "EACH wa_item NO-LOCK WHERE "
+                . "wa_item.company_it = item.company_it AND wa_item.item = item.item";
 
         $batch = 0;
         $batchSize = 1000;
@@ -122,11 +125,11 @@ class ErpProductSyncService {
             $this->_em->flush($type);
         }
 
-        $product = $prep->findOneBySku($item->item);
+        $product = $prep->findOneBySku($item->item_item);
 
         if ($product === null) {
             $product = new Product();
-            $product->setSku($item->item);
+            $product->setSku($item->item_item);
         }
 
         $product->setName(implode(" ", $item->item_descr));

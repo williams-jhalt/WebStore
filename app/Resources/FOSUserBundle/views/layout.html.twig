@@ -1,19 +1,41 @@
 {% extends 'AppBundle::layout.html.twig' %}
 
 {% block body %}        
-    
-    <div class="container">
-        
-        <div class="row">
-            
-            <div class="col-sm-4">
-                {% block fos_user_content %}{% endblock %}
+
+    <div class="container-fluid">
+
+
+        <div class="row-fluid">
+
+            <div class="col-sm-3">
+              {% block fos_user_content %}{% endblock %}            
             </div>
             
-            
-            <div class="col-sm-8"></div>
-            
+            <div class="col-sm-6"></div>
+
+            <div class="col-sm-3">
+
+                <p>
+                    Welcome to the <b>beta</b> for the new wholesale order management system
+                    for Williams Trading Co.
+                </p>
+
+                <p>
+                    Currently, no orders may be placed through this site, however all
+                    information displayed here is accurate and up-to-date.
+                </p>
+
+                <p>
+                    Orders will <b>not</b> display here until they have been imported into
+                    our warehouse system. This means that information about new orders 
+                    placed on the current website may not display here for several hours
+                    before they have been sent to the warehouse.
+                </p>
+
+            </div>
+
         </div>
+
     </div>
-        
+
 {% endblock %}
