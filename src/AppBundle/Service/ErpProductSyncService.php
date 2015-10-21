@@ -23,44 +23,49 @@ class ErpProductSyncService {
 
     public function updateProduct(Product $product) {
 
-        $query = "FOR EACH item NO-LOCK WHERE company_it = '{$this->_company}' AND item = '{$product->getSku()}'";
+        $query = "FOR EACH item NO-LOCK WHERE "
+                . "item.company_it = '{$this->_company}' AND item.item = '{$product->getSku()}', "
+                . "EACH wa_item NO-LOCK WHERE "
+                . "wa_item.company_it = item.company_it AND wa_item.item = item.item";
 
-        $result = $this->_erp->read($query, "item,manufacturer,product_line,descr");
-        
+        $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,wa_item.qty_oh,wa_item.list_price");
+
         if (empty($result)) {
             return;
         }
-        
+
         $item = $result[0];
 
         $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
         $trep = $this->_em->getRepository('AppBundle:ProductType');
 
-        $manufacturer = $mrep->findOneByCode($item->manufacturer);
+        $manufacturer = $mrep->findOneByCode($item->item_manufacturer);
 
         if ($manufacturer === null) {
             $manufacturer = new Manufacturer();
-            $manufacturer->setCode($item->manufacturer);
-            $manufacturer->setName($item->manufacturer);
+            $manufacturer->setCode($item->item_manufacturer);
+            $manufacturer->setName($item->item_manufacturer);
             $manufacturer->setShowInMenu(true);
             $this->_em->persist($manufacturer);
             $this->_em->flush($manufacturer);
         }
 
-        $type = $trep->findOneByCode($item->product_line);
+        $type = $trep->findOneByCode($item->item_product_line);
 
         if ($type === null) {
             $type = new ProductType();
-            $type->setCode($item->product_line);
-            $type->setName($item->product_line);
+            $type->setCode($item->item_product_line);
+            $type->setName($item->item_product_line);
             $type->setShowInMenu(true);
             $this->_em->persist($type);
             $this->_em->flush($type);
         }
 
-        $product->setName(implode(" ", $item->descr));
+        $product->setName(implode(" ", $item->item_descr));
         $product->setManufacturer($manufacturer);
         $product->setProductType($type);
+        $product->setStockQuantity($item->wa_item_qty_oh);
+        $product->setPrice($item->wa_item_list_price);
 
         $this->_em->persist($product);
         $this->_em->flush();
@@ -75,7 +80,7 @@ class ErpProductSyncService {
 
         do {
 
-            $result = $this->_erp->read($query, "item,manufacturer,product_line,descr", $batch, $batchSize);
+            $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,wa_item.qty_oh,wa_item.list_price", $batch, $batchSize);
 
             foreach ($result as $item) {
                 $this->_loadFromErp($item);
@@ -95,23 +100,23 @@ class ErpProductSyncService {
         $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
         $trep = $this->_em->getRepository('AppBundle:ProductType');
 
-        $manufacturer = $mrep->findOneByCode($item->manufacturer);
+        $manufacturer = $mrep->findOneByCode($item->item_manufacturer);
 
         if ($manufacturer === null) {
             $manufacturer = new Manufacturer();
-            $manufacturer->setCode($item->manufacturer);
-            $manufacturer->setName($item->manufacturer);
+            $manufacturer->setCode($item->item_manufacturer);
+            $manufacturer->setName($item->item_manufacturer);
             $manufacturer->setShowInMenu(true);
             $this->_em->persist($manufacturer);
             $this->_em->flush($manufacturer);
         }
 
-        $type = $trep->findOneByCode($item->product_line);
+        $type = $trep->findOneByCode($item->item_product_line);
 
         if ($type === null) {
             $type = new ProductType();
-            $type->setCode($item->product_line);
-            $type->setName($item->product_line);
+            $type->setCode($item->item_product_line);
+            $type->setName($item->item_product_line);
             $type->setShowInMenu(true);
             $this->_em->persist($type);
             $this->_em->flush($type);
@@ -124,9 +129,11 @@ class ErpProductSyncService {
             $product->setSku($item->item);
         }
 
-        $product->setName(implode(" ", $item->descr));
+        $product->setName(implode(" ", $item->item_descr));
         $product->setManufacturer($manufacturer);
         $product->setProductType($type);
+        $product->setStockQuantity($item->wa_item_qty_oh);
+        $product->setPrice($item->wa_item_list_price);
 
         $this->_em->persist($product);
     }
