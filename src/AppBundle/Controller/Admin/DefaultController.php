@@ -22,9 +22,14 @@ class DefaultController extends Controller {
         $numberOfUsers = $em->createQuery('SELECT COUNT(p) FROM AppBundle:User p')->getSingleScalarResult();
         $numberOfProductTypes = $em->createQuery('SELECT COUNT(p) FROM AppBundle:ProductType p')->getSingleScalarResult();
         $numberOfOpenOrders = $em->createQuery('SELECT COUNT(o) FROM AppBundle:SalesOrder o WHERE o.open = true')->getSingleScalarResult();
-        $ordersPerDay = $em->createQuery('SELECT COUNT(o) FROM AppBundle:SalesOrder o WHERE o.orderDate > DATE_SUB(o.orderDate, 5, \'DAY\') GROUP BY o.orderDate')->getScalarResult();
+        $ordersPerDayRes = $em->createQuery('SELECT COUNT(o) FROM AppBundle:SalesOrder o WHERE o.orderDate > DATE_SUB(o.orderDate, 5, \'DAY\') GROUP BY o.orderDate')->getScalarResult();
         
-        $avgOrdersPerDay = array_sum($ordersPerDay) / sizeof($ordersPerDay);
+        $sum = 0;
+        foreach ($ordersPerDayRes as $x) {
+            $sum += $x[1];
+        }
+        
+        $avgOrdersPerDay = round($sum / sizeof($ordersPerDayRes));
         
 
         return array(
