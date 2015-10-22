@@ -21,7 +21,7 @@ class Shipment {
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="SalesOrder", inversedBy="items")
+     * @ORM\ManyToOne(targetEntity="SalesOrder", inversedBy="shipments")
      * @ORM\JoinColumn(name="sales_order_id", referencedColumnName="id")
      * */
     private $salesOrder;

@@ -20,7 +20,7 @@ class Package {
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="SalesOrder", inversedBy="items")
+     * @ORM\ManyToOne(targetEntity="SalesOrder", inversedBy="packages")
      * @ORM\JoinColumn(name="sales_order_id", referencedColumnName="id")
      * */
     private $salesOrder;
