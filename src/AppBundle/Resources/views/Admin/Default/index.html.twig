@@ -1,9 +1,11 @@
 {% extends 'AppBundle:Admin:layout.html.twig' %}
 
 {% block admin_body %}
-    
+
     <h1>Statistics</h1>
-    
+
+    <h2>Catalog</h2>
+
     <table class="table">
         <tr>
             <td>Number of Products:</td>
@@ -21,10 +23,28 @@
             <td>Number of Product Types:</td>
             <td>{{ number_of_product_types }}</td>
         </tr>
+    </table>
+
+    <h2>Weborders</h2>
+
+    <table class="table">
+        <tr>
+            <td>Open Orders:</td>
+            <td>{{ number_of_open_orders }}</td>
+        </tr>
+        <tr>
+            <td>Avg Orders Per Day:</td>
+            <td>{{ avg_orders_per_day }}</td>
+        </tr>
+    </table>
+
+    <h2>System</h2>
+    
+    <table class="table">
         <tr>
             <td>Number of Users:</td>
             <td>{{ number_of_users }}</td>
         </tr>
     </table>
-    
+
 {% endblock %}
