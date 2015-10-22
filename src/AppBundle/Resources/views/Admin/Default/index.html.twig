@@ -6,45 +6,31 @@
 
     <h2>Catalog</h2>
 
-    <table class="table">
-        <tr>
-            <td>Number of Products:</td>
-            <td>{{ number_of_products }}</td>
-        </tr>
-        <tr>
-            <td>Number of Categories:</td>
-            <td>{{ number_of_categories }}</td>
-        </tr>
-        <tr>
-            <td>Number of Manufacturers:</td>
-            <td>{{ number_of_manufacturers }}</td>
-        </tr>
-        <tr>
-            <td>Number of Product Types:</td>
-            <td>{{ number_of_product_types }}</td>
-        </tr>
-    </table>
+    <dl class="dl-horizontal">
+        <dt>Products:</dt>
+        <dd>{{ number_of_products }}</dd>
+        <dt>Categories:</dt>
+        <dd>{{ number_of_categories }}</dd>
+        <dt>Manufacturers:</dt>
+        <dd>{{ number_of_manufacturers }}</dd>
+        <dt>Product Types:</dt>
+        <dd>{{ number_of_product_types }}</dd>
+    </dl>
 
     <h2>Weborders</h2>
 
-    <table class="table">
-        <tr>
-            <td>Open Orders:</td>
-            <td>{{ number_of_open_orders }}</td>
-        </tr>
-        <tr>
-            <td>Avg Orders Per Day:</td>
-            <td>{{ avg_orders_per_day }}</td>
-        </tr>
-    </table>
+    <dl class="dl-horizontal">
+        <dt>Open Orders:</dt>
+        <dd>{{ number_of_open_orders }}</dd>
+        <dt>Avg Orders Per Day:</dt>
+        <dd>{{ avg_orders_per_day }}</dd>
+    </dl>
 
     <h2>System</h2>
-    
-    <table class="table">
-        <tr>
-            <td>Number of Users:</td>
-            <td>{{ number_of_users }}</td>
-        </tr>
-    </table>
+
+    <dl class="dl-horizontal">
+        <dt>Number of Users:</dt>
+        <dd>{{ number_of_users }}</dd>
+    </dl>
 
 {% endblock %}
