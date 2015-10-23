@@ -36,7 +36,7 @@ class OrderService {
         }        
 
         if (isset($params['customer_numbers']) && !empty($params['customer_numbers'])) {
-            $qb->andWhere('p.customerNumbers IN :customerNumbers')->setParameter('customerNumbers', $params['customer_numbers']);
+            $qb->andWhere('p.customerNumber IN (:customerNumbers)')->setParameter('customerNumbers', $params['customer_numbers']);
         }
 
         if (isset($params['open'])) {
