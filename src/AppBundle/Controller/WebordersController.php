@@ -37,6 +37,7 @@ class WebordersController extends Controller {
 
     /**
      * @Route("/ajax-status/{orderNumber}", name="weborders_ajax_status", options={"expose": true})
+     * @Cache(expires="+15 minutes")
      */
     public function ajaxGetStatus($orderNumber) {
         
