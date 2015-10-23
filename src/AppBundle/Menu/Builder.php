@@ -223,7 +223,8 @@ class Builder extends ContainerAware {
         
         $menu = $factory->createItem("root");
         
-        $menu->addChild('List Orders', array('route' => 'weborders_index'));
+        $menu->addChild('List Orders', array('route' => 'weborders_index'));        
+        $menu->addChild('Submit Order', array('route' => 'weborders_submit'));
         
         return $menu;
         

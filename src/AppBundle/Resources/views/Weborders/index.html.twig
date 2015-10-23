@@ -72,12 +72,12 @@
 {% block weborders_body %}
 
     <div class="well well-sm">
-        <form id="searchForm" class="form-inline" action="{{ path('weborders_index') }}" method="get">
+        <form id="searchForm" class="form-inline" action="{{ path('weborders_index') }}" method="post">
             <div class="form-group">
                 <input class="form-control" type="text" placeholder="Search..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
             </div>
-            <button class="btn btn-default" type="button" name="action" value="search">Search</button>
-            <button class="btn btn-default" type="button" name="action" value="clear">Clear</button>
+            <button class="btn btn-default" type="submit" name="action" value="search">Search</button>
+            <button class="btn btn-default" type="submit" name="action" value="clear">Clear</button>
             {% if app.user.customerNumbers|length > 1 %}
                 <select class="form-control" name="customerNumber">
                     <option value="">All Accounts</option>

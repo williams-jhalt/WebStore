@@ -1,14 +1,26 @@
 {% for product in products %}
 
-    {% if product.productAttachment %}
-        <img src="{{ image(product.productAttachment.path).resize(100,100) }}" alt="image">
-    {% endif %}
+    <div class="row">
 
-    <p><a href="#viewProduct" data-id="{{ product.id }}">{{ product.sku }} - {{ product.name }}</a><br>
-        <b>Release Date</b>: {{ product.releaseDate|date('Y-m-d') }}<br>
-        <b>Price</b>: ${{ product.price|number_format(2) }}<br>
-        <b>Stock</b>: {{ product.stockQuantity }}</p>
-    
+        <div class="col-sm-3">
+
+            {% if product.productAttachment %}
+                <img src="{{ image(product.productAttachment.path).resize(100,100) }}" alt="image">
+            {% endif %}
+
+        </div>
+
+        <div class="col-sm-9">
+
+            <p><a href="#viewProduct" data-id="{{ product.id }}">{{ product.sku }} - {{ product.name }}</a><br>
+                <b>Release Date</b>: {{ product.releaseDate|date('Y-m-d') }}<br>
+                <b>Price</b>: ${{ product.price|number_format(2) }}<br>
+                <b>Stock</b>: {{ product.stockQuantity }}</p>
+
+        </div>
+
+    </div>
+
     <hr>
 
 {% endfor %}

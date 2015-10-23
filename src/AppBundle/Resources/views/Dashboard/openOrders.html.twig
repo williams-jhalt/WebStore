@@ -7,11 +7,20 @@
         });
     </script>
 
-    <p><a href="#viewOrder" data-id="{{ order.id }}">{{ order.orderNumber }}</a><br>
-        <b>Status</b>: <span id="status_{{ order.id }}"><img src="{{ asset('image/ajax-loader-line.gif') }}"></span><br>
-        <b>Order Date</b>: {{ order.orderDate|date('Y-m-d') }}<br>
-        {% if order.externalOrderNumber is not empty %}<b>Ext. Ref</b>: {{ order.externalOrderNumber }}{% endif %}<br>
-        {% if order.customerPO is not empty %}<b>Cust. PO</b>: {{ order.customerPO }}{% endif %}</p>
+    <div class="row">
+
+        <div class="col-sm-12">
+
+            <a href="#viewOrder" data-id="{{ order.orderNumber }}">{{ order.orderNumber }}</a><br>
+            <b>Status</b>: <span id="status_{{ order.id }}"><img src="{{ asset('image/ajax-loader-line.gif') }}"></span><br>
+            <b>Order Date</b>: {{ order.orderDate|date('Y-m-d') }}<br>
+            <b>Customer</b>: {{ order.customerNumber }}<br>
+            {% if order.externalOrderNumber is not empty %}<b>Ext. Ref</b>: {{ order.externalOrderNumber }}{% endif %}<br>
+            {% if order.customerPO is not empty %}<b>Cust. PO</b>: {{ order.customerPO }}{% endif %}
+
+        </div>
+
+    </div>
 
     <hr>
 

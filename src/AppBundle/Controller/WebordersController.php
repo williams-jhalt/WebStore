@@ -32,7 +32,7 @@ class WebordersController extends Controller {
         return $this->render('AppBundle:Weborders:index.html.twig', array('pageOptions' => array(
                         'page' => $page,
                         'searchTerms' => $searchTerms,
-            'open' => true
+                        'open' => true
         )));
     }
 
@@ -41,11 +41,11 @@ class WebordersController extends Controller {
      * @Cache(expires="+15 minutes")
      */
     public function ajaxGetStatus($orderNumber) {
-        
+
         $service = $this->get('app.order_service');
-        
+
         $order = $service->find($orderNumber);
-        
+
         $status = $service->getStatusCode($order);
 
         $response = new Response();
@@ -64,9 +64,9 @@ class WebordersController extends Controller {
         $service = $this->get('app.order_service');
 
         $order = $service->find($id);
-        
+
         $user = $this->getUser();
-        
+
         if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
             if ((array_search($order->getCustomerNumber(), $user->getCustomerNumbers())) === FALSE) {
                 $response->setStatusCode(403);
@@ -87,7 +87,7 @@ class WebordersController extends Controller {
     public function ajaxListAction(Request $request) {
 
         $page = $request->get('page', 1);
-        $searchTerms = $request->get('searchTerms');
+        $searchTerms = $request->get('searchTerms', null);
         $customerNumber = $request->get('customerNumber');
         $openOrders = (boolean) $request->get('open', true);
         $perPage = 25;
@@ -98,24 +98,15 @@ class WebordersController extends Controller {
 
         $offset = (($page - 1) * $perPage);
 
-        $searchOptions = new OrderSearchOptions();
-        $searchOptions->setOpen($openOrders);
-
         if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
-
-            if (empty($customerNumber)) {
-                $searchOptions->setCustomerNumber($user->getCustomerNumbers());
-            } else {
-                $searchOptions->setCustomerNumber($customerNumber);
-            }
-        } elseif ($this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
-
-            if (!empty($searchTerms)) {
-                $searchOptions->setSearchTerms($searchTerms);
-            }
+            
+            $params['customer_numbers'] = $user->getCustomerNumbers();
+            
         }
+        
+        $params['search_terms'] = $searchTerms;        
 
-        $weborders = $service->findBySearchOptions($searchOptions, $offset, $perPage);
+        $weborders = $service->findBySearchOptions($params, $offset, $perPage);
 
         if ($request->isXmlHttpRequest()) {
             $response = new Response();
@@ -139,9 +130,10 @@ class WebordersController extends Controller {
 
     /**
      * @Route("/submit", name="weborders_submit")
-     * @Template("AppBundle:Weborders:submit.html.twig")
      */
     public function submitAction(Request $request) {
+
+        return $this->render('AppBundle::not_implemented.html.twig');
 
         $weborder = new Weborder();
 
@@ -195,7 +187,7 @@ class WebordersController extends Controller {
             return $this->redirectToRoute('weborders_index');
         }
 
-        return array('form' => $form->createView());
+        return $this->render('AppBundle:Weborders:submit.html.twig', array('form' => $form->createView()));
     }
 
     /**

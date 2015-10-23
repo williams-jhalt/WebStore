@@ -25,30 +25,31 @@ class OrderService {
         $this->_company = $company;
     }
 
-    public function findBySearchOptions(OrderSearchOptions $searchOptions, $offset = 0, $limit = 10) {
+    public function findBySearchOptions($params, $offset = 0, $limit = 10) {
 
-        $rep = $this->_em->getRepository('AppBundle:SalesOrder');
+        $repository = $this->_em->getRepository("AppBundle:SalesOrder");
 
-        $params = array();
+        $qb = $repository->createQueryBuilder('p');
 
-        if ($searchOptions->getOpen() !== null) {
-            $params['open'] = $searchOptions->getOpen();
+        if (isset($params['search_terms']) && !empty($params['search_terms'])) {
+            $qb->andWhere('p.orderNumber LIKE :searchTerms OR p.externalOrderNumber LIKE :searchTerms OR p.customerPO LIKE :searchTerms')->setParameter('searchTerms', $params['search_terms'] . '%');
+        }        
+
+        if (isset($params['customer_numbers']) && !empty($params['customer_number'])) {
+            $qb->andWhere('p.customerNumbers IN :customerNumbers')->setParameter('customerNumbers', $params['customer_numbers']);
         }
 
-        if ($searchOptions->getCustomerNumber() !== null) {
-            $params['customerNumber'] = $searchOptions->getCustomerNumber();
+        if (isset($params['open'])) {
+            $qb->andWhere('p.open = :open')->setParameter('open', $params['open']);
         }
 
-        $orders = $rep->findBy($params, array('orderNumber' => 'DESC'), $limit, $offset);
+        $qb->setFirstResult($offset);
+        $qb->setMaxResults($limit);
+        $qb->orderBy('p.orderNumber', 'DESC');
 
-//        $timeAgo = new DateTime();
-//        $timeAgo->sub(new DateInterval("PT15M"));
-//
-//        foreach ($orders as $order) {
-//            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
-//                $this->_erp->updateOrder($order);
-//            }
-//        }
+        $query = $qb->getQuery();
+
+        $orders = $query->getResult();
 
         return $orders;
     }
@@ -58,15 +59,6 @@ class OrderService {
         $rep = $this->_em->getRepository('AppBundle:SalesOrder');
 
         $orders = $rep->findBy(array(), array('orderNumber' => 'DESC'), $limit, $offset);
-
-//        $timeAgo = new DateTime();
-//        $timeAgo->sub(new DateInterval("PT15M"));
-//
-//        foreach ($orders as $order) {
-//            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
-//                $this->_erp->updateOrder($order);
-//            }
-//        }
 
         return $orders;
     }
