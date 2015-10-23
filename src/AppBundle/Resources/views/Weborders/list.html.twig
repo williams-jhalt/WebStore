@@ -10,9 +10,14 @@
             <span class="col-sm-2">{{ weborder.orderDate|date('Y-m-d') }}</span>
             <span class="col-sm-3">{{ weborder.customerPO }}</span>
             <span class="col-sm-1">
-                {% if weborder.shipments is not empty %}P{% endif %}
-                {% if weborder.packages is not empty %}S{% endif %}
-                {% if weborder.invoices is not empty %}I{% endif %}
+                <span id="status_{{ weborder.id }}"></span>
+                <script>
+                    $(document).ready(function () {
+                        $.get('{{ path('weborders_ajax_status', {orderNumber: weborder.orderNumber}) }}', function (data) {
+                            $('#status_{{ weborder.id }}').text(data);
+                        });
+                    });
+                </script>
             </span>
             <span class="col-sm-2">{{ weborder.customerNumber }}</span>
         </div>

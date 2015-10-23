@@ -39,20 +39,12 @@ class WebordersController extends Controller {
      * @Route("/ajax-status/{orderNumber}", name="weborders_ajax_status", options={"expose": true})
      */
     public function ajaxGetStatus($orderNumber) {
-
+        
         $service = $this->get('app.order_service');
-        $packService = $this->get('app.package_service');
-
-        $weborder = $service->find($orderNumber);
-        $packages = $packService->findByOrderNumber($orderNumber);
-
-        $status = "";
-
-        if (sizeof($packages) > 0) {
-            $status = "Shipped";
-        } else {
-            $status = "Processing";
-        }
+        
+        $order = $service->find($orderNumber);
+        
+        $status = $service->getStatusCode($order);
 
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');

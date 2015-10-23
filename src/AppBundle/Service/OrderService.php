@@ -2,6 +2,7 @@
 
 namespace AppBundle\Service;
 
+use AppBundle\Entity\SalesOrder;
 use DateInterval;
 use DateTime;
 use Doctrine\ORM\EntityManager;
@@ -40,14 +41,14 @@ class OrderService {
 
         $orders = $rep->findBy($params, array('orderNumber' => 'DESC'), $limit, $offset);
 
-        $timeAgo = new DateTime();
-        $timeAgo->sub(new DateInterval("PT15M"));
-
-        foreach ($orders as $order) {
-            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
-                $this->_erp->updateOrder($order);
-            }
-        }
+//        $timeAgo = new DateTime();
+//        $timeAgo->sub(new DateInterval("PT15M"));
+//
+//        foreach ($orders as $order) {
+//            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
+//                $this->_erp->updateOrder($order);
+//            }
+//        }
 
         return $orders;
     }
@@ -58,16 +59,43 @@ class OrderService {
 
         $orders = $rep->findBy(array(), array('orderNumber' => 'DESC'), $limit, $offset);
 
+//        $timeAgo = new DateTime();
+//        $timeAgo->sub(new DateInterval("PT15M"));
+//
+//        foreach ($orders as $order) {
+//            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
+//                $this->_erp->updateOrder($order);
+//            }
+//        }
+
+        return $orders;
+    }
+    
+    public function getStatusCode(SalesOrder $so) {
+
         $timeAgo = new DateTime();
         $timeAgo->sub(new DateInterval("PT15M"));
 
-        foreach ($orders as $order) {
-            if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
-                $this->_erp->updateOrder($order);
-            }
+        if ($so->getOpen() && $so->getUpdatedOn() < $timeAgo) {
+            $this->_erp->updateOrder($so);
         }
-
-        return $orders;
+        
+        $status = "";
+        
+        if (!empty($so->getShipments())) {
+            $status .= "P ";
+        }
+        
+        if (!empty($so->getPackages())) {
+            $status .= "S ";
+        
+        if (!empty($so->getInvoices())) {
+            $status .= "I";
+        }
+        }
+        
+        return $status;
+        
     }
 
     public function find($orderNumber) {

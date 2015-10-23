@@ -5,7 +5,9 @@
     {% endif %}
 
     <p><a href="#viewProduct" data-id="{{ product.id }}">{{ product.sku }} - {{ product.name }}</a><br>
-        <b>Price</b>: ${{ product.price|number_format(2) }} <b>Stock</b>: {{ product.stockQuantity }}</p>
+        <b>Release Date</b>: {{ product.releaseDate|date('Y-m-d') }}<br>
+        <b>Price</b>: ${{ product.price|number_format(2) }}<br>
+        <b>Stock</b>: {{ product.stockQuantity }}</p>
     
     <hr>
 
