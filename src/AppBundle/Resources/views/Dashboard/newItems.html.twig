@@ -1,0 +1,16 @@
+{% for product in products %}
+
+    {% if product.productAttachment %}
+        <img src="{{ image(product.productAttachment.path).resize(100,100) }}" alt="image">
+    {% endif %}
+
+    <p><a href="#viewProduct" data-id="{{ product.id }}">{{ product.sku }} - {{ product.name }}</a><br>
+        <b>Price</b>: ${{ product.price|number_format(2) }} <b>Stock</b>: {{ product.stockQuantity }}</p>
+    
+    <hr>
+
+{% endfor %}
+
+{% if nextPage != '#' %}
+    <p class="text-center"><a class="jscroll-next" href="{{ nextPage }}">Load More Results</a></p>
+{% endif %}

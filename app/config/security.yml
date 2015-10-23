@@ -26,6 +26,7 @@ security:
         - { path: ^/catalog/, role: ROLE_USER }
         - { path: ^/cart/, role: ROLE_CUSTOMER }
         - { path: ^/weborders/, role: [ ROLE_CUSTOMER, ROLE_ADMIN ] }
+        - { path: ^/dashboard, role: [ ROLE_CUSTOMER, ROLE_ADMIN ] }
         - { path: ^/admin/, role: ROLE_ADMIN }
         - { path: ^/api, role: ROLE_USER }
 

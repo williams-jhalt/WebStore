@@ -1,0 +1,14 @@
+{% for order in orders %}
+    
+    <p><a href="#viewOrder" data-id="{{ order.id }}">{{ order.orderNumber }}</a><br>
+        <b>Order Date</b>: {{ order.orderDate|date('Y-m-d') }}<br>
+        {% if order.externalOrderNumber is not empty %}<b>Ext. Ref</b>: {{ order.externalOrderNumber }}{% endif %}<br>
+        {% if order.customerPO is not empty %}<b>Cust. PO</b>: {{ order.customerPO }}{% endif %}</p>
+    
+    <hr>
+
+{% endfor %}
+
+{% if nextPage != '#' %}
+    <p class="text-center"><a class="jscroll-next" href="{{ nextPage }}">Load More Results</a></p>
+{% endif %}

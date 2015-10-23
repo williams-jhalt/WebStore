@@ -1,0 +1,59 @@
+{% extends 'AppBundle::layout.html.twig' %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function ($) {
+
+            $('#newProductBox').load(Routing.generate('dashboard_new_items'), function (data) {
+                $('#newProductBox').data('jscroll', null);
+                $('#newProductBox').jscroll({
+                    loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                    autoTrigger: true,
+                    padding: 20,
+                    nextSelector: 'a.jscroll-next:last'
+                });
+            });
+
+            $('#openOrderBox').load(Routing.generate('dashboard_open_orders'), function (data) {
+                $('#openOrderBox').data('jscroll', null);
+                $('#openOrderBox').jscroll({
+                    loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                    autoTrigger: true,
+                    padding: 20,
+                    nextSelector: 'a.jscroll-next:last'
+                });
+            });
+
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+
+    <div class="container-fluid">
+
+        <h1>Dashboard</h1>
+
+        <div class="col-sm-6">
+
+            <h2>New Products</h2>
+
+            <div id="newProductBox" style="max-height: 500px; overflow:auto;">
+            </div>
+
+
+        </div>
+
+        <div class="col-sm-6">
+
+            <h2>Open Orders</h2>
+
+            <div id="openOrderBox" style="max-height: 500px; overflow-y:auto; overflow-x:hidden;">
+            </div>
+
+        </div>
+
+    </div>
+{% endblock %}

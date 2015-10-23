@@ -6,6 +6,7 @@ use AppBundle\Entity\Manufacturer;
 use AppBundle\Entity\Product;
 use AppBundle\Entity\ProductType;
 use AppBundle\Service\ErpOneConnectorService;
+use DateTime;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -28,7 +29,7 @@ class ErpProductSyncService {
                 . "EACH wa_item NO-LOCK WHERE "
                 . "wa_item.company_it = item.company_it AND wa_item.item = item.item";
 
-        $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,wa_item.qty_oh,wa_item.list_price");
+        $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,item.date_added,wa_item.qty_oh,wa_item.list_price");
 
         if (empty($result)) {
             return;
@@ -66,6 +67,7 @@ class ErpProductSyncService {
         $product->setProductType($type);
         $product->setStockQuantity($item->wa_item_qty_oh);
         $product->setPrice($item->wa_item_list_price);
+        $product->setReleaseDate(new DateTime($item->item_date_added));
 
         $this->_em->persist($product);
         $this->_em->flush();
@@ -83,7 +85,7 @@ class ErpProductSyncService {
 
         do {
 
-            $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,wa_item.qty_oh,wa_item.list_price", $batch, $batchSize);
+            $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,item.date_added,wa_item.qty_oh,wa_item.list_price", $batch, $batchSize);
 
             foreach ($result as $item) {
                 $this->_loadFromErp($item);
@@ -137,6 +139,7 @@ class ErpProductSyncService {
         $product->setProductType($type);
         $product->setStockQuantity($item->wa_item_qty_oh);
         $product->setPrice($item->wa_item_list_price);
+        $product->setReleaseDate(new DateTime($item->item_date_added));
 
         $this->_em->persist($product);
     }

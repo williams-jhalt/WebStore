@@ -10,10 +10,14 @@ class Builder extends ContainerAware {
     public function mainMenu(FactoryInterface $factory, array $options) {
 
         $menu = $factory->createItem("root");
-
-        $menu->addChild('Home', array('route' => 'homepage'));
         
         $checker = $this->container->get('security.authorization_checker');
+        
+        if ($checker->isGranted(array('ROLE_CUSTOMER', 'ROLE_ADMIN'))) {
+            $menu->addChild('Dashboard', array('route' => 'dashboard_index'));
+        } else {
+            $menu->addChild('Home', array('route' => 'homepage'));
+        }
 
         if ($checker->isGranted('ROLE_USER')) {
             $menu->addChild('Catalog', array('route' => 'catalog_index'));
