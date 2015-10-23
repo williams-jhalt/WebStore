@@ -82,14 +82,14 @@ class OrderService {
         
         $status = "";
         
-        if (!empty($so->getShipments())) {
+        if (sizeof($so->getShipments()) > 0) {
             $status .= "P ";
         }
         
-        if (!empty($so->getPackages())) {
+        if (sizeof($so->getPackages()) > 0) {
             $status .= "S ";
         
-        if (!empty($so->getInvoices())) {
+        if (sizeof($so->getInvoices()) > 0) {
             $status .= "I";
         }
         }
