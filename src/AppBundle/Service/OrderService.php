@@ -35,7 +35,7 @@ class OrderService {
             $qb->andWhere('p.orderNumber LIKE :searchTerms OR p.externalOrderNumber LIKE :searchTerms OR p.customerPO LIKE :searchTerms')->setParameter('searchTerms', $params['search_terms'] . '%');
         }        
 
-        if (isset($params['customer_numbers']) && !empty($params['customer_number'])) {
+        if (isset($params['customer_numbers']) && !empty($params['customer_numbers'])) {
             $qb->andWhere('p.customerNumbers IN :customerNumbers')->setParameter('customerNumbers', $params['customer_numbers']);
         }
 
