@@ -63,7 +63,7 @@ class Product {
      * @var double
      * 
      * @JMS\Expose
-     * @ORM\Column(name="price", type="decimal", nullable=true)
+     * @ORM\Column(name="price", type="float", nullable=true)
      */
     private $price;
 

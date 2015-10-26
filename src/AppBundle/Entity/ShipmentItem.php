@@ -47,9 +47,9 @@ class ShipmentItem {
     protected $name; // descr
 
     /**
-     * @var string
+     * @var float
      *
-     * @ORM\Column(name="price", type="decimal", nullable=true)
+     * @ORM\Column(name="price", type="float", nullable=true)
      */
     private $price; // price
 

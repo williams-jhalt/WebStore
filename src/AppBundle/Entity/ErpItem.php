@@ -45,28 +45,28 @@ class ErpItem {
     protected $name; // descr
 
     /**
-     * @var string
+     * @var float
      *
-     * @ORM\Column(name="price", type="decimal", nullable=true)
+     * @ORM\Column(name="price", type="float", nullable=true)
      */
     private $price; // price
 
     /**
-     * @var string
+     * @var integer
      *
      * @ORM\Column(name="quantity_ordered", type="integer")
      */
     protected $quantityOrdered; // q_ord
 
     /**
-     * @var string
+     * @var integer
      *
      * @ORM\Column(name="quantity_billed", type="integer")
      */
     private $quantityBilled; // q_itd
 
     /**
-     * @var string
+     * @var integer
      *
      * @ORM\Column(name="quantity_shipped", type="integer")
      */

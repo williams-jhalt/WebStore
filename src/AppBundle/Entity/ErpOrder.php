@@ -112,7 +112,7 @@ class ErpOrder {
     /**
      * @var string
      *
-     * @ORM\Column(name="order_gross_amount", type="decimal", nullable=true)
+     * @ORM\Column(name="order_gross_amount", type="float", nullable=true)
      */
     protected $orderGrossAmount; // o_tot_gross
 
@@ -147,28 +147,28 @@ class ErpOrder {
     /**
      * @var string
      *
-     * @ORM\Column(name="freight_charge", type="decimal", nullable=true)
+     * @ORM\Column(name="freight_charge", type="float", nullable=true)
      */
     private $freightCharge; // c_tot_code_amt[1]
 
     /**
      * @var string
      *
-     * @ORM\Column(name="shipping_and_handling_charge", type="decimal", nullable=true)
+     * @ORM\Column(name="shipping_and_handling_charge", type="float", nullable=true)
      */
     private $shippingAndHandlingCharge; // c_tot_code_amt[2]
 
     /**
      * @var string
      *
-     * @ORM\Column(name="invoice_gross_amount", type="decimal", nullable=true)
+     * @ORM\Column(name="invoice_gross_amount", type="float", nullable=true)
      */
     private $invoiceGrossAmount; // c_tot_gross
 
     /**
      * @var string
      *
-     * @ORM\Column(name="invoice_net_amount", type="decimal", nullable=true)
+     * @ORM\Column(name="invoice_net_amount", type="float", nullable=true)
      */
     private $invoiceNetAmount; // c_tot_net_ar
 

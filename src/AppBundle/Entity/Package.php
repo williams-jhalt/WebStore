@@ -63,35 +63,35 @@ class Package {
     /**
      * @var string
      *
-     * @ORM\Column(name="package_charge", type="decimal", nullable=true)
+     * @ORM\Column(name="package_charge", type="float", nullable=true)
      */
     private $packageCharge; // pkg_chg
 
     /**
      * @var string
      *
-     * @ORM\Column(name="weight", type="decimal", nullable=true)
+     * @ORM\Column(name="weight", type="float", nullable=true)
      */
     private $weight; // pack_weight
 
     /**
      * @var string
      *
-     * @ORM\Column(name="height", type="decimal", nullable=true)
+     * @ORM\Column(name="height", type="float", nullable=true)
      */
     private $height; // pack_height
 
     /**
      * @var string
      *
-     * @ORM\Column(name="length", type="decimal", nullable=true)
+     * @ORM\Column(name="length", type="float", nullable=true)
      */
     private $length; // pack_length
 
     /**
      * @var string
      *
-     * @ORM\Column(name="width", type="decimal", nullable=true)
+     * @ORM\Column(name="width", type="float", nullable=true)
      */
     private $width; // pack_width
 

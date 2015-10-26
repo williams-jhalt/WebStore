@@ -119,7 +119,7 @@ class SalesOrder {
     /**
      * @var string
      *
-     * @ORM\Column(name="order_gross_amount", type="decimal", nullable=true)
+     * @ORM\Column(name="order_gross_amount", type="float", nullable=true)
      */
     protected $orderGrossAmount; // o_tot_gross
 
