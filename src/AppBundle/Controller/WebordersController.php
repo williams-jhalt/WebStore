@@ -3,7 +3,6 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Weborder;
-use AppBundle\Service\OrderSearchOptions;
 use DateTime;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -32,7 +31,7 @@ class WebordersController extends Controller {
         return $this->render('AppBundle:Weborders:index.html.twig', array('pageOptions' => array(
                         'page' => $page,
                         'searchTerms' => $searchTerms,
-                        'open' => true
+                        'open' => null
         )));
     }
 
@@ -89,7 +88,7 @@ class WebordersController extends Controller {
         $page = $request->get('page', 1);
         $searchTerms = $request->get('searchTerms', null);
         $customerNumber = $request->get('customerNumber');
-        $openOrders = (boolean) $request->get('open', true);
+        $openOrders = $request->get('open', null);
         $perPage = 25;
 
         $user = $this->getUser();
@@ -99,13 +98,15 @@ class WebordersController extends Controller {
         $offset = (($page - 1) * $perPage);
 
         if ($this->get('security.authorization_checker')->isGranted('ROLE_CUSTOMER')) {
-            
+
             $params['customer_numbers'] = $user->getCustomerNumbers();
-            
         }
-        
-        $params['search_terms'] = $searchTerms;        
-        $params['open'] = $openOrders;
+
+        $params['search_terms'] = $searchTerms;
+
+        if ($openOrders !== null) {
+            $params['open'] = (boolean) $openOrders;
+        }
 
         $weborders = $service->findBySearchOptions($params, $offset, $perPage);
 
