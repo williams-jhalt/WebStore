@@ -105,6 +105,7 @@ class WebordersController extends Controller {
         }
         
         $params['search_terms'] = $searchTerms;        
+        $params['open'] = $openOrders;
 
         $weborders = $service->findBySearchOptions($params, $offset, $perPage);
 

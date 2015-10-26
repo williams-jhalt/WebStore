@@ -73,6 +73,13 @@
                 });
                 return false;
             });
+            
+            $('body').on('click', '.clear-button', function(e) {
+                $(".search-form input").val('');
+                pageOptions['searchTerms'] = null;
+                $('#catalogBody').text('Loading...');
+                updateCatalog();
+            });
 
             $('body').on('submit', '.search-form', function (e) {
                 pageOptions['searchTerms'] = $(".search-form input").val();
@@ -152,7 +159,8 @@
             <div class="well well-sm">
                 <form class="search-form form-inline" action="#" method="get">
                     <input class="form-control" type="text" name="searchTerms" placeholder="Search...">
-                    <button class="btn btn-default" type="submit">Go</button>
+                    <button class="btn btn-default search-button" type="submit">Go</button>
+                    <button class="btn btn-default clear-button" type="button" name="action" value="clear">Clear</button>
                 </form>
             </div>
 
