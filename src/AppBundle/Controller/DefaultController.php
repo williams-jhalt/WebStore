@@ -74,7 +74,7 @@ class DefaultController extends Controller {
     /**
      * @Route("/display_product_image", name="display_product_image")
      */
-    public function displayProductImage(Request $request) {
+    public function displayProductImageAction(Request $request) {
         
         $path = $request->get('path');
         $width = $request->get('width');
@@ -91,6 +91,15 @@ class DefaultController extends Controller {
         
         return $response;
         
+    }
+    
+    /**
+     * @Route("/keep-alive", name="keep_alive")
+     */
+    public function keepAliveAction() {
+        $response = new Response();
+        $response->setContent("true");
+        return $response;
     }
 
 }

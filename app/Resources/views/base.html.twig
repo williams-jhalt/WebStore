@@ -26,6 +26,16 @@
         <script src="{{ asset('js/bootstrap.js') }}"></script>
 
         <!-- JavaScript Routing -->
+        <script src="{{ asset('bundles/app/js/bootstrap-session-timeout/bootstrap-session-timeout.min.js') }}">
+            $.sessionTimeout({
+                message: 'Your session will be locked in one minute.',
+                keepAliveUrl: '{{ path('keep_alive') }}',
+                logoutUrl: '{{ path('fos_user_security_logout') }}',
+                redirUrl: '{{ path('fos_user_security_login') }}',
+                warnAfter: 60000,
+                redirAfter: 120000
+            });
+        </script>
         <script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
         <script src="{{ path('fos_js_routing_js', {"callback": "fos.Router.setData"}) }}"></script>
 
@@ -48,7 +58,7 @@
 
                 {{ knp_menu_render('AppBundle:Builder:accountMenu', { 'style': 'navbar-right' }) }}
                 {{ knp_menu_render('AppBundle:Builder:mainMenu', { 'style': 'navbar' }) }}
-                
+
             </div>
         </div>
     </nav>
