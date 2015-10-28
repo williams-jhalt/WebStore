@@ -34,6 +34,7 @@
             pageOptions = {};
 
             updateCatalog = function () {
+                $.blockUI();
                 $('#catalogBody').load(Routing.generate('catalog_list', pageOptions), function (data) {
                     $('#catalogBody').data('jscroll', null);
                     $('#catalogBody').jscroll({
