@@ -165,6 +165,12 @@ class SalesOrder {
     private $invoices;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Invoice", inversedBy="salesOrders")
+     * @ORM\JoinColumn(name="consolidated_invoice_id", referencedColumnName="id")
+     * */
+    private $consolidatedInvoice;
+
+    /**
      * @ORM\OneToMany(targetEntity="Shipment", mappedBy="salesOrder", cascade={"persist", "remove"})
      * */
     private $shipments;
@@ -434,6 +440,15 @@ class SalesOrder {
      */
     public function preUpdate() {
         $this->updatedOn = new DateTime();
+    }
+
+    public function getConsolidatedInvoice() {
+        return $this->consolidatedInvoice;
+    }
+
+    public function setConsolidatedInvoice($consolidatedInvoice) {
+        $this->consolidatedInvoice = $consolidatedInvoice;
+        return $this;
     }
 
 }

@@ -1,10 +1,13 @@
 {% for invoice in invoices %}
 
     <div class="row">
-        <span class="col-sm-3"><a href="#" class="view-invoice" data-id="{{ invoice.orderNumber }}">{{ invoice.orderNumber }}</a></span>
-        <span class="col-sm-3">{{ invoice.invoiceDate|date('Y-m-d') }}</span>
-        <span class="col-sm-3">{{ invoice.status }}</span>
-        <span class="col-sm-3">{{ invoice.customerNumber }}</span>
+        <span class="col-sm-2"><a href="#" class="view-invoice" data-id="{{ invoice.id }}">{{ invoice.orderNumber }}-{{ "%03d"|format(invoice.recordSequence) }}</a></span>
+        <span class="col-sm-2">{{ invoice.invoiceDate|date('Y-m-d') }}</span>
+        <span class="col-sm-2">${{ invoice.grossAmount|number_format(2) }}</span>
+        <span class="col-sm-1">${{ invoice.freightCharge|number_format(2) }}</span>
+        <span class="col-sm-1">${{ invoice.shippingAndHandlingCharge|number_format(2) }}</span>  
+        <span class="col-sm-2">${{ invoice.netAmount|number_format(2) }}</span>  
+        <span class="col-sm-2">{{ invoice.customerNumber }}</span>
     </div>
 
 {% endfor %}

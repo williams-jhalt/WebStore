@@ -34,6 +34,10 @@ services:
         class: AppBundle\Service\OrderService
         arguments: ["@doctrine.orm.entity_manager", "@app.order_sync_service", "%erp_company%"]
         
+    app.invoice_service:
+        class: AppBundle\Service\InvoiceService
+        arguments: ["@doctrine.orm.entity_manager", "@app.order_sync_service", "%erp_company%"]
+        
     app.customer_service:
         class: AppBundle\Service\CustomerService
         arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%erp_company%"]

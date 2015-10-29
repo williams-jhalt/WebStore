@@ -45,6 +45,10 @@ class ErpOrderSyncService {
         $this->_company = $company;
     }
 
+    public function findCombinedInvoices($params, $offset = 0, $limit = 100) {
+        
+    }
+
     public function updateOrder(SalesOrder $so) {
 
         $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order = {$so->getOrderNumber()}";
@@ -113,32 +117,70 @@ class ErpOrderSyncService {
 //            $this->_readPackageFromErp($packageQuery);
 //        }
 
-        $firstOpenOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
+        $lastOpenOrder = $rep->findOneBy(array('consolidated' => false), array('orderNumber' => 'DESC'));
 
-        if ($firstOpenOrder === null) {
+        if ($lastOpenOrder === null) {
 
             // if this is a new database, only get the last 5 days of open orders
-            $firstRecentOpenOrderRes = $this->_erp->read("FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND opn = yes AND order > 0 AND INTERVAL(NOW, ord_date, 'days') < 5", "order", 0, 1);
+            $firstRecentOrder = $this->_erp->read("FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND INTERVAL(NOW, oe_head.ord_date, 'days') <= 1 USE-INDEX order_d", "oe_head.order", 0, 1);
 
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order >= {$firstRecentOpenOrderRes[0]->order}";
+            $firstOrderNumber = abs($firstRecentOrder[0]->oe_head_order);
+
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND ABS(oe_head.order) >= {$firstOrderNumber}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND ABS(oe_line.order) >= {$firstOrderNumber}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE oe_ship_pack.company_oe = '{$this->_company}' AND ABS(oe_ship_pack.order) >= {$firstOrderNumber}";
         } else {
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE company_oe = '{$this->_company}' AND order > {$firstOpenOrder->getOrderNumber()}";
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND oe_head.order > {$lastOpenOrder->getOrderNumber()}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND oe_line.order > {$lastOpenOrder->getOrderNumber()}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE oe_ship_pack.company_oe = '{$this->_company}' AND oe_ship_pack.order > {$lastOpenOrder->getOrderNumber()}";
         }
 
         $this->_readHeaderFromErp($headerQuery);
         $this->_readDetailFromErp($detailQuery);
         $this->_readPackageFromErp($packageQuery);
 
+        $lastConsolidatedInvoice = $rep->findOneBy(array('consolidated' => true), array('orderNumber' => 'DESC'));
+
+        if ($lastConsolidatedInvoice !== null) {
+
+            $lastConsolidatedInvoiceNumber = abs($lastConsolidatedInvoice->getOrderNumber());
+
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND oe_head.consolidated_order = yes AND ABS(oe_head.order) > {$lastConsolidatedInvoiceNumber}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND ABS(oe_line.order) > {$lastConsolidatedInvoiceNumber}, EACH oe_head NO-LOCK WHERE oe_head.order = oe_line.order AND oe_head.rec_type = oe_line.rec_type AND oe_head.rec_seq = oe_line.rec_seq AND oe_head.company_oe = oe_line.company_oe AND oe_head.consolidated_order = yes";
+
+            $this->_readHeaderFromErp($headerQuery);
+            $this->_readDetailFromErp($detailQuery);
+        }
+
         $this->_generateSalesOrders();
     }
 
     private function _readHeaderFromErp($query) {
 
-        $fields = "order,rec_seq,rec_type,name,adr,state,postal_code,country_code,ship_via_code,cu_po,ord_date,opn,o_tot_gross,stat,customer,ord_ext,invoice,c_tot_code_amt,c_tot_gross,c_tot_net_ar,invc_date,Manifest_id,ship_date";
+        $fields = "oe_head.order,"
+                . "oe_head.rec_seq,"
+                . "oe_head.rec_type,"
+                . "oe_head.name,"
+                . "oe_head.adr,"
+                . "oe_head.state,"
+                . "oe_head.postal_code,"
+                . "oe_head.country_code,"
+                . "oe_head.ship_via_code,"
+                . "oe_head.cu_po,"
+                . "oe_head.ord_date,"
+                . "oe_head.opn,"
+                . "oe_head.o_tot_gross,"
+                . "oe_head.stat,"
+                . "oe_head.customer,"
+                . "oe_head.ord_ext,"
+                . "oe_head.invoice,"
+                . "oe_head.c_tot_code_amt,"
+                . "oe_head.c_tot_gross,"
+                . "oe_head.c_tot_net_ar,"
+                . "oe_head.invc_date,"
+                . "oe_head.Manifest_id,"
+                . "oe_head.ship_date,"
+                . "oe_head.consolidated_order";
 
         $offset = 0;
         $limit = 5000;
@@ -160,7 +202,16 @@ class ErpOrderSyncService {
 
     private function _readDetailFromErp($query) {
 
-        $fields = "order,rec_seq,line,rec_type,item,descr,price,q_ord,q_itd,q_comm";
+        $fields = "oe_line.order,"
+                . "oe_line.rec_seq,"
+                . "oe_line.line,"
+                . "oe_line.rec_type,"
+                . "oe_line.item,"
+                . "oe_line.descr,"
+                . "oe_line.price,"
+                . "oe_line.q_ord,"
+                . "oe_line.q_itd,"
+                . "oe_line.q_comm";
 
         $offset = 0;
         $limit = 5000;
@@ -181,7 +232,16 @@ class ErpOrderSyncService {
 
     private function _readPackageFromErp($query) {
 
-        $fields = "order,rec_seq,tracking_no,Manifest_id,ship_via_code,pkg_chg,pack_weight,pack_height,pack_length,pack_width";
+        $fields = "oe_ship_pack.order,"
+                . "oe_ship_pack.rec_seq,"
+                . "oe_ship_pack.tracking_no,"
+                . "oe_ship_pack.Manifest_id,"
+                . "oe_ship_pack.ship_via_code,"
+                . "oe_ship_pack.pkg_chg,"
+                . "oe_ship_pack.pack_weight,"
+                . "oe_ship_pack.pack_height,"
+                . "oe_ship_pack.pack_length,"
+                . "oe_ship_pack.pack_width";
 
         $offset = 0;
         $limit = 1000;
@@ -204,38 +264,40 @@ class ErpOrderSyncService {
 
         $rep = $this->_em->getRepository('AppBundle:ErpOrder');
 
-        $order = $rep->find(array('orderNumber' => $row->order, 'recordSequence' => $row->rec_seq, 'recordType' => $row->rec_type));
+        $order = $rep->find(array('orderNumber' => $row->oe_head_order, 'recordSequence' => $row->oe_head_rec_seq, 'recordType' => $row->oe_head_rec_type));
 
         if ($order === null) {
-            $order = new ErpOrder($row->order, $row->rec_seq, $row->rec_type);
+            $order = new ErpOrder($row->oe_head_order, $row->oe_head_rec_seq, $row->oe_head_rec_type);
         } elseif (!$order->getOpen()) {
             return;
         }
 
-        $order->setShipToName($row->name)
-                ->setShipToAddress1($row->adr[0])
-                ->setShipToAddress2($row->adr[1])
-                ->setShipToAddress3($row->adr[2])
-                ->setShipToCity($row->adr[3])
-                ->setShipToState($row->state)
-                ->setShipToPostalCode($row->postal_code)
-                ->setShipToCountryCode($row->country_code)
-                ->setShipViaCode($row->ship_via_code)
-                ->setCustomerPO($row->cu_po)
-                ->setOrderDate(new DateTime($row->ord_date))
-                ->setOpen($row->opn)
-                ->setOrderGrossAmount($row->o_tot_gross)
-                ->setStatus($row->stat)
-                ->setCustomerNumber($row->customer)
-                ->setExternalOrderNumber($row->ord_ext)
-                ->setInvoiceNumber($row->invoice)
-                ->setFreightCharge($row->c_tot_code_amt[0])
-                ->setShippingAndHandlingCharge($row->c_tot_code_amt[1])
-                ->setInvoiceGrossAmount($row->c_tot_gross)
-                ->setInvoiceNetAmount($row->c_tot_net_ar)
-                ->setInvoiceDate(new DateTime($row->invc_date))
-                ->setManifestId($row->Manifest_id)
-                ->setShipDate(new DateTime($row->ship_date));
+        $order->setShipToName($row->oe_head_name)
+                ->setShipToAddress1($row->oe_head_adr[0])
+                ->setShipToAddress2($row->oe_head_adr[1])
+                ->setShipToAddress3($row->oe_head_adr[2])
+                ->setShipToCity($row->oe_head_adr[3])
+                ->setShipToState($row->oe_head_state)
+                ->setShipToPostalCode($row->oe_head_postal_code)
+                ->setShipToCountryCode($row->oe_head_country_code)
+                ->setShipViaCode($row->oe_head_ship_via_code)
+                ->setCustomerPO($row->oe_head_cu_po)
+                ->setOrderDate(new DateTime($row->oe_head_ord_date))
+                ->setOpen($row->oe_head_opn)
+                ->setOrderGrossAmount($row->oe_head_o_tot_gross)
+                ->setStatus($row->oe_head_stat)
+                ->setCustomerNumber($row->oe_head_customer)
+                ->setExternalOrderNumber($row->oe_head_ord_ext)
+                ->setInvoiceNumber($row->oe_head_invoice)
+                ->setFreightCharge($row->oe_head_c_tot_code_amt[0])
+                ->setShippingAndHandlingCharge($row->oe_head_c_tot_code_amt[1])
+                ->setInvoiceGrossAmount($row->oe_head_c_tot_gross)
+                ->setInvoiceNetAmount($row->oe_head_c_tot_net_ar)
+                ->setInvoiceDate(new DateTime($row->oe_head_invc_date))
+                ->setManifestId($row->oe_head_Manifest_id)
+                ->setShipDate(new DateTime($row->oe_head_ship_date))
+                ->setConsolidated($row->oe_head_consolidated_order)
+                ->setInvoiceNumber($row->oe_head_invoice);
 
         $this->_em->persist($order);
     }
@@ -244,17 +306,17 @@ class ErpOrderSyncService {
 
         $rep = $this->_em->getRepository('AppBundle:ErpItem');
 
-        $item = $rep->find(array('orderNumber' => $row->order, 'recordSequence' => $row->rec_seq, 'lineNumber' => $row->line, 'recordType' => $row->rec_type));
+        $item = $rep->find(array('orderNumber' => $row->oe_line_order, 'recordSequence' => $row->oe_line_rec_seq, 'lineNumber' => $row->oe_line_line, 'recordType' => $row->oe_line_rec_type));
 
         if ($item === null) {
-            $item = new ErpItem($row->order, $row->rec_seq, $row->line, $row->rec_type);
+            $item = new ErpItem($row->oe_line_order, $row->oe_line_rec_seq, $row->oe_line_line, $row->oe_line_rec_type);
 
-            $item->setItemNumber($row->item)
-                    ->setName(implode(" ", $row->descr))
-                    ->setPrice($row->price)
-                    ->setQuantityOrdered($row->q_ord)
-                    ->setQuantityBilled($row->q_itd)
-                    ->setQuantityShipped($row->q_comm);
+            $item->setItemNumber($row->oe_line_item)
+                    ->setName(implode(" ", $row->oe_line_descr))
+                    ->setPrice($row->oe_line_price)
+                    ->setQuantityOrdered($row->oe_line_q_ord)
+                    ->setQuantityBilled($row->oe_line_q_itd)
+                    ->setQuantityShipped($row->oe_line_q_comm);
 
             $this->_em->persist($item);
         }
@@ -264,17 +326,17 @@ class ErpOrderSyncService {
 
         $rep = $this->_em->getRepository('AppBundle:ErpPackage');
 
-        $item = $rep->find(array('orderNumber' => $row->order, 'recordSequence' => $row->rec_seq, 'trackingNumber' => $row->tracking_no));
+        $item = $rep->find(array('orderNumber' => $row->oe_ship_pack_order, 'recordSequence' => $row->oe_ship_pack_rec_seq, 'trackingNumber' => $row->oe_ship_pack_tracking_no));
 
         if ($item === null) {
-            $item = new ErpPackage($row->order, $row->rec_seq, $row->tracking_no);
-            $item->setManifestId($row->Manifest_id)
-                    ->setShipViaCode($row->ship_via_code)
-                    ->setPackageCharge($row->pkg_chg)
-                    ->setWeight($row->pack_weight)
-                    ->setHeight($row->pack_height)
-                    ->setLength($row->pack_length)
-                    ->setWidth($row->pack_width);
+            $item = new ErpPackage($row->oe_ship_pack_order, $row->oe_ship_pack_rec_seq, $row->oe_ship_pack_tracking_no);
+            $item->setManifestId($row->oe_ship_pack_Manifest_id)
+                    ->setShipViaCode($row->oe_ship_pack_ship_via_code)
+                    ->setPackageCharge($row->oe_ship_pack_pkg_chg)
+                    ->setWeight($row->oe_ship_pack_pack_weight)
+                    ->setHeight($row->oe_ship_pack_pack_height)
+                    ->setLength($row->oe_ship_pack_pack_length)
+                    ->setWidth($row->oe_ship_pack_pack_width);
 
             $this->_em->persist($item);
         }
@@ -384,6 +446,77 @@ class ErpOrderSyncService {
         $this->_em->flush();
     }
 
+    private function _findParentInvoice($invoiceNumber) {
+
+        $erpRep = $this->_em->getRepository('AppBundle:ErpOrder');
+        $erpItemRep = $this->_em->getRepository('AppBundle:ErpItem');
+        $rep = $this->_em->getRepository('AppBundle:Invoice');
+        $itemRep = $this->_em->getRepository('AppBundle:InvoiceItem');
+
+        $invoice = $rep->findOneBy(array('invoiceNumber' => $invoiceNumber, 'consolidated' => true));
+
+        if ($invoice !== null) {
+            return $invoice;
+        }
+
+        $erpInvoice = $erpRep->findOneBy(array('invoiceNumber' => $invoiceNumber, 'consolidated' => true));
+
+        if ($erpInvoice === null) {
+            return null;
+        }
+
+        $invoice = new Invoice();
+
+        $invoice->setOrderNumber($erpInvoice->getOrderNumber())
+                ->setInvoiceNumber($erpInvoice->getInvoiceNumber())
+                ->setRecordSequence($erpInvoice->getRecordSequence())
+                ->setOpen($erpInvoice->getOpen())
+                ->setStatus($erpInvoice->getStatus())
+                ->setInvoiceDate($erpInvoice->getInvoiceDate())
+                ->setConsolidated($erpInvoice->getConsolidated())
+                ->setCustomerNumber($erpInvoice->getCustomerNumber())
+                ->setGrossAmount($erpInvoice->getInvoiceGrossAmount())
+                ->setNetAmount($erpInvoice->getInvoiceNetAmount())
+                ->setFreightCharge($erpInvoice->getFreightCharge())
+                ->setShippingAndHandlingCharge($erpInvoice->getShippingAndHandlingCharge());
+
+        $erpItems = $erpItemRep->findBy(array(
+            'orderNumber' => $erpInvoice->getOrderNumber(),
+            'recordSequence' => $erpInvoice->getRecordSequence(),
+            'recordType' => 'I'));
+
+        $items = new ArrayCollection();
+
+        foreach ($erpItems as $erpItem) {
+
+            $soi = $itemRep->findOneBy(array('invoice' => $invoice, 'lineNumber' => $erpItem->getLineNumber()));
+
+            if ($soi === null) {
+                $soi = new InvoiceItem();
+            }
+
+            $soi->setLineNumber($erpItem->getLineNumber())
+                    ->setItemNumber($erpItem->getItemNumber())
+                    ->setName($erpItem->getName())
+                    ->setPrice($erpItem->getPrice())
+                    ->setQuantityOrdered($erpItem->getQuantityOrdered())
+                    ->setQuantityBilled($erpItem->getQuantityBilled())
+                    ->setQuantityShipped($erpItem->getQuantityShipped())
+                    ->setInvoice($invoice);
+
+            $this->_em->persist($soi);
+
+            $items[] = $soi;
+        }
+
+        $invoice->setItems($items);
+
+        $this->_em->persist($invoice);
+        $this->_em->flush($invoice);
+
+        return $invoice;
+    }
+
     private function _generateInvoices(SalesOrder $salesOrder) {
 
         $erpRep = $this->_em->getRepository('AppBundle:ErpOrder');
@@ -406,10 +539,25 @@ class ErpOrderSyncService {
             }
 
             $invoice->setOrderNumber($t->getOrderNumber())
+                    ->setInvoiceNumber($t->getInvoiceNumber())
                     ->setRecordSequence($t->getRecordSequence())
                     ->setOpen($t->getOpen())
                     ->setStatus($t->getStatus())
-                    ->setSalesOrder($salesOrder);
+                    ->setSalesOrder($salesOrder)
+                    ->setInvoiceDate($t->getInvoiceDate())
+                    ->setConsolidated($t->getConsolidated())
+                    ->setCustomerNumber($t->getCustomerNumber())
+                    ->setGrossAmount($t->getInvoiceGrossAmount())
+                    ->setNetAmount($t->getInvoiceNetAmount())
+                    ->setFreightCharge($t->getFreightCharge())
+                    ->setShippingAndHandlingCharge($t->getShippingAndHandlingCharge());
+
+            $parent = $this->_findParentInvoice($t->getInvoiceNumber());
+
+            if ($parent !== null) {
+                $parent->getConsolidatedSalesOrders()->add($salesOrder);
+                $invoice->setParent($parent);
+            }
 
             $erpItems = $erpItemRep->findBy(array(
                 'orderNumber' => $t->getOrderNumber(),
@@ -693,7 +841,7 @@ class ErpOrderSyncService {
         $so->setItems($items);
 
         $this->_em->persist($so);
-        
+
         $this->_em->flush();
     }
 

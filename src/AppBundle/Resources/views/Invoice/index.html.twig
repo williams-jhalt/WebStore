@@ -1,4 +1,4 @@
-{% extends 'AppBundle:Invoice:layout.html.twig' %}
+{% extends 'AppBundle:Weborders:layout.html.twig' %}
 
 
 {% block javascripts %}
@@ -9,17 +9,19 @@
         $(document).ready(function () {
 
             pageOptions = {{pageOptions|json_encode|raw}};
-                    updateInvoices = function () {
-                        $('#invoiceBody').load(Routing.generate('invoice_ajax_list', pageOptions), function (data) {
-                            $('#invoiceBody').data('jscroll', null);
-                            $('#invoiceBody').jscroll({
-                                loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
-                                autoTrigger: true,
-                                padding: 20,
-                                nextSelector: 'a.jscroll-next:last'
-                            });
-                        });
-                    };
+            
+            updateInvoices = function () {
+                $.blockUI();
+                $('#invoiceBody').load(Routing.generate('invoice_ajax_list', pageOptions), function (data) {
+                    $('#invoiceBody').data('jscroll', null);
+                    $('#invoiceBody').jscroll({
+                        loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                        autoTrigger: true,
+                        padding: 20,
+                        nextSelector: 'a.jscroll-next:last'
+                    });
+                });
+            };
 
             $('#invoiceBody').on('click', 'a.view-invoice', function (e) {
                 $.get(Routing.generate('invoice_ajax_view', {id: e.target.dataset.id}), function (data) {
@@ -29,11 +31,30 @@
                 return false;
             });
 
-            $("body").on('click', "a.update-display", function (e) {
-                pageOptions['status'] = e.target.dataset.id;
-                $(this).tab('show');
+            $('#searchForm').submit(function (e) {
+                $("button.open").each(function () {
+                    $(this).removeClass('active')
+                });
+                pageOptions['searchTerms'] = $('#searchForm input[name=searchTerms]').val();
+                pageOptions['consolidated'] = null;
                 updateInvoices();
                 e.preventDefault();
+            });
+
+            $('body').on('click', '.clear-button', function (e) {
+                $('#searchForm input[name=searchTerms]').val('');
+                pageOptions['searchTerms'] = null;
+                $('#weborderBody').text('Loading...');
+                updateInvoices();
+            });
+
+            $("#searchForm").on('click', "button.consolidated", function () {
+                $("button.consolidated").each(function () {
+                    $(this).removeClass('active')
+                });
+                pageOptions['consolidated'] = $(this).val();
+                $(this).addClass('active');
+                updateInvoices();
             });
 
             updateInvoices();
@@ -43,23 +64,38 @@
     </script>
 {% endblock %}
 
-{% block invoice_body %}
+{% block weborders_body %}
 
     <div class="well well-sm">
-        <form class="form-inline" action="{{ path('invoice_index') }}" method="get">
+        <form id="searchForm" class="form-inline" action="{{ path('invoice_index') }}" method="post">
             <div class="form-group">
                 <input class="form-control" type="text" placeholder="Search..." name="searchTerms" value="{{ pageOptions.searchTerms }}">
             </div>
-            <button class="btn btn-default" type="submit" name="action" value="search">Search</button>
-            <button class="btn btn-default" type="submit" name="action" value="clear">Clear</button>
+            <button class="btn btn-default search-button" type="submit" name="action" value="search">Search</button>
+            <button class="btn btn-default clear-button" type="button" name="action" value="clear">Clear</button>
+            {% if app.user.customerNumbers|length > 1 %}
+                <select class="form-control" name="customerNumber">
+                    <option value="">All Accounts</option>
+                    {% for customerNumber in app.user.customerNumbers %}
+                        <option value="{{ customerNumber }}">{{ customerNumber }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+            <div class="btn-group pull-right">
+                <button class="btn btn-default consolidated active" id="openOrdersButton" type="button" name="open" value="0">Individual</button>
+                <button class="btn btn-default consolidated" id="closedOrdersButton" type="button" name="open" value="1">Consolidated</button>
+            </div>
         </form>
     </div>
 
     <div class="row">
-        <span class="col-sm-3"><strong>Invoice Number</strong></span>
-        <span class="col-sm-3"><strong>Invoice Date</strong></span>
-        <span class="col-sm-3"><strong>Status</strong></span>
-        <span class="col-sm-3"><strong>Customer Number</strong></span>
+        <span class="col-sm-2"><strong>Invoice Number</strong></span>
+        <span class="col-sm-2"><strong>Invoice Date</strong></span>
+        <span class="col-sm-2"><strong>Item Total</strong></span>
+        <span class="col-sm-1"><strong>Freight</strong></span>
+        <span class="col-sm-1"><strong>S&amp;H</strong></span>  
+        <span class="col-sm-2"><strong>Total</strong></span>  
+        <span class="col-sm-2"><strong>Customer Number</strong></span>
     </div>
 
     <div id="invoiceBody"></div>

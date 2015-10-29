@@ -193,6 +193,13 @@ class ErpOrder {
      */
     private $shipDate; // ship_date
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="consolidated", type="boolean", nullable=true)
+     */
+    protected $consolidated;
+
     public function __construct($orderNumber, $recordSequence, $recordType) {
         $this->orderNumber = $orderNumber;
         $this->recordSequence = $recordSequence;
@@ -441,5 +448,16 @@ class ErpOrder {
         $this->shipDate = $shipDate;
         return $this;
     }
+
+    public function getConsolidated() {
+        return $this->consolidated;
+    }
+
+    public function setConsolidated($consolidated) {
+        $this->consolidated = $consolidated;
+        return $this;
+    }
+    
+    
 
 }
