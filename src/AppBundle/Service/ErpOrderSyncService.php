@@ -130,8 +130,8 @@ class ErpOrderSyncService {
             $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND ABS(oe_line.order) >= {$firstOrderNumber}";
             $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE oe_ship_pack.company_oe = '{$this->_company}' AND ABS(oe_ship_pack.order) >= {$firstOrderNumber}";
         } else {
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND oe_head.order >= {$firstOpenOrder->getOrderNumber()}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND oe_line.order >= {$firstOpenOrder->getOrderNumber()}";
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND ABS(oe_head.order) >= {$firstOpenOrder->getOrderNumber()}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND ABS(oe_line.order) >= {$firstOpenOrder->getOrderNumber()}";
             $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE oe_ship_pack.company_oe = '{$this->_company}' AND oe_ship_pack.order >= {$firstOpenOrder->getOrderNumber()}";
         }
 
@@ -155,6 +155,8 @@ class ErpOrderSyncService {
     }
 
     private function _readHeaderFromErp($query) {
+        
+        echo "IMPORTING HEADER RECORDS";
 
         $fields = "oe_head.order,"
                 . "oe_head.rec_seq,"
@@ -190,9 +192,11 @@ class ErpOrderSyncService {
 
 
             foreach ($response as $row) {
+                echo ".";
                 $this->_loadHeaderRecord($row);
             }
 
+            echo "BATCH LOADED\n";
             $this->_em->flush();
 
             $offset = $offset + $limit;
@@ -200,6 +204,8 @@ class ErpOrderSyncService {
     }
 
     private function _readDetailFromErp($query) {
+        
+        echo "IMPORTING LINE RECORDS";
 
         $fields = "oe_line.order,"
                 . "oe_line.rec_seq,"
@@ -220,9 +226,11 @@ class ErpOrderSyncService {
             $response = $this->_erp->read($query, $fields, $offset, $limit);
 
             foreach ($response as $row) {
+                echo ".";
                 $this->_loadDetailRecord($row);
             }
 
+            echo "BATCH LOADED\n";
             $this->_em->flush();
 
             $offset = $offset + $limit;
@@ -230,6 +238,8 @@ class ErpOrderSyncService {
     }
 
     private function _readPackageFromErp($query) {
+        
+        echo "IMPORTING PACKAGE RECORDS";
 
         $fields = "oe_ship_pack.order,"
                 . "oe_ship_pack.rec_seq,"
@@ -250,9 +260,11 @@ class ErpOrderSyncService {
             $response = $this->_erp->read($query, $fields, $offset, $limit);
 
             foreach ($response as $row) {
+                echo ".";
                 $this->_loadPackageRecord($row);
             }
 
+            echo "BATCH LOADED\n";
             $this->_em->flush();
 
             $offset = $offset + $limit;
@@ -267,7 +279,7 @@ class ErpOrderSyncService {
 
         if ($order === null) {
             $order = new ErpOrder($row->oe_head_order, $row->oe_head_rec_seq, $row->oe_head_rec_type);
-        } elseif (!$order->getOpen() || $row->oe_head_opn) {
+        } elseif (!$order->getOpen()) {
             return;
         }
 
@@ -376,9 +388,6 @@ class ErpOrderSyncService {
 
             if ($so === null) {
                 $so = new SalesOrder();
-            } elseif ($t->getOpen()) {
-                $count++;
-                continue;
             }
 
             $so->setOrderNumber($t->getOrderNumber())
