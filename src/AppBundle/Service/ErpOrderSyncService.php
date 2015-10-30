@@ -349,9 +349,9 @@ class ErpOrderSyncService {
         $rep = $this->_em->getRepository('AppBundle:SalesOrder');
         $itemRep = $this->_em->getRepository('AppBundle:SalesOrderItem');
 
-        $lastKnownSalesOrder = $rep->findOneBy(array(), array('orderNumber' => 'DESC'));
+        $firstOpenSalesOrder = $rep->findOneBy(array('open' => true), array('orderNumber' => 'ASC'));
 
-        if ($lastKnownSalesOrder === null) {
+        if ($firstOpenSalesOrder === null) {
 
             $erpOrders = $erpRep->findBy(array('recordType' => 'O'));
         } else {
@@ -359,7 +359,7 @@ class ErpOrderSyncService {
             $erpOrders = $erpRep->createQueryBuilder('e')
                     ->where("e.recordType = 'O'")
                     ->andWhere('e.orderNumber > :orderNumber')
-                    ->setParameter('orderNumber', $lastKnownSalesOrder->getOrderNumber())
+                    ->setParameter('orderNumber', $firstOpenSalesOrder->getOrderNumber())
                     ->getQuery()
                     ->getResult();
         }
