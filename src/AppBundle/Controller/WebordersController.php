@@ -31,7 +31,7 @@ class WebordersController extends Controller {
         return $this->render('AppBundle:Weborders:index.html.twig', array('pageOptions' => array(
                         'page' => $page,
                         'searchTerms' => $searchTerms,
-                        'open' => null
+                        'open' => false
         )));
     }
 
@@ -88,7 +88,7 @@ class WebordersController extends Controller {
         $page = $request->get('page', 1);
         $searchTerms = $request->get('searchTerms', null);
         $customerNumber = $request->get('customerNumber');
-        $openOrders = $request->get('open', null);
+        $openOrders = $request->get('open', false);
         $perPage = 25;
 
         $user = $this->getUser();

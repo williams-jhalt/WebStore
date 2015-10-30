@@ -53,7 +53,7 @@
                 });
                 $('#allOrdersButton').addClass('active');
                 pageOptions['searchTerms'] = $('#searchForm input[name=searchTerms]').val();
-                pageOptions['open'] = null;
+                pageOptions['open'] = 0;
                 updateWeborders();
                 e.preventDefault();
             });
@@ -99,9 +99,8 @@
                 </select>
             {% endif %}
             <div class="btn-group pull-right">
-                <button class="btn btn-default open active" id="allOrdersButton" type="button" name="open" value="">All Orders</button>
+                <button class="btn btn-default open active" id="closedOrdersButton" type="button" name="open" value="0">Closed Orders</button>
                 <button class="btn btn-default open" id="openOrdersButton" type="button" name="open" value="1">Open Orders</button>
-                <button class="btn btn-default open" id="closedOrdersButton" type="button" name="open" value="0">Closed Orders</button>
             </div>
         </form>
     </div>
