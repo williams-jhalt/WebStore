@@ -376,7 +376,8 @@ class ErpOrderSyncService {
 
             if ($so === null) {
                 $so = new SalesOrder();
-            } else {
+            } elseif ($t->getOpen()) {
+                $count++;
                 continue;
             }
 
