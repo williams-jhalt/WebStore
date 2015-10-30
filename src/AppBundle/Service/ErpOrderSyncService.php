@@ -151,8 +151,7 @@ class ErpOrderSyncService {
             $this->_readHeaderFromErp($headerQuery);
             $this->_readDetailFromErp($detailQuery);
         }
-
-        $this->_generateSalesOrders();
+        
     }
 
     private function _readHeaderFromErp($query) {
@@ -342,7 +341,7 @@ class ErpOrderSyncService {
         }
     }
 
-    private function _generateSalesOrders() {
+    public function generateSalesOrders() {
 
         $erpRep = $this->_em->getRepository('AppBundle:ErpOrder');
         $erpItemRep = $this->_em->getRepository('AppBundle:ErpItem');
