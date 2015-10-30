@@ -376,6 +376,8 @@ class ErpOrderSyncService {
 
             if ($so === null) {
                 $so = new SalesOrder();
+            } else {
+                continue;
             }
 
             $so->setOrderNumber($t->getOrderNumber())
