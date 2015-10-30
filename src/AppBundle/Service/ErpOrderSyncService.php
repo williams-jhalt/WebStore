@@ -358,6 +358,7 @@ class ErpOrderSyncService {
             $erpOrders = $erpRep->createQueryBuilder('e')
                     ->where("e.recordType = 'O'")
                     ->andWhere('e.orderNumber >= :orderNumber')
+                    ->andWhere('e.orderNumber NOT IN (SELECT s.orderNumber FROM AppBundle:SalesOrder s WHERE s.open = 0)')
                     ->setParameter('orderNumber', $firstOpenSalesOrder->getOrderNumber())
                     ->orderBy('e.orderNumber', 'ASC')
                     ->getQuery()
@@ -365,7 +366,7 @@ class ErpOrderSyncService {
         }
 
         $count = 0;
-        $blockSize = 250;
+        $blockSize = 500;
 
         $salesOrders = new ArrayCollection();
 
@@ -375,9 +376,6 @@ class ErpOrderSyncService {
 
             if ($so === null) {
                 $so = new SalesOrder();
-            } elseif (!$so->getOpen()) {
-                echo " S ";
-                continue;
             }
 
             $so->setOrderNumber($t->getOrderNumber())
