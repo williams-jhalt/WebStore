@@ -359,6 +359,7 @@ class ErpOrderSyncService {
                     ->where("e.recordType = 'O'")
                     ->andWhere('e.orderNumber >= :orderNumber')
                     ->setParameter('orderNumber', $firstOpenSalesOrder->getOrderNumber())
+                    ->orderBy('e.orderNumber', 'ASC')
                     ->getQuery()
                     ->getResult();
         }
