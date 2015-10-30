@@ -358,7 +358,7 @@ class ErpOrderSyncService {
 
             $erpOrders = $erpRep->createQueryBuilder('e')
                     ->where("e.recordType = 'O'")
-                    ->andWhere('e.orderNumber > :orderNumber')
+                    ->andWhere('e.orderNumber >= :orderNumber')
                     ->setParameter('orderNumber', $firstOpenSalesOrder->getOrderNumber())
                     ->getQuery()
                     ->getResult();
