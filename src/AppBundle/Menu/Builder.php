@@ -14,25 +14,25 @@ class Builder extends ContainerAware {
         $checker = $this->container->get('security.authorization_checker');
         
         if ($checker->isGranted(array('ROLE_CUSTOMER', 'ROLE_ADMIN'))) {
-            $menu->addChild('Dashboard', array('route' => 'dashboard_index'));
+            $menu->addChild('Dashboard', array('route' => 'dashboard_index'))->setLinkAttribute('class', 'abort-ajax');
         } else {
-            $menu->addChild('Home', array('route' => 'homepage'));
+            $menu->addChild('Home', array('route' => 'homepage'))->setLinkAttribute('class', 'abort-ajax');
         }
 
         if ($checker->isGranted('ROLE_USER')) {
-            $menu->addChild('Catalog', array('route' => 'catalog_index'));
+            $menu->addChild('Catalog', array('route' => 'catalog_index'))->setLinkAttribute('class', 'abort-ajax');
         }
 
         if ($checker->isGranted('ROLE_CUSTOMER')) {
-            $menu->addChild('Cart', array('route' => 'cart_index'));
+            $menu->addChild('Cart', array('route' => 'cart_index'))->setLinkAttribute('class', 'abort-ajax');
         }
         
         if ($checker->isGranted(array('ROLE_CUSTOMER', 'ROLE_ADMIN'))) {
-            $menu->addChild('Weborders', array('route' => 'weborders_index'));
+            $menu->addChild('Weborders', array('route' => 'weborders_index'))->setLinkAttribute('class', 'abort-ajax');
         }
         
         if ($checker->isGranted('ROLE_ADMIN')) {
-            $menu->addChild('Admin', array('route' => 'admin_index'));
+            $menu->addChild('Admin', array('route' => 'admin_index'))->setLinkAttribute('class', 'abort-ajax');
         }
 
         return $menu;
@@ -223,9 +223,9 @@ class Builder extends ContainerAware {
         
         $menu = $factory->createItem("root");
         
-        $menu->addChild('List Orders', array('route' => 'weborders_index'));   
-        $menu->addChild('List Invoices', array('route' => 'invoice_index'));        
-        $menu->addChild('Submit Order', array('route' => 'weborders_submit'));
+        $menu->addChild('List Orders', array('route' => 'weborders_index'))->setLinkAttribute('class', 'abort-ajax');   
+        $menu->addChild('List Invoices', array('route' => 'invoice_index'))->setLinkAttribute('class', 'abort-ajax');        
+        $menu->addChild('Submit Order', array('route' => 'weborders_submit'))->setLinkAttribute('class', 'abort-ajax');
         
         return $menu;
         
