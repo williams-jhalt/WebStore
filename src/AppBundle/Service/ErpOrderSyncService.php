@@ -117,9 +117,9 @@ class ErpOrderSyncService {
 //            $this->_readPackageFromErp($packageQuery);
 //        }
 
-        $lastOpenOrder = $rep->findOneBy(array('consolidated' => false), array('orderNumber' => 'DESC'));
+        $firstOpenOrder = $rep->findOneBy(array('consolidated' => false, 'open' => true), array('orderNumber' => 'ASC'));
 
-        if ($lastOpenOrder === null) {
+        if ($firstOpenOrder === null) {
 
             // if this is a new database, only get the last 5 days of open orders
             $firstRecentOrder = $this->_erp->read("FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND INTERVAL(NOW, oe_head.ord_date, 'days') <= 1 USE-INDEX order_d", "oe_head.order", 0, 1);
@@ -130,9 +130,9 @@ class ErpOrderSyncService {
             $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND ABS(oe_line.order) >= {$firstOrderNumber}";
             $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE oe_ship_pack.company_oe = '{$this->_company}' AND ABS(oe_ship_pack.order) >= {$firstOrderNumber}";
         } else {
-            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND oe_head.order > {$lastOpenOrder->getOrderNumber()}";
-            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND oe_line.order > {$lastOpenOrder->getOrderNumber()}";
-            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE oe_ship_pack.company_oe = '{$this->_company}' AND oe_ship_pack.order > {$lastOpenOrder->getOrderNumber()}";
+            $headerQuery = "FOR EACH oe_head NO-LOCK WHERE oe_head.company_oe = '{$this->_company}' AND oe_head.order >= {$firstOpenOrder->getOrderNumber()}";
+            $detailQuery = "FOR EACH oe_line NO-LOCK WHERE oe_line.company_oe = '{$this->_company}' AND oe_line.item <> '' AND oe_line.order >= {$firstOpenOrder->getOrderNumber()}";
+            $packageQuery = "FOR EACH oe_ship_pack NO-LOCK WHERE oe_ship_pack.company_oe = '{$this->_company}' AND oe_ship_pack.order >= {$firstOpenOrder->getOrderNumber()}";
         }
 
         $this->_readHeaderFromErp($headerQuery);
@@ -268,7 +268,7 @@ class ErpOrderSyncService {
 
         if ($order === null) {
             $order = new ErpOrder($row->oe_head_order, $row->oe_head_rec_seq, $row->oe_head_rec_type);
-        } elseif (!$order->getOpen()) {
+        } elseif (!$order->getOpen() || $row->oe_head_opn) {
             return;
         }
 
