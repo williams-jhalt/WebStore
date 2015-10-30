@@ -365,7 +365,7 @@ class ErpOrderSyncService {
         }
 
         $count = 0;
-        $blockSize = 1000;
+        $blockSize = 250;
 
         $salesOrders = new ArrayCollection();
 
@@ -376,6 +376,7 @@ class ErpOrderSyncService {
             if ($so === null) {
                 $so = new SalesOrder();
             } elseif (!$so->getOpen()) {
+                echo " S ";
                 continue;
             }
 
@@ -437,8 +438,11 @@ class ErpOrderSyncService {
             $salesOrders[] = $so;
 
             $count++;
+            
+            echo ".";
 
             if (($count % $blockSize) == 0) {
+                echo "BATCH COMPLETE\n";
                 $this->_em->flush();
             }
         }

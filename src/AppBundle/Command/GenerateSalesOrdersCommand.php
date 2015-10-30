@@ -19,7 +19,7 @@ class GenerateSalesOrdersCommand extends ContainerAwareCommand {
         $service2 = $this->getContainer()->get('app.order_sync_service');
         $output->write("Beginning sales order generation...\n");
         try {
-            $service2->generateSalesOrders($output);
+            $service2->generateSalesOrders();
         } catch (Exception $e) {
             echo $e;
             $output->writeln("There was an error refreshing the order status");
