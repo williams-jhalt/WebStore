@@ -12,11 +12,11 @@ services:
     # helper services        
     app.order_sync_service:
         class: AppBundle\Service\ErpOrderSyncService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%wsdl_url%"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%wsdl_url%", "%soap_username%", "%soap_password%"]
         
     app.product_sync_service:
         class: AppBundle\Service\ErpProductSyncService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%wsdl_url%"]
+        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service", "%wsdl_url%", "%soap_username%", "%soap_password%"]
         
     app.product_service:
         class: AppBundle\Service\ProductService

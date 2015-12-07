@@ -37,14 +37,14 @@ class ErpOrderSyncService {
     private $_wsdlLocation;
     private $_soapClient;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp, $wsdlLocation) {
+    public function __construct(EntityManager $em, ErpOneConnectorService $erp, $wsdlLocation, $soapUser, $soapPass) {
         $this->_em = $em;
         $this->_erp = $erp;
         $this->_wsdlLocation = $wsdlLocation;
 
         $this->_soapClient = new SoapClient($this->_wsdlLocation, array(
-            'login' => "admin",
-            'password' => "test",
+            'login' => $soapUser,
+            'password' => $soapPass,
             'cache_wsdl' => WSDL_CACHE_NONE));
     }
 
