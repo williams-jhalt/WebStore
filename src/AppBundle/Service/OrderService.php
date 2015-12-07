@@ -62,13 +62,6 @@ class OrderService {
     }
     
     public function getStatusCode(SalesOrder $so) {
-
-        $timeAgo = new DateTime();
-        $timeAgo->sub(new DateInterval("PT15M"));
-
-        if ($so->getOpen() && $so->getUpdatedOn() < $timeAgo) {
-            $this->_erp->updateOrder($so);
-        }
         
         $status = "";
         
@@ -93,13 +86,6 @@ class OrderService {
         $rep = $this->_em->getRepository('AppBundle:SalesOrder');
 
         $order = $rep->findOneBy(array('orderNumber' => $orderNumber));
-
-        $timeAgo = new DateTime();
-        $timeAgo->sub(new DateInterval("PT15M"));
-
-        if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
-            $this->_erp->updateOrder($order);
-        }
 
         return $order;
     }

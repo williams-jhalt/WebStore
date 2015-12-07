@@ -40,15 +40,6 @@ class ProductService {
 
         $products = $rep->findBy(array(), array('sku' => 'ASC'), $limit, $offset);
 
-        $timeAgo = new DateTime();
-        $timeAgo->sub(new DateInterval("PT15M"));
-
-        foreach ($products as $product) {
-            if ($product->getUpdatedOn() < $timeAgo) {
-                $this->_erp->updateProduct($product);
-            }
-        }
-
         return $products;
     }
 
@@ -96,15 +87,6 @@ class ProductService {
 
         $products = $query->getResult();
 
-        $timeAgo = new DateTime();
-        $timeAgo->sub(new DateInterval("PT15M"));
-
-        foreach ($products as $product) {
-            if ($product->getUpdatedOn() < $timeAgo) {
-                $this->_erp->updateProduct($product);
-            }
-        }
-
         return $products;
     }
 
@@ -113,13 +95,6 @@ class ProductService {
         $rep = $this->_em->getRepository('AppBundle:Product');
 
         $product = $rep->findOneBy(array('sku' => $itemNumber));
-
-        $timeAgo = new DateTime();
-        $timeAgo->sub(new DateInterval("PT15M"));
-
-        if ($product->getUpdatedOn() < $timeAgo) {
-            $this->_erp->updateProduct($product);
-        }
 
         return $product;
     }
