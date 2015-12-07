@@ -36,7 +36,7 @@ class ErpOrderSyncService {
     }
 
     public function updateOpenOrders(OutputInterface $output) {
-
+        
         $orders = $this->_em->getRepository('AppBundle:SalesOrder')->findBy(array('open' => true));
 
         $salesOrders = array();
@@ -48,7 +48,7 @@ class ErpOrderSyncService {
         }
 
         $batch = 0;
-        $batchSize = 10;
+        $batchSize = 50;
 
         while ($batch < sizeof($salesOrders)) {
 
@@ -62,30 +62,22 @@ class ErpOrderSyncService {
 
             $output->writeln("Loaded {$batchSize} items, total {$batch}");
         };
+        
     }
 
     public function loadNewOrders(OutputInterface $output) {
 
-        $lastKnownOrder = $this->_em->getRepository('AppBundle:SalesOrder')->findOneBy(array(), array('orderNumber' => 'desc'));
+        $knownOrderNumbers = $this->_em->createQuery("SELECT o.orderNumber FROM AppBundle:SalesOrder o WHERE DATE_DIFF(CURRENT_DATE(), o.orderDate) <= 1")->getResult();
 
-        if ($lastKnownOrder !== null) {
-
-            $query = "FOR EACH oe_head NO-LOCK WHERE "
-                    . "oe_head.company_oe = '{$this->_erp->getCompany()}' "
-                    . "AND oe_head.rec_type = 'O' "
-                    . "AND oe_head.order > '{$lastKnownOrder->getOrderNumber()}' ";
-        } else {
-
-            $query = "FOR EACH oe_head NO-LOCK WHERE "
-                    . "oe_head.company_oe = '{$this->_erp->getCompany()}' "
-                    . "AND oe_head.rec_type = 'O' "
-                    . "AND oe_head.opn = yes ";
-        }
+        $query = "FOR EACH oe_head NO-LOCK WHERE "
+                . "oe_head.company_oe = '{$this->_erp->getCompany()}' "
+                . "AND oe_head.rec_type = 'O' "
+                . "AND INTERVAL(NOW, oe_head.ord_date, 'days') <= 1 ";
 
         $fields = "oe_head.order";
 
         $batch = 0;
-        $batchSize = 10;
+        $batchSize = 50;
 
         do {
 
@@ -94,9 +86,11 @@ class ErpOrderSyncService {
             $salesOrders = array();
 
             foreach ($result as $item) {
-                $so = new SoapSalesOrder();
-                $so->orderNumber = $item->oe_head_order;
-                $salesOrders[] = $so;
+                if (array_search($item->oe_head_order, $knownOrderNumbers) === false) {
+                    $so = new SoapSalesOrder();
+                    $so->orderNumber = $item->oe_head_order;
+                    $salesOrders[] = $so;
+                }
             }
 
             try {
