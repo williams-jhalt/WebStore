@@ -70,7 +70,7 @@ class ErpOneConnectorService {
 
     private function _refreshToken() {
 
-        if ($this->_grantTime > (time() - (60 * 3))) {
+        if ($this->_grantTime < (time() - (60 * 3))) {
             return;
         }
 
