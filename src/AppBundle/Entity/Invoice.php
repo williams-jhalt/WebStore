@@ -130,6 +130,7 @@ class Invoice {
     public function __construct() {
         $this->items = new ArrayCollection();
         $this->consolidatedSalesOrders = new ArrayCollection();
+        $this->children = new ArrayCollection();
     }
 
     public function getId() {

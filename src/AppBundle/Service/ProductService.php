@@ -21,12 +21,10 @@ class ProductService {
 
     private $_em;
     private $_erp;
-    private $_company;
 
-    public function __construct(EntityManager $em, ErpProductSyncService $erp, $company) {
+    public function __construct(EntityManager $em, ErpProductSyncService $erp) {
         $this->_em = $em;
         $this->_erp = $erp;
-        $this->_company = $company;
     }
 
     /**

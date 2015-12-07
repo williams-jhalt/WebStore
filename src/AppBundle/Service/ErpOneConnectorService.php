@@ -13,21 +13,24 @@ class ErpOneConnectorService {
     private $_password;
     private $_grantTime;
     private $_cache;
+    private $_company;
+    private $_appname;
 
-    public function __construct($server, $username, $password) {
+    public function __construct($server, $username, $password, $company, $appname) {
 
         $this->_cache = new FilesystemCache(sys_get_temp_dir());
 
         $this->_server = $server;
         $this->_username = $username;
         $this->_password = $password;
+        $this->_company = $company;
+        $this->_appname = $appname;
 
         if (($serializedData = $this->_cache->fetch('erp_token')) !== false) {
             $data = unserialize($serializedData);
             $this->_grantToken = $data[0];
             $this->_accessToken = $data[1];
             $this->_grantTime = $data[2];
-            
         } else {
 
             $ch = curl_init();
@@ -39,8 +42,8 @@ class ErpOneConnectorService {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-                'client' => 'com.williamstradingco.app',
-                'company' => 'wtc',
+                'client' => $this->_appname,
+                'company' => $this->_company,
                 'username' => $this->_username,
                 'password' => $this->_password
             )));
@@ -245,6 +248,10 @@ class ErpOneConnectorService {
         }
 
         return $response;
+    }
+
+    public function getCompany() {
+        return $this->_company;
     }
 
 }

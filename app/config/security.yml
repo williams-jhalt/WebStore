@@ -28,6 +28,7 @@ security:
         - { path: ^/weborders/, role: [ ROLE_CUSTOMER, ROLE_ADMIN ] }
         - { path: ^/dashboard, role: [ ROLE_CUSTOMER, ROLE_ADMIN ] }
         - { path: ^/admin/, role: ROLE_ADMIN }
+        - { path: ^/api/soap.wsdl, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api, role: ROLE_USER }
 
     role_hierarchy:

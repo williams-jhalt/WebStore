@@ -2,146 +2,86 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Manufacturer;
-use AppBundle\Entity\Product;
-use AppBundle\Entity\ProductType;
-use AppBundle\Service\ErpOneConnectorService;
+use AppBundle\Soap\SoapProduct;
 use DateTime;
 use Doctrine\ORM\EntityManager;
+use SoapClient;
+use SoapFault;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ErpProductSyncService {
 
+    /**
+     *
+     * @var EntityManager
+     */
     private $_em;
-    private $_erp;
-    private $_company;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp, $company) {
+    /**
+     *
+     * @var ErpOneConnectorService
+     */
+    private $_erp;
+    private $_wsdlLocation;
+    private $_soapClient;
+
+    public function __construct(EntityManager $em, ErpOneConnectorService $erp, $wsdlLocation) {
         $this->_em = $em;
         $this->_erp = $erp;
-        $this->_company = $company;
-    }
+        $this->_wsdlLocation = $wsdlLocation;
 
-    public function updateProduct(Product $product) {
-
-        $query = "FOR EACH item NO-LOCK WHERE "
-                . "item.company_it = '{$this->_company}' AND item.item = '{$product->getSku()}' AND item.web_item = yes, "
-                . "EACH wa_item NO-LOCK WHERE "
-                . "wa_item.company_it = item.company_it AND wa_item.item = item.item";
-
-        $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,item.date_added,wa_item.qty_oh,wa_item.list_price");
-
-        if (empty($result)) {
-            return;
-        }
-
-        $item = $result[0];
-
-        $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
-        $trep = $this->_em->getRepository('AppBundle:ProductType');
-
-        $manufacturer = $mrep->findOneByCode($item->item_manufacturer);
-
-        if ($manufacturer === null) {
-            $manufacturer = new Manufacturer();
-            $manufacturer->setCode($item->item_manufacturer);
-            $manufacturer->setName($item->item_manufacturer);
-            $manufacturer->setShowInMenu(true);
-            $this->_em->persist($manufacturer);
-            $this->_em->flush($manufacturer);
-        }
-
-        $type = $trep->findOneByCode($item->item_product_line);
-
-        if ($type === null) {
-            $type = new ProductType();
-            $type->setCode($item->item_product_line);
-            $type->setName($item->item_product_line);
-            $type->setShowInMenu(true);
-            $this->_em->persist($type);
-            $this->_em->flush($type);
-        }
-
-        $product->setName(implode(" ", $item->item_descr));
-        $product->setManufacturer($manufacturer);
-        $product->setProductType($type);
-        $product->setStockQuantity($item->wa_item_qty_oh);
-        $product->setPrice($item->wa_item_list_price);
-        $product->setReleaseDate(new DateTime($item->item_date_added));
-
-        $this->_em->persist($product);
-        $this->_em->flush();
+        $this->_soapClient = new SoapClient($this->_wsdlLocation, array(
+            'login' => "admin",
+            'password' => "test",
+            'cache_wsdl' => WSDL_CACHE_NONE));
     }
 
     public function loadFromErp(OutputInterface $output) {
 
         $query = "FOR EACH item NO-LOCK WHERE "
-                . "item.company_it = '{$this->_company}' AND item.web_item = yes, "
+                . "item.company_it = '{$this->_erp->getCompany()}' AND item.web_item = yes, "
                 . "EACH wa_item NO-LOCK WHERE "
                 . "wa_item.company_it = item.company_it AND wa_item.item = item.item";
+
+        $fields = "item.item,item.manufacturer,item.product_line,item.descr,item.date_added,wa_item.qty_oh,wa_item.list_price";
 
         $batch = 0;
         $batchSize = 1000;
 
         do {
 
-            $result = $this->_erp->read($query, "item.item,item.manufacturer,item.product_line,item.descr,item.date_added,wa_item.qty_oh,wa_item.list_price", $batch, $batchSize);
+            $result = $this->_erp->read($query, $fields, $batch, $batchSize);
+
+            $products = array();
 
             foreach ($result as $item) {
-                $this->_loadFromErp($item);
+
+                $releaseDate = new DateTime($item->item_date_added);
+
+                $p = new SoapProduct();
+                $p->sku = $item->item_item;
+                $p->name = implode(" ", $item->item_descr);
+                $p->price = $item->wa_item_list_price;
+                $p->stockQuantity = $item->wa_item_qty_oh;
+                $p->manufacturerCode = $item->item_manufacturer;
+                $p->productTypeCode = $item->item_product_line;
+                $p->releaseDate = $releaseDate->format('Y-m-d');
+
+                $products[] = $p;
+            }
+
+            $results = 0;
+
+            try {
+                $results = $this->_soapClient->updateProducts($products);
+            } catch (SoapFault $fault) {
+                $output->writeln("Couldn't submit webservice call " + $fault->getMessage());
             }
 
             $batch += $batchSize;
 
-            $output->writeln("Loaded {$batch} items");
-
-            $this->_em->flush();
+            $output->writeln("Loaded {$batch} items, wrote {$results} to webservice");
         } while (!empty($result));
-    }
-
-    private function _loadFromErp($item) {
-
-        $prep = $this->_em->getRepository('AppBundle:Product');
-        $mrep = $this->_em->getRepository('AppBundle:Manufacturer');
-        $trep = $this->_em->getRepository('AppBundle:ProductType');
-
-        $manufacturer = $mrep->findOneByCode($item->item_manufacturer);
-
-        if ($manufacturer === null) {
-            $manufacturer = new Manufacturer();
-            $manufacturer->setCode($item->item_manufacturer);
-            $manufacturer->setName($item->item_manufacturer);
-            $manufacturer->setShowInMenu(true);
-            $this->_em->persist($manufacturer);
-            $this->_em->flush($manufacturer);
-        }
-
-        $type = $trep->findOneByCode($item->item_product_line);
-
-        if ($type === null) {
-            $type = new ProductType();
-            $type->setCode($item->item_product_line);
-            $type->setName($item->item_product_line);
-            $type->setShowInMenu(true);
-            $this->_em->persist($type);
-            $this->_em->flush($type);
-        }
-
-        $product = $prep->findOneBySku($item->item_item);
-
-        if ($product === null) {
-            $product = new Product();
-            $product->setSku($item->item_item);
-        }
-
-        $product->setName(implode(" ", $item->item_descr));
-        $product->setManufacturer($manufacturer);
-        $product->setProductType($type);
-        $product->setStockQuantity($item->wa_item_qty_oh);
-        $product->setPrice($item->wa_item_list_price);
-        $product->setReleaseDate(new DateTime($item->item_date_added));
-
-        $this->_em->persist($product);
     }
 
 }

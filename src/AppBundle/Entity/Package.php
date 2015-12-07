@@ -103,10 +103,6 @@ class Package {
         return $this->salesOrder;
     }
 
-    public function getOrderNumber() {
-        return $this->orderNumber;
-    }
-
     public function getRecordSequence() {
         return $this->recordSequence;
     }
@@ -153,11 +149,6 @@ class Package {
         return $this;
     }
 
-    public function setOrderNumber($orderNumber) {
-        $this->orderNumber = $orderNumber;
-        return $this;
-    }
-
     public function setRecordSequence($recordSequence) {
         $this->recordSequence = $recordSequence;
         return $this;
@@ -200,6 +191,15 @@ class Package {
 
     public function setWidth($width) {
         $this->width = $width;
+        return $this;
+    }
+
+    public function getOrderNumber() {
+        return $this->orderNumber;
+    }
+
+    public function setOrderNumber($orderNumber) {
+        $this->orderNumber = $orderNumber;
         return $this;
     }
 

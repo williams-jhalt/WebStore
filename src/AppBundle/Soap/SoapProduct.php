@@ -1,38 +1,42 @@
 <?php
 
-namespace AppBundle\Service\Soap;
+namespace AppBundle\Soap;
 
-class Product {
-    
+class SoapProduct {
+
     /**
      * @type string
      */
     public $sku;
-    
+
     /**
      * @type string
      */
     public $name;
-    
+
     /**
-     * @type decimal
+     * @type double
      */
     public $price;
-    
+
     /**
      * @type int
      */
     public $stockQuantity;
-    
+
     /**
      * @type string
      */
-    public $barcode;
-    
+    public $manufacturerCode;
+
     /**
-     * @type dateTime
+     * @type string
+     */
+    public $productTypeCode;
+
+    /**
+     * @type date
      */
     public $releaseDate;
-    
-}
 
+}

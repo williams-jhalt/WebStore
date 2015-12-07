@@ -20,7 +20,7 @@ class DefaultController extends Controller {
         $wsdl = new WSDLCreator('AppBundle\Service\SoapService', $this->generateUrl('api_soap_endpoint', array(), true));
         $wsdl->setNamespace("http://williamstradingco.com/");
         $response = new Response();
-        $response->headers->set('Content-Type', 'text/xml; charset=ISO-8859-1');
+        $response->headers->set('Content-Type', 'text/xml; charset=UTF-8');
         ob_start();
         $wsdl->renderWSDL();
         $response->setContent(ob_get_clean());
@@ -33,11 +33,12 @@ class DefaultController extends Controller {
      */
     public function soapEndpointAction() {
 
-        $server = new SoapServer(null, array('uri' => $this->generateUrl('api_soap_endpoint', array(), true)));
+        $server = new SoapServer(null, array('uri' => $this->generateUrl('api_soap_wsdl', array(), true)));
+        
         $server->setObject($this->get('api.soap_service'));
 
         $response = new Response();
-        $response->headers->set('Content-Type', 'text/xml; charset=ISO-8859-1');
+        $response->headers->set('Content-Type', 'text/xml; charset=UTF-8');
 
         ob_start();
         $server->handle();

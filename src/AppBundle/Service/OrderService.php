@@ -17,12 +17,10 @@ class OrderService {
 
     private $_em;
     private $_erp;
-    private $_company;
 
-    public function __construct(EntityManager $em, ErpOrderSyncService $erp, $company) {
+    public function __construct(EntityManager $em, ErpOrderSyncService $erp) {
         $this->_em = $em;
         $this->_erp = $erp;
-        $this->_company = $company;
     }
 
     public function findBySearchOptions($params, $offset = 0, $limit = 10) {
