@@ -33,7 +33,7 @@ class ErpProductSyncService {
         $this->_soapClient = new SoapClient($this->_wsdlLocation, array(
             'login' => $soapUser,
             'password' => $soapPass,
-            'cache_wsdl' => WSDL_CACHE_NONE));
+            'keep_alive' => true));
     }
 
     public function loadFromErp(OutputInterface $output) {

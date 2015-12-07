@@ -32,7 +32,7 @@ class ErpOrderSyncService {
         $this->_soapClient = new SoapClient($this->_wsdlLocation, array(
             'login' => $soapUser,
             'password' => $soapPass,
-            'cache_wsdl' => WSDL_CACHE_NONE));
+            'keep_alive' => true));
     }
 
     public function updateOpenOrders(OutputInterface $output) {
@@ -48,7 +48,7 @@ class ErpOrderSyncService {
         }
 
         $batch = 0;
-        $batchSize = 100;
+        $batchSize = 10;
 
         while ($batch < sizeof($salesOrders)) {
 
@@ -85,7 +85,7 @@ class ErpOrderSyncService {
         $fields = "oe_head.order";
 
         $batch = 0;
-        $batchSize = 100;
+        $batchSize = 10;
 
         do {
 
