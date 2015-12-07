@@ -15,7 +15,6 @@ class ErpOneConnectorService {
     private $_cache;
     private $_company;
     private $_appname;
-    private $_ch;
 
     public function __construct($server, $username, $password, $company, $appname) {
 
@@ -26,11 +25,8 @@ class ErpOneConnectorService {
         $this->_password = $password;
         $this->_company = $company;
         $this->_appname = $appname;
-        
-        $this->_ch = curl_init();
 
         if (($serializedData = $this->_cache->fetch('erp_token')) !== false) {
-
             $data = unserialize($serializedData);
             $this->_grantToken = $data[0];
             $this->_accessToken = $data[1];
@@ -53,6 +49,8 @@ class ErpOneConnectorService {
             )));
 
             $response = json_decode(curl_exec($ch));
+
+            curl_close($ch);
 
             if (isset($response->_errors)) {
                 $this->_cache->delete('erp_token');
@@ -94,6 +92,8 @@ class ErpOneConnectorService {
 
         $response = json_decode(curl_exec($ch));
 
+        curl_close($ch);
+
         if (isset($response->_errors)) {
             $this->_cache->delete('erp_token');
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
@@ -114,21 +114,25 @@ class ErpOneConnectorService {
 
         $this->_refreshToken();
 
-        curl_setopt($this->_ch, CURLOPT_URL, $this->_server . "/distone/rest/service/data/read");
-        curl_setopt($this->_ch, CURLOPT_HTTPHEADER, array(
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/data/read");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/x-www-form-urlencoded',
             'Authorization: ' . $this->_accessToken
         ));
-        curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($this->_ch, CURLOPT_POST, 1);
-        curl_setopt($this->_ch, CURLOPT_POSTFIELDS, http_build_query(array(
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
             'query' => $query,
             'columns' => $columns,
             'skip' => $offset,
             'take' => $limit
         )));
 
-        $response = json_decode(curl_exec($this->_ch));
+        $response = json_decode(curl_exec($ch));
+
+        curl_close($ch);
 
         if (isset($response->_errors)) {
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
@@ -164,6 +168,8 @@ class ErpOneConnectorService {
 
         $this->_refreshToken();
 
+        $ch = curl_init();
+
         $queryData = array();
 
         $queryData['item'] = $itemNumber;
@@ -177,13 +183,15 @@ class ErpOneConnectorService {
 
         $query = http_build_query($queryData);
 
-        curl_setopt($this->_ch, CURLOPT_URL, $this->_server . "/distone/rest/service/price/fetch?" . $query);
-        curl_setopt($this->_ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/price/fetch?" . $query);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Authorization: ' . $this->_accessToken
         ));
-        curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        $response = json_decode(curl_exec($this->_ch));
+        $response = json_decode(curl_exec($ch));
+
+        curl_close($ch);
 
         if (isset($response->_errors)) {
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
@@ -213,6 +221,8 @@ class ErpOneConnectorService {
 
         $this->_refreshToken();
 
+        $ch = curl_init();
+
         $queryData = array(
             'type' => $type,
             'record' => $record,
@@ -221,15 +231,17 @@ class ErpOneConnectorService {
 
         $query = http_build_query($queryData);
 
-        curl_setopt($this->_ch, CURLOPT_URL, $this->_server . "/distone/rest/service/form/fetch?" . $query);
-        curl_setopt($this->_ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/form/fetch?" . $query);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Authorization: ' . $this->_accessToken
         ));
-        curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        $r = curl_exec($this->_ch);
+        $r = curl_exec($ch);
 
         $response = json_decode($r);
+
+        curl_close($ch);
 
         if (isset($response->_errors)) {
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
