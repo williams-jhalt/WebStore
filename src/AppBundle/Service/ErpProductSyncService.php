@@ -75,7 +75,7 @@ class ErpProductSyncService {
             try {
                 $results = $this->_soapClient->updateProducts($products);
             } catch (SoapFault $fault) {
-                $output->writeln("Couldn't submit webservice call " + $fault->getMessage());
+                $output->writeln("Couldn't submit webservice call " . $fault->getMessage());
             }
 
             $batch += $batchSize;
