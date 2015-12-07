@@ -26,29 +26,33 @@ class ErpOneConnectorService {
         $this->_password = $password;
         $this->_company = $company;
         $this->_appname = $appname;
+        
         $this->_ch = curl_init();
 
         if (($serializedData = $this->_cache->fetch('erp_token')) !== false) {
+
             $data = unserialize($serializedData);
             $this->_grantToken = $data[0];
             $this->_accessToken = $data[1];
             $this->_grantTime = $data[2];
         } else {
 
-            curl_setopt($this->_ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/grant");
-            curl_setopt($this->_ch, CURLOPT_HTTPHEADER, array(
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/grant");
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/x-www-form-urlencoded'
             ));
-            curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($this->_ch, CURLOPT_POST, 1);
-            curl_setopt($this->_ch, CURLOPT_POSTFIELDS, http_build_query(array(
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
                 'client' => $this->_appname,
                 'company' => $this->_company,
                 'username' => $this->_username,
                 'password' => $this->_password
             )));
 
-            $response = json_decode(curl_exec($this->_ch));
+            $response = json_decode(curl_exec($ch));
 
             if (isset($response->_errors)) {
                 $this->_cache->delete('erp_token');
@@ -70,23 +74,25 @@ class ErpOneConnectorService {
 
     private function _refreshToken() {
 
-        if ($this->_grantTime < (time() - (60 * 3))) {
+        if ($this->_grantTime > (time() - (60 * 3))) {
             return;
         }
 
-        curl_setopt($this->_ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/access");
-        curl_setopt($this->_ch, CURLOPT_HTTPHEADER, array(
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/access");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/x-www-form-urlencoded'
         ));
-        curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($this->_ch, CURLOPT_POST, 1);
-        curl_setopt($this->_ch, CURLOPT_POSTFIELDS, http_build_query(array(
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
             'client' => $this->_appname,
             'company' => $this->_company,
             'grant_token' => $this->_grantToken
         )));
 
-        $response = json_decode(curl_exec($this->_ch));
+        $response = json_decode(curl_exec($ch));
 
         if (isset($response->_errors)) {
             $this->_cache->delete('erp_token');

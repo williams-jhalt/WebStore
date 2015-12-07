@@ -55,7 +55,7 @@ class ErpOrderSyncService {
             try {
                 $this->_soapClient->updateSalesOrders(array_slice($salesOrders, $batch, $batchSize));
             } catch (SoapFault $fault) {
-                $output->writeln("Couldn't submit webservice call " + $fault->getMessage());
+                $output->writeln("Couldn't submit webservice call " . $fault->getMessage());
             }
 
             $batch += $batchSize;
@@ -102,7 +102,7 @@ class ErpOrderSyncService {
             try {
                 $this->_soapClient->updateSalesOrders($salesOrders);
             } catch (SoapFault $fault) {
-                $output->writeln("Couldn't submit webservice call " + $fault->getMessage());
+                $output->writeln("Couldn't submit webservice call " . $fault->getMessage());
             }
 
             $batch += $batchSize;
