@@ -32,42 +32,45 @@ class ErpOneConnectorService {
             $this->_accessToken = $data[1];
             $this->_grantTime = $data[2];
         } else {
-
-            $ch = curl_init();
-
-            curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/grant");
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/x-www-form-urlencoded'
-            ));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-                'client' => $this->_appname,
-                'company' => $this->_company,
-                'username' => $this->_username,
-                'password' => $this->_password
-            )));
-
-            $response = json_decode(curl_exec($ch));
-
-            curl_close($ch);
-
-            if (isset($response->_errors)) {
-                $this->_cache->delete('erp_token');
-                throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
-            }
-
-            $this->_grantToken = $response->grant_token;
-            $this->_accessToken = $response->access_token;
-
-            $this->_grantTime = time();
-
-            $this->_cache->save('erp_token', serialize(array(
-                $this->_grantToken,
-                $this->_accessToken,
-                $this->_grantTime
-            )));
+            $this->_getGrantToken();
         }
+    }
+
+    private function _getGrantToken() {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/grant");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/x-www-form-urlencoded'
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
+            'client' => $this->_appname,
+            'company' => $this->_company,
+            'username' => $this->_username,
+            'password' => $this->_password
+        )));
+
+        $response = json_decode(curl_exec($ch));
+
+        curl_close($ch);
+
+        if (isset($response->_errors)) {
+            $this->_cache->delete('erp_token');
+            throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
+        }
+
+        $this->_grantToken = $response->grant_token;
+        $this->_accessToken = $response->access_token;
+
+        $this->_grantTime = time();
+
+        $this->_cache->save('erp_token', serialize(array(
+            $this->_grantToken,
+            $this->_accessToken,
+            $this->_grantTime
+        )));
     }
 
     private function _refreshToken() {
@@ -96,7 +99,7 @@ class ErpOneConnectorService {
 
         if (isset($response->_errors)) {
             $this->_cache->delete('erp_token');
-            throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
+            $this->_getGrantToken();
         }
 
         $this->_accessToken = $response->access_token;
