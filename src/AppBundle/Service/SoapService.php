@@ -93,103 +93,110 @@ class SoapService {
     /**
      * @WebMethod
      * 
-     * @param string $orderNumber
+     * @param wrapper[] $salesOrders @className=\AppBundle\Soap\SoapSalesOrder
      */
-    public function updateSalesOrder($orderNumber) {
+    public function updateSalesOrders($salesOrders) {
 
         $rep = $this->_em->getRepository('AppBundle:SalesOrder');
 
-        $query = "FOR EACH oe_head "
-                . "WHERE oe_head.company_oe = '{$this->_erp->getCompany()}' "
-                . "AND oe_head.order = '{$orderNumber}' "
-                . "AND oe_head.rec_type = 'O'";
+        foreach ($salesOrders as $so) {
 
-        $fields = "oe_head.order,"
-                . "oe_head.name,"
-                . "oe_head.adr,"
-                . "oe_head.state,"
-                . "oe_head.postal_code,"
-                . "oe_head.country_code,"
-                . "oe_head.ship_via_code,"
-                . "oe_head.cu_po,"
-                . "oe_head.ord_date,"
-                . "oe_head.opn,"
-                . "oe_head.o_tot_gross,"
-                . "oe_head.stat,"
-                . "oe_head.customer,"
-                . "oe_head.ord_ext,"
-                . "oe_head.rec_seq";
-
-        $response = $this->_erp->read($query, $fields);
-
-        foreach ($response as $i) {
-
-            $salesOrder = $rep->findOneBy(array('orderNumber' => $i->oe_head_order));
-
-            if ($salesOrder === null) {
-                $salesOrder = new SalesOrder();
-                $salesOrder->setOrderNumber($i->oe_head_order);
-                $salesOrder->setRecordSequence($i->oe_head_rec_seq);
+            if (is_array($so)) {
+                return $this->updateSalesOrders($so);
             }
+            
+            $query = "FOR EACH oe_head "
+                    . "WHERE oe_head.company_oe = '{$this->_erp->getCompany()}' "
+                    . "AND oe_head.order = '{$so->orderNumber}' "
+                    . "AND oe_head.rec_type = 'O'";
 
-            $salesOrder->setCustomerNumber($i->oe_head_customer);
-            $salesOrder->setCustomerPO($i->oe_head_cu_po);
-            $salesOrder->setExternalOrderNumber($i->oe_head_ord_ext);
-            $salesOrder->setOpen($i->oe_head_opn);
-            $salesOrder->setOrderDate(new DateTime($i->oe_head_ord_date));
-            $salesOrder->setOrderGrossAmount($i->oe_head_o_tot_gross);
-            $salesOrder->setShipToAddress1($i->oe_head_adr[0]);
-            $salesOrder->setShipToAddress2($i->oe_head_adr[1]);
-            $salesOrder->setShipToAddress3($i->oe_head_adr[2]);
-            $salesOrder->setShipToCity($i->oe_head_adr[3]);
-            $salesOrder->setShipToCountryCode($i->oe_head_country_code);
-            $salesOrder->setShipToName($i->oe_head_name);
-            $salesOrder->setShipToPostalCode($i->oe_head_postal_code);
-            $salesOrder->setShipToState($i->oe_head_state);
-            $salesOrder->setShipViaCode($i->oe_head_ship_via_code);
-            $salesOrder->setStatus($i->oe_head_stat);
+            $fields = "oe_head.order,"
+                    . "oe_head.name,"
+                    . "oe_head.adr,"
+                    . "oe_head.state,"
+                    . "oe_head.postal_code,"
+                    . "oe_head.country_code,"
+                    . "oe_head.ship_via_code,"
+                    . "oe_head.cu_po,"
+                    . "oe_head.ord_date,"
+                    . "oe_head.opn,"
+                    . "oe_head.o_tot_gross,"
+                    . "oe_head.stat,"
+                    . "oe_head.customer,"
+                    . "oe_head.ord_ext,"
+                    . "oe_head.rec_seq";
 
-            $this->_em->persist($salesOrder);
+            $response = $this->_erp->read($query, $fields);
 
-            // load items
-            $itemRep = $this->_em->getRepository('AppBundle:SalesOrderItem');
+            foreach ($response as $i) {
 
-            $itemQuery = "FOR EACH oe_line "
-                    . "WHERE oe_line.company_oe = '{$this->_erp->getCompany()}' "
-                    . "AND oe_line.order = '{$salesOrder->getOrderNumber()}' "
-                    . "AND oe_line.rec_type = 'O'";
+                $salesOrder = $rep->findOneBy(array('orderNumber' => $i->oe_head_order));
 
-            $itemFields = "oe_line.line,"
-                    . "oe_line.item,"
-                    . "oe_line.descr,"
-                    . "oe_line.price,"
-                    . "oe_line.q_ord";
-
-            $itemResponse = $this->_erp->read($itemQuery, $itemFields);
-
-            foreach ($itemResponse as $t) {
-                $item = $itemRep->findOneBy(array('salesOrder' => $salesOrder, 'lineNumber' => $t->oe_line_line));
-                if ($item === null) {
-                    $item = new SalesOrderItem();
-                    $item->setSalesOrder($salesOrder);
-                    $item->setLineNumber($t->oe_line_line);
+                if ($salesOrder === null) {
+                    $salesOrder = new SalesOrder();
+                    $salesOrder->setOrderNumber($i->oe_head_order);
+                    $salesOrder->setRecordSequence($i->oe_head_rec_seq);
                 }
-                $item->setItemNumber($t->oe_line_item);
-                $item->setName(implode($t->oe_line_descr));
-                $item->setPrice($t->oe_line_price);
-                $item->setQuantityOrdered($t->oe_line_q_ord);
-                $this->_em->persist($item);
+
+                $salesOrder->setCustomerNumber($i->oe_head_customer);
+                $salesOrder->setCustomerPO($i->oe_head_cu_po);
+                $salesOrder->setExternalOrderNumber($i->oe_head_ord_ext);
+                $salesOrder->setOpen($i->oe_head_opn);
+                $salesOrder->setOrderDate(new DateTime($i->oe_head_ord_date));
+                $salesOrder->setOrderGrossAmount($i->oe_head_o_tot_gross);
+                $salesOrder->setShipToAddress1($i->oe_head_adr[0]);
+                $salesOrder->setShipToAddress2($i->oe_head_adr[1]);
+                $salesOrder->setShipToAddress3($i->oe_head_adr[2]);
+                $salesOrder->setShipToCity($i->oe_head_adr[3]);
+                $salesOrder->setShipToCountryCode($i->oe_head_country_code);
+                $salesOrder->setShipToName($i->oe_head_name);
+                $salesOrder->setShipToPostalCode($i->oe_head_postal_code);
+                $salesOrder->setShipToState($i->oe_head_state);
+                $salesOrder->setShipViaCode($i->oe_head_ship_via_code);
+                $salesOrder->setStatus($i->oe_head_stat);
+
+                $this->_em->persist($salesOrder);
+
+                // load items
+                $itemRep = $this->_em->getRepository('AppBundle:SalesOrderItem');
+
+                $itemQuery = "FOR EACH oe_line "
+                        . "WHERE oe_line.company_oe = '{$this->_erp->getCompany()}' "
+                        . "AND oe_line.order = '{$salesOrder->getOrderNumber()}' "
+                        . "AND oe_line.rec_type = 'O'";
+
+                $itemFields = "oe_line.line,"
+                        . "oe_line.item,"
+                        . "oe_line.descr,"
+                        . "oe_line.price,"
+                        . "oe_line.q_ord";
+
+                $itemResponse = $this->_erp->read($itemQuery, $itemFields);
+
+                foreach ($itemResponse as $t) {
+                    $item = $itemRep->findOneBy(array('salesOrder' => $salesOrder, 'lineNumber' => $t->oe_line_line));
+                    if ($item === null) {
+                        $item = new SalesOrderItem();
+                        $item->setSalesOrder($salesOrder);
+                        $item->setLineNumber($t->oe_line_line);
+                    }
+                    $item->setItemNumber($t->oe_line_item);
+                    $item->setName(implode($t->oe_line_descr));
+                    $item->setPrice($t->oe_line_price);
+                    $item->setQuantityOrdered($t->oe_line_q_ord);
+                    $this->_em->persist($item);
+                }
+
+                $this->_updateShipments($salesOrder);
+                $this->_updateInvoices($salesOrder);
+                $this->_updateCredits($salesOrder);
+                $this->_updatePackages($salesOrder);
+
+                $this->_em->persist($salesOrder);
             }
 
-            $this->_updateShipments($salesOrder);
-            $this->_updateInvoices($salesOrder);
-            $this->_updateCredits($salesOrder);
-            $this->_updatePackages($salesOrder);
-
-            $this->_em->persist($salesOrder);
+            $this->_em->flush();
         }
-
-        $this->_em->flush();
     }
 
     private function _updatePackages(SalesOrder $salesOrder) {

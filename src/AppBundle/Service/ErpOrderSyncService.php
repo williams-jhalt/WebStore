@@ -2,20 +2,7 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Credit;
-use AppBundle\Entity\CreditItem;
-use AppBundle\Entity\ErpItem;
-use AppBundle\Entity\ErpOrder;
-use AppBundle\Entity\ErpPackage;
-use AppBundle\Entity\Invoice;
-use AppBundle\Entity\InvoiceItem;
-use AppBundle\Entity\Package;
-use AppBundle\Entity\SalesOrder;
-use AppBundle\Entity\SalesOrderItem;
-use AppBundle\Entity\Shipment;
-use AppBundle\Entity\ShipmentItem;
-use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
+use AppBundle\Soap\SoapSalesOrder;
 use Doctrine\ORM\EntityManager;
 use SoapClient;
 use SoapFault;
@@ -52,25 +39,41 @@ class ErpOrderSyncService {
 
         $orders = $this->_em->getRepository('AppBundle:SalesOrder')->findBy(array('open' => true));
 
+        $salesOrders = array();
+
         foreach ($orders as $order) {
+            $so = new SoapSalesOrder();
+            $so->orderNumber = $order->getOrderNumber();
+            $salesOrders[] = $so;
+        }
+
+        $batch = 0;
+        $batchSize = 100;
+
+        while ($batch < sizeof($salesOrders)) {
+
             try {
-                $this->_soapClient->updateSalesOrder($order->getOrderNumber());
+                $this->_soapClient->updateSalesOrders(array_slice($salesOrders, $batch, $batchSize));
             } catch (SoapFault $fault) {
                 $output->writeln("Couldn't submit webservice call " + $fault->getMessage());
             }
-        }
+
+            $batch += $batchSize;
+
+            $output->writeln("Loaded {$batchSize} items, total {$batch}");
+        };
     }
 
     public function loadNewOrders(OutputInterface $output) {
 
-        $lastKnownOrder = $this->_em->createQuery("SELECT o.orderNumber FROM AppBundle:SalesOrder o ORDER BY o.orderNumber DESC")->setMaxResults(1)->getSingleScalarResult();
+        $lastKnownOrder = $this->_em->getRepository('AppBundle:SalesOrder')->findOneBy(array(), array('orderNumber' => 'desc'));
 
         if ($lastKnownOrder !== null) {
 
             $query = "FOR EACH oe_head NO-LOCK WHERE "
                     . "oe_head.company_oe = '{$this->_erp->getCompany()}' "
                     . "AND oe_head.rec_type = 'O' "
-                    . "AND oe_head.order > '{$lastKnownOrder}' ";
+                    . "AND oe_head.order > '{$lastKnownOrder->getOrderNumber()}' ";
         } else {
 
             $query = "FOR EACH oe_head NO-LOCK WHERE "
@@ -82,18 +85,24 @@ class ErpOrderSyncService {
         $fields = "oe_head.order";
 
         $batch = 0;
-        $batchSize = 1000;
+        $batchSize = 100;
 
         do {
 
             $result = $this->_erp->read($query, $fields, $batch, $batchSize);
-           
+
+            $salesOrders = array();
+
             foreach ($result as $item) {
-                try {
-                    $this->_soapClient->updateSalesOrder($item->oe_head_order);
-                } catch (SoapFault $fault) {
-                    $output->writeln("Couldn't submit webservice call " + $fault->getMessage());
-                }
+                $so = new SoapSalesOrder();
+                $so->orderNumber = $item->oe_head_order;
+                $salesOrders[] = $so;
+            }
+
+            try {
+                $this->_soapClient->updateSalesOrders($salesOrders);
+            } catch (SoapFault $fault) {
+                $output->writeln("Couldn't submit webservice call " + $fault->getMessage());
             }
 
             $batch += $batchSize;
