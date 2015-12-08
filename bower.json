@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "bootstrap": "~3.3.5",
-    "select2": "~4.0.0",
+    "select2": "~3.5.4",
     "jscroll": "~2.3.4",
     "tinymce": "~4.2.7",
     "jstree": "~3.2.1",
@@ -30,7 +30,8 @@
     "jstree-bootstrap-theme": "~1.0.1",
     "datatables-responsive": "~2.0.0",
     "bootstrap-session-timeout": "~1.0.3",
-    "jquery-zoom": "~1.7.14"
+    "jquery-zoom": "~1.7.14",
+    "select2-bootstrap-css": "~1.4.6"
   },
   "resolutions": {
     "bootstrap": "~3.3.5",
