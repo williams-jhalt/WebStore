@@ -3,7 +3,6 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
     <script type="text/javascript">
 
         $(document).ready(function () {
@@ -13,7 +12,6 @@
             pageOptions = {{pageOptions|json_encode|raw}};
 
             updateWeborders = function () {
-                $.blockUI();
                 $('#weborderBody').load(Routing.generate('weborders_ajax_list', pageOptions), function (data) {
                     $('#weborderBody').data('jscroll', null);
                     $('#weborderBody').jscroll({

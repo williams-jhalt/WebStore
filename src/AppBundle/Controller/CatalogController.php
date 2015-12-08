@@ -20,13 +20,13 @@ class CatalogController extends Controller {
      * @Route("/", name="catalog_index")
      */
     public function indexAction() {
-        
+
         $rep = $this->getDoctrine()->getRepository('AppBundle:Manufacturer');
-        
+
         $manufacturers = $rep->findBy(array('showInMenu' => true), array('name' => 'ASC'));
-        
+
         return $this->render('AppBundle:Catalog:index.html.twig', array(
-            'manufacturers' => $manufacturers
+                    'manufacturers' => $manufacturers
         ));
     }
 
@@ -44,7 +44,7 @@ class CatalogController extends Controller {
      * @Route("/list", name="catalog_list", options={"expose": true})
      */
     public function listAction(Request $request) {
-
+        
         $category = $request->get('category_id', null);
         $manufacturer = $request->get('manufacturer', null);
         $type = $request->get('type', null);
@@ -82,6 +82,7 @@ class CatalogController extends Controller {
                 'page' => $page + 1
             ));
         }
+
 
         return $this->render('AppBundle:Catalog:list.html.twig', $params);
     }

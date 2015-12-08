@@ -2,7 +2,6 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
     <style type="text/css">
         .hide-overflow {
             overflow: hidden;
@@ -19,8 +18,6 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
-    <script src="{{ asset('bundles/app/js/zoom-master/jquery.zoom.min.js') }}"></script>
     <script type="text/javascript">
         $(document).ready(function ($) {
 

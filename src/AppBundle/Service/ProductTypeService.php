@@ -9,11 +9,9 @@ use SplFileObject;
 class ProductTypeService {
 
     private $_em;
-    private $_erp;
 
-    public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
+    public function __construct(EntityManager $em) {
         $this->_em = $em;
-        $this->_erp = $erp;
     }
 
     /**

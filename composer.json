@@ -41,6 +41,8 @@
         "twbs/bootstrap": "3.2.*",
         "jquery/jquery": "1.11.*",
         "oyejorge/less.php": "~1.5",
+        "leafo/scssphp": "*",
+        "patchwork/jsqueeze": "~1.0",
         "braincrafted/bootstrap-bundle": "~2.0",
         "gregwar/image-bundle": "~2.0",
         "friendsofsymfony/jsrouting-bundle": "~1.5",

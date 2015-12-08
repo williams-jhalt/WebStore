@@ -2,9 +2,6 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('bundles/app/js/select2/select2.css') }}" rel="stylesheet">
-    <link href="{{ asset('bundles/app/js/select2/select2-bootstrap.css') }}" rel="stylesheet">
     <style type="text/css">
         .hide-overflow {
             overflow: hidden;
@@ -24,17 +21,12 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
-    <script src="{{ asset('bundles/app/js/jstree/jstree.min.js') }}"></script>
-    <script src="{{ asset('bundles/app/js/zoom-master/jquery.zoom.min.js') }}"></script>
-    <script src="{{ asset('bundles/app/js/select2/select2.js') }}"></script>
     <script type="text/javascript">
         $(document).ready(function ($) {
 
             pageOptions = {};
 
             updateCatalog = function () {
-                $.blockUI();
                 $('#catalogBody').load(Routing.generate('catalog_list', pageOptions), function (data) {
                     $('#catalogBody').data('jscroll', null);
                     $('#catalogBody').jscroll({

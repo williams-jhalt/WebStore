@@ -16,13 +16,9 @@ use Doctrine\ORM\EntityManager;
 class InvoiceService {
 
     private $_em;
-    private $_erp;
-    private $_company;
 
-    public function __construct(EntityManager $em, ErpOrderSyncService $erp, $company) {
+    public function __construct(EntityManager $em) {
         $this->_em = $em;
-        $this->_erp = $erp;
-        $this->_company = $company;
     }
 
     public function findBySearchOptions($params, $offset = 0, $limit = 10) {
@@ -68,18 +64,11 @@ class InvoiceService {
         return $orders;
     }
 
-    public function find($orderNumber) {
+    public function find($id) {
 
         $rep = $this->_em->getRepository('AppBundle:Invoice');
 
-        $order = $rep->findOneBy(array('orderNumber' => $orderNumber));
-
-        $timeAgo = new DateTime();
-        $timeAgo->sub(new DateInterval("PT15M"));
-
-        if ($order->getOpen() && $order->getUpdatedOn() < $timeAgo) {
-            $this->_erp->updateOrder($order);
-        }
+        $order = $rep->find($id);
 
         return $order;
     }

@@ -20,11 +20,9 @@ class ProductService {
     const EXPORT_FORMAT_DIMENSIONS = 'dimensions';
 
     private $_em;
-    private $_erp;
 
-    public function __construct(EntityManager $em, ErpProductSyncService $erp) {
+    public function __construct(EntityManager $em) {
         $this->_em = $em;
-        $this->_erp = $erp;
     }
 
     /**
@@ -97,37 +95,6 @@ class ProductService {
         $product = $rep->findOneBy(array('sku' => $itemNumber));
 
         return $product;
-    }
-
-    /**
-     * Get the price of an item based on the parameters
-     * 
-     * @param string $itemNumber
-     * @param string $customer
-     * @param integer $quantity
-     * @param string $uom
-     * @return float
-     */
-    public function getPrice($itemNumber, $customer = null, $quantity = 1, $uom = "EA") {
-
-        $response = $this->_erp->getItemPriceDetails($itemNumber, $customer, $quantity, $uom);
-
-        $price = (float) $response->price;
-
-        return $price;
-    }
-
-    /**
-     * Get the current stock quantity of an item
-     * 
-     * @param string $itemNumber
-     * @return integer
-     */
-    public function getStock($itemNumber) {
-        $response = $this->_erp->read("FOR EACH wa_item NO-LOCK WHERE item = '{$itemNumber}'", "qty_oh");
-        $stock = (int) $response[0]->qty_oh;
-
-        return $stock;
     }
 
     /**

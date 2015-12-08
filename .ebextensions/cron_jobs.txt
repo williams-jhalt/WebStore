@@ -1,1 +1,0 @@
-*/5 * * * * root php /var/app/current/app/console scheduler:execute --env=prod > /dev/null

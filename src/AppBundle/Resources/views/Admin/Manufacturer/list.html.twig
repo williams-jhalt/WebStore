@@ -1,6 +1,7 @@
 {% extends 'AppBundle:Admin:layout.html.twig' %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script type="text/javascript">
         $(document).ready(function() {
             $('.toggleShowInMenu').on('click', function() {

@@ -1,0 +1,13 @@
+/*!
+	Zoom 1.7.14
+	license: MIT
+	http://www.jacklmoore.com/zoom
+*/
+(function(o){var e={url:!1,callback:!1,target:!1,duration:120,on:'mouseover',touch:!0,onZoomIn:!1,onZoomOut:!1,magnify:1};o.zoom=function(e,r,t,h){var a,s,c,i,d,l,u,n=o(e),f=n.css('position'),m=o(r);n.css('position',/(absolute|fixed)/.test(f)?f:'relative');n.css('overflow','hidden');t.style.width=t.style.height='';o(t).addClass('zoomImg').css({position:'absolute',top:0,left:0,opacity:0,width:t.width*h,height:t.height*h,border:'none',maxWidth:'none',maxHeight:'none'}).appendTo(e);return{init:function(){s=n.outerWidth();a=n.outerHeight();if(r===n[0]){i=s;c=a}
+else{i=m.outerWidth();c=m.outerHeight()};d=(t.width-s)/i;l=(t.height-a)/c;u=m.offset()},move:function(o){var n=(o.pageX-u.left),e=(o.pageY-u.top);e=Math.max(Math.min(e,c),0);n=Math.max(Math.min(n,i),0);t.style.left=(n*-d)+'px';t.style.top=(e*-l)+'px'}}};o.fn.zoom=function(t){return this.each(function(){var n=o.extend({},e,t||{}),l=n.target||this,h=this,i=o(h),a=o(l),c=document.createElement('img'),f=o(c),s='mousemove.zoom',u=!1,r=!1,m;if(!n.url){m=i.find('img');if(m[0]){n.url=m.data('src')||m.attr('src')};if(!n.url){return}}(function(){var e=a.css('position'),o=a.css('overflow');i.one('zoom.destroy',function(){i.off('.zoom');a.css('position',e);a.css('overflow',o);f.remove()})}());c.onload=function(){var e=o.zoom(l,h,c,n.magnify);function m(t){e.init();e.move(t);f.stop().fadeTo(o.support.opacity?n.duration:0,1,o.isFunction(n.onZoomIn)?n.onZoomIn.call(c):!1)};function t(){f.stop().fadeTo(n.duration,0,o.isFunction(n.onZoomOut)?n.onZoomOut.call(c):!1)};if(n.on==='grab'){i.on('mousedown.zoom',function(n){if(n.which===1){o(document).one('mouseup.zoom',function(){t();o(document).off(s,e.move)});m(n);o(document).on(s,e.move);n.preventDefault()}})}
+else if(n.on==='click'){i.on('click.zoom',function(n){if(u){return}
+else{u=!0;m(n);o(document).on(s,e.move);o(document).one('click.zoom',function(){t();u=!1;o(document).off(s,e.move)});return!1}})}
+else if(n.on==='toggle'){i.on('click.zoom',function(o){if(u){t()}
+else{m(o)};u=!u})}
+else if(n.on==='mouseover'){e.init();i.on('mouseenter.zoom',m).on('mouseleave.zoom',t).on(s,e.move)};if(n.touch){i.on('touchstart.zoom',function(o){o.preventDefault();if(r){r=!1;t()}
+else{r=!0;m(o.originalEvent.touches[0]||o.originalEvent.changedTouches[0])}}).on('touchmove.zoom',function(o){o.preventDefault();e.move(o.originalEvent.touches[0]||o.originalEvent.changedTouches[0])})};if(o.isFunction(n.callback)){n.callback.call(c)}};c.src=n.url})};o.fn.zoom.defaults=e}(window.jQuery));

@@ -6,114 +6,125 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
-
-        <!-- Bootstrap CSS -->
-        <link href="{{ asset('css/bootstrap.css') }}" rel="stylesheet" media="screen">
+        {% block stylesheets %}
+            {% stylesheets filter="cssrewrite,scssphp"
+                'assets/bootstrap/css/bootstrap.css'
+                'assets/vendor/datatables/media/css/dataTables.bootstrap.css'
+                'assets/vendor/select2/dist/css/select2.css'
+                'assets/vendor/jstree/dist/themes/default/style.css'
+                'assets/vendor/jstree-bootstrap-theme/dist/themes/proton/style.css'
+                'assets/vendor/datatables-responsive/css/responsive.bootstrap.scss' %}
+            <link rel="stylesheet" href="{{ asset_url }}" />
+            {% endstylesheets %}
+            <style type="text/css">
+                body {
+                }
+                #pageLayout {
+                    margin-top: 75px;
+                }
+            </style>       
+        {% endblock %}
         <!-- HTML5 Shim and Respond.js add IE8 support of HTML5 elements and media queries -->
         {% include 'BraincraftedBootstrapBundle::ie8-support.html.twig' %}
 
-        <style type="text/css">
-            body {
-            }
-            #pageLayout {
-                margin-top: 75px;
-            }
-        </style>
-
-        <!-- jQuery (necessary for Bootstraps JavaScript plugins) -->
-        <script src="{{ asset('js/jquery.js') }}"></script>
-        <script type="text/javascript">
-            $(function () {
-                $.xhrPool = [];
-                $.xhrPool.abortAll = function () {
-                    $(this).each(function (i, jqXHR) {   //  cycle through list of recorded connection
-                        jqXHR.abort();  //  aborts connection
-                        $.xhrPool.splice(i, 1); //  removes from list by index
-                    });
-                }
-                $.ajaxSetup({
-                    beforeSend: function (jqXHR) {
-                        $.xhrPool.push(jqXHR);
-                    }, //  annd connection to list
-                    complete: function (jqXHR) {
-                        var i = $.xhrPool.indexOf(jqXHR);   //  get index for current connection completed
-                        if (i > -1)
+        {% block javascripts %}
+            {% javascripts filter="jsqueeze"
+                'bundles/fosjsrouting/js/router.js'
+                'assets/bootstrap/js/jquery.js'
+                'assets/bootstrap/js/bootstrap.js'
+                'assets/vendor/datatables/media/js/jquery.dataTables.js'
+                'assets/vendor/datatables/media/js/dataTables.bootstrap.js'
+                'assets/vendor/jscroll/jquery.jscroll.js'
+                'assets/vendor/select2/dist/js/select2.js'
+                'assets/vendor/jstree-bootstrap-theme/dist/jstree.js'
+                'assets/vendor/datatables-responsive/js/dataTables.responsive.js' 
+                'assets/vendor/datatables-responsive/js/responsive.bootstrap.js'
+                'assets/vendor/bootstrap-session-timeout/dist/bootstrap-session-timeout.js'
+                'assets/vendor/jquery-zoom/jquery.zoom.js'
+                'assets/vendor/tinymce/tinymce.js' 
+                'assets/vendor/tinymce/tinymce.jquery.js'
+                'assets/vendor/blockUI/jquery.blockUI.js' %}
+            <script src="{{ asset_url }}"></script>
+            {% endjavascripts %}
+            <script type="text/javascript">
+                $(function () {
+                    $.xhrPool = [];
+                    $.xhrPool.abortAll = function () {
+                        $(this).each(function (i, jqXHR) {   //  cycle through list of recorded connection
+                            jqXHR.abort();  //  aborts connection
                             $.xhrPool.splice(i, 1); //  removes from list by index
+                        });
                     }
+                    $.ajaxSetup({
+                        beforeSend: function (jqXHR) {
+                            $.xhrPool.push(jqXHR);
+                        }, //  annd connection to list
+                        complete: function (jqXHR) {
+                            var i = $.xhrPool.indexOf(jqXHR);   //  get index for current connection completed
+                            if (i > -1)
+                                $.xhrPool.splice(i, 1); //  removes from list by index
+                        }
+                    });
                 });
-            });
 
-            $(document).ready(function () {
-               $('body').on('click', 'a.abort-ajax', function() {
-                   $.xhrPool.abortAll();
-               });              
-            });
-        </script>
-        <!-- Include all JavaScripts, compiled by Assetic -->
-        <script src="{{ asset('js/bootstrap.js') }}"></script>
+                $(document).ready(function () {
+                    $('body').on('click', 'a.abort-ajax', function () {
+                        $.xhrPool.abortAll();
+                    });
+                });
 
-        <!-- JavaScript Routing -->
-        <script src="{{ asset('bundles/app/js/bootstrap-session-timeout/bootstrap-session-timeout.min.js') }}"></script>
-        <script src="{{ asset('bundles/app/js/blockui/jquery.blockUI.js') }}">
-        </script>
-        <script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
-        <script src="{{ path('fos_js_routing_js', {"callback": "fos.Router.setData"}) }}"></script>
-        <script type="text/javascript">
-            $(document).ajaxStop($.unblockUI);
-            $.sessionTimeout({
-                message: 'Your session will be locked in one minute.',
-                keepAliveUrl: '{{ path('keep_alive') }}',
-                logoutUrl: '{{ path('fos_user_security_logout') }}',
-                redirUrl: '{{ path('fos_user_security_login') }}',
-                warnAfter: 900000,
-                redirAfter: 1200000
-            });
-        </script>
+                $.sessionTimeout({
+                    message: 'Your session will be locked in one minute.',
+                    keepAliveInterval: 50000,
+                    keepAliveUrl: '{{ path('keep_alive') }}',
+                    logoutUrl: '{{ path('fos_user_security_logout') }}',
+                    redirUrl: '{{ path('fos_user_security_login') }}',
+                    warnAfter: 900000,
+                    redirAfter: 1200000
+                });
+            </script>
+            <script src="{{ path('fos_js_routing_js', {"callback": "fos.Router.setData"}) }}"></script>
+        {% endblock %}
+    </head>
+    <body>
 
-    {% block stylesheets %}{% endblock %}
-</head>
-<body>
+        <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="{{ path('homepage') }}">Williams Trading</a>
+                </div>
+                <div id="navbar" class="collapse navbar-collapse">
 
-    <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{{ path('homepage') }}">Williams Trading</a>
+                    {{ knp_menu_render('AppBundle:Builder:accountMenu', { 'style': 'navbar-right' }) }}
+                    {{ knp_menu_render('AppBundle:Builder:mainMenu', { 'style': 'navbar' }) }}
+
+                </div>
             </div>
-            <div id="navbar" class="collapse navbar-collapse">
+        </nav>
 
-                {{ knp_menu_render('AppBundle:Builder:accountMenu', { 'style': 'navbar-right' }) }}
-                {{ knp_menu_render('AppBundle:Builder:mainMenu', { 'style': 'navbar' }) }}
+        <div id="pageLayout" class="container-fluid">
 
-            </div>
-        </div>
-    </nav>
+            {% for flashMessage in app.session.flashbag.get('messages') %}
+                <div class="alert alert-info">
+                    {{ flashMessage }}
+                </div>
+            {% endfor %}
 
-    <div id="pageLayout" class="container-fluid">
+            {% for flashMessage in app.session.flashbag.get('notices') %}
+                <div class="alert alert-warning">
+                    {{ flashMessage }}
+                </div>
+            {% endfor %}
 
-        {% for flashMessage in app.session.flashbag.get('messages') %}
-            <div class="alert alert-info">
-                {{ flashMessage }}
-            </div>
-        {% endfor %}
+        {% block body %}{% endblock %}
 
-        {% for flashMessage in app.session.flashbag.get('notices') %}
-            <div class="alert alert-warning">
-                {{ flashMessage }}
-            </div>
-        {% endfor %}
-
-    {% block body %}{% endblock %}
-
-</div>
-
-{% block javascripts %}
-{% endblock %}
+    </div>
 
 </body>
 </html>

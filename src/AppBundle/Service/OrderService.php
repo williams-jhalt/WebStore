@@ -16,11 +16,9 @@ use Doctrine\ORM\EntityManager;
 class OrderService {
 
     private $_em;
-    private $_erp;
 
-    public function __construct(EntityManager $em, ErpOrderSyncService $erp) {
+    public function __construct(EntityManager $em) {
         $this->_em = $em;
-        $this->_erp = $erp;
     }
 
     public function findBySearchOptions($params, $offset = 0, $limit = 10) {

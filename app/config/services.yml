@@ -20,23 +20,23 @@ services:
         
     app.product_service:
         class: AppBundle\Service\ProductService
-        arguments: ["@doctrine.orm.entity_manager", "@app.product_sync_service"]
+        arguments: ["@doctrine.orm.entity_manager"]
     
     app.manufacturer_service:
         class: AppBundle\Service\ManufacturerService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        arguments: ["@doctrine.orm.entity_manager"]
     
     app.product_type_service:
         class: AppBundle\Service\ProductTypeService
-        arguments: ["@doctrine.orm.entity_manager", "@app.erp_connector_service"]
+        arguments: ["@doctrine.orm.entity_manager"]
         
     app.order_service:
         class: AppBundle\Service\OrderService
-        arguments: ["@doctrine.orm.entity_manager", "@app.order_sync_service"]
+        arguments: ["@doctrine.orm.entity_manager"]
         
     app.invoice_service:
         class: AppBundle\Service\InvoiceService
-        arguments: ["@doctrine.orm.entity_manager", "@app.order_sync_service"]
+        arguments: ["@doctrine.orm.entity_manager"]
         
     app.customer_service:
         class: AppBundle\Service\CustomerService

@@ -1,14 +1,7 @@
 {% extends 'AppBundle:Admin:layout.html.twig' %}
 
-{% block stylesheets %}
-    <link href="{{ asset('bundles/app/js/jstree/themes/default/style.min.css') }}" rel="stylesheet">
-{% endblock %}
-
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('bundles/app/js/tinymce/js/tinymce/tinymce.min.js') }}"></script>
-    <script src="{{ asset('bundles/app/js/tinymce/js/tinymce/jquery.tinymce.min.js') }}"></script>
-    <script src="{{ asset('bundles/app/js/jstree/jstree.min.js') }}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
 

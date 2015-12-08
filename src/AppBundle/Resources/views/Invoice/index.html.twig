@@ -3,7 +3,6 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('bundles/app/js/jscroll/jquery.jscroll.min.js') }}"></script>
     <script type="text/javascript">
 
         $(document).ready(function () {
@@ -11,7 +10,6 @@
             pageOptions = {{pageOptions|json_encode|raw}};
             
             updateInvoices = function () {
-                $.blockUI();
                 $('#invoiceBody').load(Routing.generate('invoice_ajax_list', pageOptions), function (data) {
                     $('#invoiceBody').data('jscroll', null);
                     $('#invoiceBody').jscroll({
