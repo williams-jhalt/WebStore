@@ -88,7 +88,6 @@ class WebordersController extends Controller {
         $page = $request->get('page', 1);
         $searchTerms = $request->get('searchTerms', null);
         $customerNumber = $request->get('customerNumber');
-        $openOrders = $request->get('open', 0);
         $perPage = 25;
 
         $user = $this->getUser();
@@ -104,10 +103,6 @@ class WebordersController extends Controller {
 
         $params['search_terms'] = $searchTerms;
 
-        if ($openOrders !== null) {
-            $params['open'] = (boolean) $openOrders;
-        }
-
         $weborders = $service->findBySearchOptions($params, $offset, $perPage);
 
         if ($request->isXmlHttpRequest()) {
@@ -117,7 +112,6 @@ class WebordersController extends Controller {
                 $nextPage = $this->generateUrl('weborders_ajax_list', array(
                     'searchTerms' => $searchTerms,
                     'customerNumber' => $customerNumber,
-                    'open' => $openOrders,
                     'page' => $page + 1
                 ));
                 $response->setContent($engine->render('AppBundle:Weborders:list.html.twig', array('weborders' => $weborders, 'nextPage' => $nextPage)));

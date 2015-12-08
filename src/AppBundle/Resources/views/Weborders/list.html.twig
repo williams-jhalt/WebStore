@@ -6,9 +6,9 @@
 
         <div class="row {% if weborder.credits is not empty %}bg-info{% endif %}">
             <span class="col-sm-2"><a href="#" class="view-weborder" data-id="{{ weborder.orderNumber}}">{{ weborder.orderNumber }}</a></span>
-            <span class="col-sm-2">{{ weborder.externalOrderNumber }}</span>
+            <span class="col-md-2">{{ weborder.externalOrderNumber }}</span>
             <span class="col-sm-2">{{ weborder.orderDate|date('Y-m-d') }}</span>
-            <span class="col-sm-3">{{ weborder.customerPO }}</span>
+            <span class="col-lg-3">{{ weborder.customerPO }}</span>
             <span class="col-sm-1">
                 {% if weborder.shipments.count > 0 %}
                     P
@@ -20,8 +20,10 @@
                     I
                 {% endif %}
             </span>
-            <span class="col-sm-2">{{ weborder.customerNumber }}</span>
+            <span class="col-sm-2">{{ weborder.customerNumber }}</span>            
         </div>
+        
+        <hr>
 
     {% endfor %}
 

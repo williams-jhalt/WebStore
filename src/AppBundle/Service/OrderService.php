@@ -35,10 +35,6 @@ class OrderService {
             $qb->andWhere('p.customerNumber IN (:customerNumbers)')->setParameter('customerNumbers', $params['customer_numbers']);
         }
 
-        if (isset($params['open'])) {
-            $qb->andWhere('p.open = :open')->setParameter('open', $params['open']);
-        }
-
         $qb->setFirstResult($offset);
         $qb->setMaxResults($limit);
         $qb->orderBy('p.orderNumber', 'DESC');

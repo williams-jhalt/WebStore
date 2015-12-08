@@ -54,9 +54,9 @@ class SoapService {
             $dbProduct->setName($p->name);
             $dbProduct->setPrice($p->price);
             $dbProduct->setStockQuantity($p->stockQuantity);
-            
+
             $releaseDate = new DateTime($p->releaseDate);
-            
+
             if ($releaseDate != $dbProduct->getReleaseDate()) {
                 $dbProduct->setReleaseDate($releaseDate);
             }
@@ -128,13 +128,13 @@ class SoapService {
             $salesOrder->setCustomerPO($so->customerPO);
             $salesOrder->setExternalOrderNumber($so->externalOrderNumber);
             $salesOrder->setOpen($so->open);
-            
+
             $orderDate = new DateTime($so->orderDate);
-            
+
             if ($orderDate != $salesOrder->getOrderDate()) {
                 $salesOrder->setOrderDate($orderDate);
             }
-            
+
             $salesOrder->setOrderGrossAmount($so->orderGrossAmount);
             $salesOrder->setShipToAddress1($so->shipToAddress1);
             $salesOrder->setShipToAddress2($so->shipToAddress2);
@@ -207,12 +207,12 @@ class SoapService {
         $itemRep = $this->_em->getRepository('AppBundle:InvoiceItem');
 
         if (is_array($invoices->invoice)) {
-            $invoices = $invoices->invoice;
+            $inv = $invoices->invoice;
         } else {
-            $invoices = $so->invoices;
+            $inv = $invoices;
         }
 
-        foreach ($invoices as $i) {
+        foreach ($inv as $i) {
             $invoice = $rep->findOneBy(array('orderNumber' => $i->orderNumber, 'recordSequence' => $i->recordSequence));
             if ($invoice === null) {
                 $invoice = new Invoice();
@@ -223,26 +223,26 @@ class SoapService {
             $invoice->setCustomerNumber($i->customerNumber);
             $invoice->setFreightCharge($i->freightCharge);
             $invoice->setGrossAmount($i->grossAmount);
-            
+
             $invoiceDate = new DateTime($i->invoiceDate);
-            
-            if ($invoiceDate != $invoice->getInvoiceDate()) {            
+
+            if ($invoiceDate != $invoice->getInvoiceDate()) {
                 $invoice->setInvoiceDate($invoiceDate);
             }
-            
+
             $invoice->setInvoiceNumber($i->invoiceNumber);
             $invoice->setNetAmount($i->netAmount);
             $invoice->setOpen($i->open);
             $invoice->setShippingAndHandlingCharge($i->shippingAndHandlingCharge);
             $invoice->setStatus($i->status);
-            
+
             $children = $rep->findBy(array('invoiceNumber' => $i->invoiceNumber));
-                        
+
             foreach ($children as $child) {
                 $invoice->getChildren()->add($child);
                 $invoice->getConsolidatedSalesOrders()->add($child->getSalesOrder());
             }
-            
+
             $this->_em->persist($invoice);
 
             if (is_array($i->invoiceItems->invoiceItem)) {
@@ -417,13 +417,13 @@ class SoapService {
             $invoice->setCustomerNumber($i->customerNumber);
             $invoice->setFreightCharge($i->freightCharge);
             $invoice->setGrossAmount($i->grossAmount);
-            
+
             $invoiceDate = new DateTime($i->invoiceDate);
-            
-            if ($invoiceDate != $invoice->getInvoiceDate()) {            
+
+            if ($invoiceDate != $invoice->getInvoiceDate()) {
                 $invoice->setInvoiceDate($invoiceDate);
             }
-            
+
             $invoice->setInvoiceNumber($i->invoiceNumber);
             $invoice->setNetAmount($i->netAmount);
             $invoice->setOpen($i->open);
@@ -452,7 +452,6 @@ class SoapService {
                 $item->setQuantityShipped($t->quantityShipped);
                 $this->_em->persist($item);
             }
-            
         }
     }
 

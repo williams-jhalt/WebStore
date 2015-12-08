@@ -10,18 +10,17 @@
             var thread = null;
 
             pageOptions = {{pageOptions|json_encode|raw}};
-
-            updateWeborders = function () {
-                $('#weborderBody').load(Routing.generate('weborders_ajax_list', pageOptions), function (data) {
-                    $('#weborderBody').data('jscroll', null);
-                    $('#weborderBody').jscroll({
-                        loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
-                        autoTrigger: true,
-                        padding: 20,
-                        nextSelector: 'a.jscroll-next:last'
-                    });
-                });
-            };
+                    updateWeborders = function () {
+                        $('#weborderBody').load(Routing.generate('weborders_ajax_list', pageOptions), function (data) {
+                            $('#weborderBody').data('jscroll', null);
+                            $('#weborderBody').jscroll({
+                                loadingHtml: '<img src="{{ asset('image/ajax-loader.gif') }}">',
+                                autoTrigger: true,
+                                padding: 20,
+                                nextSelector: 'a.jscroll-next:last'
+                            });
+                        });
+                    };
 
             $('#weborderBody').on('click', 'a.view-weborder', function (e) {
                 $.get(Routing.generate('weborders_ajax_view', {id: e.target.dataset.id}), function (data) {
@@ -31,44 +30,16 @@
                 return false;
             });
 
-        {#            $("#searchForm").on('change keyup paste', ":input", function (e) {
-                        clearTimeout(thread);
-                        thread = setTimeout(function () {
-                            pageOptions['searchTerms'] = $("input[name='searchTerms']").val();
-                            {% if app.user.customerNumbers|length > 1 %}
-                                pageOptions['customerNumber'] = $("select[name='customerNumber']").val();
-                            {% else %}
-                                pageOptions['customerNumber'] = '';
-                            {% endif %}
-                            console.log(pageOptions);
-                            updateWeborders();
-                        },1000);
-                    });#}
-
             $('#searchForm').submit(function (e) {
-                $("button.open").each(function () {
-                    $(this).removeClass('active')
-                });
-                $('#allOrdersButton').addClass('active');
                 pageOptions['searchTerms'] = $('#searchForm input[name=searchTerms]').val();
-                pageOptions['open'] = 0;
                 updateWeborders();
                 e.preventDefault();
             });
-            
-            $('body').on('click', '.clear-button', function(e) {
+
+            $('body').on('click', '.clear-button', function (e) {
                 $('#searchForm input[name=searchTerms]').val('');
                 pageOptions['searchTerms'] = null;
                 $('#weborderBody').text('Loading...');
-                updateWeborders();
-            });
-
-            $("#searchForm").on('click', "button.open", function () {
-                $("button.open").each(function () {
-                    $(this).removeClass('active')
-                });
-                pageOptions['open'] = $(this).val();
-                $(this).addClass('active');
                 updateWeborders();
             });
 
@@ -96,10 +67,6 @@
                     {% endfor %}
                 </select>
             {% endif %}
-            <div class="btn-group pull-right">
-                <button class="btn btn-default open active" id="closedOrdersButton" type="button" name="open" value="0">Closed Orders</button>
-                <button class="btn btn-default open" id="openOrdersButton" type="button" name="open" value="1">Open Orders</button>
-            </div>
         </form>
     </div>
 
@@ -111,6 +78,8 @@
         <span class="col-sm-1"><strong>Status</strong></span>
         <span class="col-sm-2"><strong>Customer Number</strong></span>
     </div>
+
+    <hr>
 
     <div id="weborderBody">Loading... please be patient...</div>
 
