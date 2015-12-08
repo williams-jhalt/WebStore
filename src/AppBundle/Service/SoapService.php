@@ -267,6 +267,8 @@ class SoapService {
                 $this->_em->persist($item);
             }
         }
+        
+        $this->_em->flush();
     }
 
     private function _updatePackages(SalesOrder $salesOrder, $so) {
