@@ -70,17 +70,15 @@ class ErpProductSyncService {
                 $products[] = $p;
             }
 
-            $results = 0;
-
             try {
-                $results = $this->_soapClient->updateProducts(array('products' => $products));
+                $this->_soapClient->updateProducts(array('products' => $products));
             } catch (SoapFault $fault) {
                 $output->writeln("Couldn't submit webservice call " . $fault->getMessage());
             }
 
             $batch += $batchSize;
 
-            $output->writeln("Loaded {$batch} items, wrote {$results} to webservice");
+            $output->writeln("Loaded {$batchSize} items, total {$batch}");
         } while (!empty($result));
     }
 
