@@ -21,3 +21,6 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 /app/soap.wsdl
+/web/assets/bootstrap/
+/web/css/
+/web/js/
