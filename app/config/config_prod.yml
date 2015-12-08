@@ -1,6 +1,6 @@
 imports:
     - { resource: config.yml }
-    - { resource: rds_parameters.php }
+    - { resource: eb_parameters.php }
 
 framework:
     validation:
