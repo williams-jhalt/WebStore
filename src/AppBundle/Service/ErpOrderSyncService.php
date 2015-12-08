@@ -151,7 +151,7 @@ class ErpOrderSyncService {
                 . "oe_head.customer";
 
         $batch = 0;
-        $batchSize = 100;
+        $batchSize = 25;
 
         $ch = curl_init();
 
