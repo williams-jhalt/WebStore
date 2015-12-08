@@ -31,13 +31,11 @@ class ErpOneConnectorService {
             $this->_grantToken = $data[0];
             $this->_accessToken = $data[1];
             $this->_grantTime = $data[2];
-        } else {
-            $this->_getGrantToken();
         }
+        
     }
 
-    private function _getGrantToken() {
-        $ch = curl_init();
+    private function _getGrantToken($ch) {
 
         curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/grant");
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -53,8 +51,6 @@ class ErpOneConnectorService {
         )));
 
         $response = json_decode(curl_exec($ch));
-
-        curl_close($ch);
 
         if (isset($response->_errors)) {
             $this->_cache->delete('erp_token');
@@ -73,14 +69,16 @@ class ErpOneConnectorService {
         )));
     }
 
-    private function _refreshToken() {
+    private function _refreshToken($ch) {
+        
+        if ($this->_grantTime === null || $this->_grantToken === null || $this->_accessToken === null) {
+            $this->_getGrantToken($ch);
+        }
 
         if ($this->_grantTime > (time() - (60 * 3))) {
             return;
         }
-
-        $ch = curl_init();
-
+        
         curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/authorize/access");
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/x-www-form-urlencoded'
@@ -95,11 +93,9 @@ class ErpOneConnectorService {
 
         $response = json_decode(curl_exec($ch));
 
-        curl_close($ch);
-
         if (isset($response->_errors)) {
             $this->_cache->delete('erp_token');
-            $this->_getGrantToken();
+            $this->_getGrantToken($ch);
         }
 
         $this->_accessToken = $response->access_token;
@@ -113,11 +109,16 @@ class ErpOneConnectorService {
         )));
     }
 
-    public function read($query, $columns = "*", $offset = 0, $limit = 0) {
+    public function read($query, $columns = "*", $offset = 0, $limit = 0, $ch = null) {
+        
+        $closeCurlWhenFinished = false;
 
-        $this->_refreshToken();
 
-        $ch = curl_init();
+        if ($ch === null) {
+            $ch = curl_init();
+            $closeCurlWhenFinished = true;
+        }
+        $this->_refreshToken($ch);
 
         curl_setopt($ch, CURLOPT_URL, $this->_server . "/distone/rest/service/data/read");
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -135,7 +136,9 @@ class ErpOneConnectorService {
 
         $response = json_decode(curl_exec($ch));
 
-        curl_close($ch);
+        if ($closeCurlWhenFinished) {
+            curl_close($ch);
+        }
 
         if (isset($response->_errors)) {
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
@@ -167,11 +170,16 @@ class ErpOneConnectorService {
      * @param string $uom
      * @return object
      */
-    public function getItemPriceDetails($itemNumber, $customer = null, $quantity = 1, $uom = "EA") {
+    public function getItemPriceDetails($itemNumber, $customer = null, $quantity = 1, $uom = "EA", $ch = null) {
+        $closeCurlWhenFinished = false;
 
-        $this->_refreshToken();
 
-        $ch = curl_init();
+
+        if ($ch === null) {
+            $ch = curl_init();
+            $closeCurlWhenFinished = true;
+        }
+        $this->_refreshToken($ch);
 
         $queryData = array();
 
@@ -194,7 +202,9 @@ class ErpOneConnectorService {
 
         $response = json_decode(curl_exec($ch));
 
-        curl_close($ch);
+        if ($closeCurlWhenFinished) {
+            curl_close($ch);
+        }
 
         if (isset($response->_errors)) {
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors
@@ -220,11 +230,17 @@ class ErpOneConnectorService {
      * @param string $record
      * @param string|null $seq
      */
-    public function getPdf($type, $record, $seq = 1) {
+    public function getPdf($type, $record, $seq = 1, $ch = null) {
+        $closeCurlWhenFinished = false;
 
-        $this->_refreshToken();
 
-        $ch = curl_init();
+
+        if ($ch === null) {
+            $ch = curl_init();
+            $closeCurlWhenFinished = true;
+        }
+
+        $this->_refreshToken($ch);
 
         $queryData = array(
             'type' => $type,
@@ -244,7 +260,9 @@ class ErpOneConnectorService {
 
         $response = json_decode($r);
 
-        curl_close($ch);
+        if ($closeCurlWhenFinished) {
+            curl_close($ch);
+        }
 
         if (isset($response->_errors)) {
             throw new ErpOneException($response->_errors[0]->_errorMsg, $response->_errors[0]->_errorNum); // find out the structure of ERP-ONE's errors

@@ -21,6 +21,7 @@ class ErpOneOrderSyncCommand extends ContainerAwareCommand {
         try {
             $service->updateOpenOrders($output);
             $service->loadNewOrders($output);
+            $service->loadConsolidatedInvoices($output);
         } catch (Exception $e) {
             $output->writeln("There was an error refreshing the order status: " . $e->getMessage());
         }

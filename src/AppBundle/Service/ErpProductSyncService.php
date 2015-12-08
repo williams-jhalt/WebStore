@@ -73,7 +73,7 @@ class ErpProductSyncService {
             $results = 0;
 
             try {
-                $results = $this->_soapClient->updateProducts($products);
+                $results = $this->_soapClient->updateProducts(array('products' => $products));
             } catch (SoapFault $fault) {
                 $output->writeln("Couldn't submit webservice call " . $fault->getMessage());
             }
