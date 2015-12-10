@@ -139,7 +139,8 @@ class SoapService {
 
             $dbProduct->setProductType($productType);
 
-            $dbDetail = $dbProduct->getProductDetail();
+            $dbDetail = new ProductDetail();
+
             $dbDetail->setColor($p->detail->color);
             $dbDetail->setHtmlDescription($p->detail->htmlDescription);
             $dbDetail->setMaterial($p->detail->material);
@@ -153,23 +154,28 @@ class SoapService {
             $dbDetail->setProductWidth($p->detail->productWidth);
             $dbDetail->setTextDescription($p->detail->textDescription);
 
+            $dbProduct->setProductDetail($dbDetail);
+
             if (is_array($p->attachments->attachment)) {
                 $attachments = $p->attachments->attachment;
             } else {
                 $attachments = $p->attachments;
             }
-            
+
             $dbAttachments = new ArrayCollection();
-            
+
             foreach ($attachments as $attachment) {
-                $dbAttachment = new ProductAttachment();
+                $dbAttachment = $this->_em->getRepository('AppBundle:ProductAttachment')->findOneBy(array('product' => $dbProduct, 'path' => $attachment->path));
+                if ($dbAttachment === null) {
+                    $dbAttachment = new ProductAttachment();
+                }
                 $dbAttachment->setPath($attachment->path);
                 $dbAttachment->setExplicit($attachment->explicit);
                 $dbAttachment->setPrimaryAttachment($attachment->primaryAttachment);
                 $dbAttachment->setProduct($dbProduct);
                 $dbAttachments->add($dbAttachment);
             }
-            
+
             $dbProduct->setProductAttachments($dbAttachments);
 
             $this->_em->persist($dbProduct);
