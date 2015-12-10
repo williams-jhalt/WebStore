@@ -153,13 +153,13 @@ class SoapService {
             $dbDetail->setProductWidth($p->detail->productWidth);
             $dbDetail->setTextDescription($p->detail->textDescription);
 
+            $this->_em->persist($dbProduct);
+
             if (is_array($p->attachments->attachment)) {
                 $attachments = $p->attachments->attachment;
             } else {
                 $attachments = $p->attachments;
             }
-            
-            $dbAttachments = new ArrayCollection();
 
             foreach ($attachments as $attachment) {
                 $dbAttachment = $this->_em->getRepository('AppBundle:ProductAttachment')->findOneBy(array('product' => $dbProduct, 'path' => $attachment->path));
@@ -171,12 +171,7 @@ class SoapService {
                 $dbAttachment->setPrimaryAttachment($attachment->primaryAttachment);
                 $dbAttachment->setProduct($dbProduct);
                 $this->_em->persist($dbAttachment);
-                $dbAttachments[] = $dbAttachment;
             }
-            
-            $dbProduct->setProductAttachments($dbAttachments);
-
-            $this->_em->persist($dbProduct);
 
             $count++;
         }
