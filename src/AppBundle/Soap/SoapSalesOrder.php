@@ -90,8 +90,7 @@ class SoapSalesOrder {
     public $status;
 
     /**
-     *
-     * @var string
+     * @type string
      */
     public $shipViaCode;
 

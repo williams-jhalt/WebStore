@@ -123,7 +123,7 @@ class Product {
 
     /**
      * @JMS\Expose
-     * @ORM\OneToMany(targetEntity="ProductAttachment", mappedBy="product")
+     * @ORM\OneToMany(targetEntity="ProductAttachment", mappedBy="product", cascade={"persist","remove"})
      * */
     private $productAttachments;
 

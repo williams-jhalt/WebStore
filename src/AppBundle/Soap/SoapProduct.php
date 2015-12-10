@@ -33,10 +33,25 @@ class SoapProduct {
      * @type string
      */
     public $productTypeCode;
+    
+    /**
+     * @type string
+     */
+    public $barcode;
 
     /**
      * @type date
      */
     public $releaseDate;
+    
+    /**
+     * @type wrapper[] $attachments @className=\AppBundle\Soap\SoapProductAttachment
+     */
+    public $attachments;
+    
+    /**
+     * @type wrapper $detail @className=\AppBundle\Soap\SoapProductDetail
+     */
+    public $detail;
 
 }

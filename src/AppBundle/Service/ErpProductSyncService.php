@@ -3,6 +3,8 @@
 namespace AppBundle\Service;
 
 use AppBundle\Soap\SoapProduct;
+use AppBundle\Soap\SoapProductAttachment;
+use AppBundle\Soap\SoapProductDetail;
 use DateTime;
 use Doctrine\ORM\EntityManager;
 use SoapClient;
@@ -33,7 +35,8 @@ class ErpProductSyncService {
         $this->_soapClient = new SoapClient($this->_wsdlLocation, array(
             'login' => $soapUser,
             'password' => $soapPass,
-            'keep_alive' => true));
+            'keep_alive' => true,
+            'trace' => 1));
     }
 
     public function loadFromErp(OutputInterface $output) {
@@ -43,10 +46,12 @@ class ErpProductSyncService {
                 . "EACH wa_item NO-LOCK WHERE "
                 . "wa_item.company_it = item.company_it AND wa_item.item = item.item";
 
-        $fields = "item.item,item.manufacturer,item.product_line,item.descr,item.date_added,wa_item.qty_oh,wa_item.list_price";
+        $fields = "item.item,item.manufacturer,item.product_line,item.descr,item.date_added,wa_item.qty_oh,wa_item.list_price,item.upc1";
 
         $batch = 0;
-        $batchSize = 1000;
+        $batchSize = 100;
+        
+        $ch = curl_init();
 
         do {
 
@@ -66,6 +71,34 @@ class ErpProductSyncService {
                 $p->manufacturerCode = $item->item_manufacturer;
                 $p->productTypeCode = $item->item_product_line;
                 $p->releaseDate = $releaseDate->format('Y-m-d');
+                $p->barcode = $item->item_upc1;
+
+                curl_setopt($ch, CURLOPT_URL, "http://wholesale.williams-trading.com/rest/product-images/{$item->item_item}?format=json");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                
+                $response = json_decode(curl_exec($ch));
+                
+                $p->attachments = array();
+                
+                foreach ($response->images as $image) {
+                    $pa = new SoapProductAttachment();
+                    $pa->path = $image->image_url;
+                    $pa->explicit = $image->explicit;
+                    $pa->primaryAttachment = $image->primary;
+                    $p->attachments[] = $pa;
+                }
+
+                curl_setopt($ch, CURLOPT_URL, "http://wholesale.williams-trading.com/rest/products/{$item->item_item}?format=json");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                
+                $response2 = json_decode(curl_exec($ch));                
+                
+                $p->detail = new SoapProductDetail();
+                $p->detail->textDescription = $response2->product->description;
+                $p->detail->packageHeight = $response2->product->height;
+                $p->detail->packageLength = $response2->product->length;
+                $p->detail->packageWeight = $response2->product->weight;
+                $p->detail->packageWidth = $response2->product->width;
 
                 $products[] = $p;
             }
@@ -73,6 +106,7 @@ class ErpProductSyncService {
             try {
                 $this->_soapClient->updateProducts(array('products' => $products));
             } catch (SoapFault $fault) {
+                $output->writeln("REQUEST:\n" . $this->_soapClient->__getLastRequest());
                 $output->writeln("Couldn't submit webservice call " . $fault->getMessage());
             }
 
@@ -80,6 +114,8 @@ class ErpProductSyncService {
 
             $output->writeln("Loaded {$batchSize} items, total {$batch}");
         } while (!empty($result));
+        
+        curl_close($ch);
     }
 
 }

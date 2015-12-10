@@ -30,8 +30,7 @@ class WebordersController extends Controller {
 
         return $this->render('AppBundle:Weborders:index.html.twig', array('pageOptions' => array(
                         'page' => $page,
-                        'searchTerms' => $searchTerms,
-                        'open' => 0
+                        'searchTerms' => $searchTerms
         )));
     }
 

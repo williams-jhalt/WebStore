@@ -9,12 +9,18 @@ use AppBundle\Entity\InvoiceItem;
 use AppBundle\Entity\Manufacturer;
 use AppBundle\Entity\Package;
 use AppBundle\Entity\Product;
+use AppBundle\Entity\ProductAttachment;
+use AppBundle\Entity\ProductDetail;
 use AppBundle\Entity\ProductType;
 use AppBundle\Entity\SalesOrder;
 use AppBundle\Entity\SalesOrderItem;
 use AppBundle\Entity\Shipment;
 use AppBundle\Entity\ShipmentItem;
+use AppBundle\Soap\SoapProduct;
+use AppBundle\Soap\SoapProductAttachment;
+use AppBundle\Soap\SoapProductDetail;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 
 class SoapService {
@@ -25,6 +31,54 @@ class SoapService {
     public function __construct(EntityManager $em, ErpOneConnectorService $erp) {
         $this->_em = $em;
         $this->_erp = $erp;
+    }
+
+    /**
+     * @WebMethod
+     * 
+     * @param string $sku
+     * 
+     * @return wrapper $product @className=\AppBundle\Soap\SoapProduct
+     */
+    public function getProduct($sku) {
+
+        $prod = $this->_em->getRepository('AppBundle:Product')->findOneBy(array('sku' => $sku));
+
+        $product = new SoapProduct();
+
+        $product->sku = $prod->getSku();
+        $product->name = $prod->getName();
+        $product->price = $prod->getPrice();
+        $product->stockQuantity = $prod->getStockQuantity();
+        $product->releaseDate = $prod->getReleaseDate()->format('Y-m-d');
+        $product->manufacturerCode = $prod->getManufacturer()->getCode();
+        $product->productTypeCode = $prod->getProductType()->getCode();
+        $product->barcode = $prod->getBarcode();
+
+        $product->attachments = array();
+
+        foreach ($prod->getProductAttachments() as $att) {
+            $attachment = new SoapProductAttachment();
+            $attachment->path = $att->getPath();
+            $attachment->explicit = $att->getExplicit();
+            $attachment->primaryAttachment = $att->getPrimaryAttachment();
+            $product->attachments[] = $attachment;
+        }
+
+        $product->detail = new SoapProductDetail();
+        $product->detail->color = $prod->getProductDetail()->getColor();
+        $product->detail->htmlDescription = $prod->getProductDetail()->getHtmlDescription();
+        $product->detail->material = $prod->getProductDetail()->getMaterial();
+        $product->detail->packageHeight = $prod->getProductDetail()->getPackageHeight();
+        $product->detail->packageLength = $prod->getProductDetail()->getPackageLength();
+        $product->detail->packageWeight = $prod->getProductDetail()->getPackageWeight();
+        $product->detail->packageWidth = $prod->getProductDetail()->getPackageWidth();
+        $product->detail->productHeight = $prod->getProductDetail()->getProductHeight();
+        $product->detail->productLenght = $prod->getProductDetail()->getProductLength();
+        $product->detail->productWeight = $prod->getProductDetail()->getProductWeight();
+        $product->detail->productWidth = $prod->getProductDetail()->getProductWidth();
+
+        return $product;
     }
 
     /**
@@ -84,6 +138,41 @@ class SoapService {
             }
 
             $dbProduct->setProductType($productType);
+
+            $dbDetail = $dbProduct->getProductDetail();
+            $dbDetail->setColor($p->detail->color);
+            $dbDetail->setHtmlDescription($p->detail->htmlDescription);
+            $dbDetail->setMaterial($p->detail->material);
+            $dbDetail->setPackageHeight($p->detail->packageHeight);
+            $dbDetail->setPackageLength($p->detail->packageLength);
+            $dbDetail->setPackageWeight($p->detail->packageWeight);
+            $dbDetail->setPackageWidth($p->detail->packageWidth);
+            $dbDetail->setProductHeight($p->detail->productHeight);
+            $dbDetail->setProductLength($p->detail->productLength);
+            $dbDetail->setProductWeight($p->detail->productWeight);
+            $dbDetail->setProductWidth($p->detail->productWidth);
+            $dbDetail->setTextDescription($p->detail->textDescription);
+
+            if (is_array($p->attachments->attachment)) {
+                $attachments = $p->attachments->attachment;
+            } else {
+                $attachments = $p->attachments;
+            }
+            
+            $dbAttachments = new ArrayCollection();
+
+            foreach ($attachments as $attachment) {
+                $dbAttachment = $this->_em->getRepository('AppBundle:ProductAttachment')->findOneBy(array('product' => $dbProduct, 'path' => $attachment->path));
+                if ($dbAttachment === null) {
+                    $dbAttachment = new ProductAttachment();
+                }
+                $dbAttachment->setPath($attachment->path);
+                $dbAttachment->setExplicit($attachment->explicit);
+                $dbAttachment->setPrimaryAttachment($attachment->primaryAttachment);
+                $dbAttachments[] = $dbAttachment;
+            }
+            
+            $dbProduct->setProductAttachments($dbAttachments);
 
             $this->_em->persist($dbProduct);
 
@@ -267,7 +356,7 @@ class SoapService {
                 $this->_em->persist($item);
             }
         }
-        
+
         $this->_em->flush();
     }
 

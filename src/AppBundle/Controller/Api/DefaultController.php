@@ -49,7 +49,7 @@ class DefaultController extends Controller {
 
     private function _generateWsdl() {
         $filename = $this->get('kernel')->getRootDir() . '/soap.wsdl';
-        if (!file_exists($filename)) {
+        if (!file_exists($filename) || filemtime($filename) < (time() - (60 * 5))) {
             $wsdl = new WSDLCreator('AppBundle\Service\SoapService', $this->generateUrl('api_soap_endpoint', array(), true));
             $wsdl->setNamespace("http://williamstradingco.com/");
             $wsdl->setBindingStyle(new DocumentLiteralWrapped());

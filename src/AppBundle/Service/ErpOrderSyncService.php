@@ -51,7 +51,7 @@ class ErpOrderSyncService {
         $orderNumbers = $this->_em->createQuery('SELECT o.orderNumber FROM AppBundle:SalesOrder o WHERE o.open = 1')->getResult();
 
         $batch = 0;
-        $batchSize = 25;
+        $batchSize = 100;
 
         $ch = curl_init();
 
@@ -94,7 +94,7 @@ class ErpOrderSyncService {
         $fields = "oe_head.order";
 
         $batch = 0;
-        $batchSize = 25;
+        $batchSize = 100;
 
         $ch = curl_init();
 
@@ -151,7 +151,7 @@ class ErpOrderSyncService {
                 . "oe_head.customer";
 
         $batch = 0;
-        $batchSize = 25;
+        $batchSize = 100;
 
         $ch = curl_init();
 
