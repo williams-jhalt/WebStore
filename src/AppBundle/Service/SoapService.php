@@ -169,6 +169,8 @@ class SoapService {
                 $dbAttachment->setPath($attachment->path);
                 $dbAttachment->setExplicit($attachment->explicit);
                 $dbAttachment->setPrimaryAttachment($attachment->primaryAttachment);
+                $dbAttachment->setProduct($dbProduct);
+                $this->_em->persist($dbAttachment);
                 $dbAttachments[] = $dbAttachment;
             }
             
