@@ -50,12 +50,13 @@ class ErpProductSyncService {
 
         $batch = 0;
         $batchSize = 100;
-        
-        $ch = curl_init();
 
         do {
 
             $result = $this->_erp->read($query, $fields, $batch, $batchSize);
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
             $products = array();
 
@@ -74,12 +75,11 @@ class ErpProductSyncService {
                 $p->barcode = $item->item_upc1;
 
                 curl_setopt($ch, CURLOPT_URL, "http://wholesale.williams-trading.com/rest/product-images/{$item->item_item}?format=json");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                
+
                 $response = json_decode(curl_exec($ch));
-                
+
                 $p->attachments = array();
-                
+
                 foreach ($response->images as $image) {
                     $pa = new SoapProductAttachment();
                     $pa->path = $image->image_url;
@@ -89,10 +89,9 @@ class ErpProductSyncService {
                 }
 
                 curl_setopt($ch, CURLOPT_URL, "http://wholesale.williams-trading.com/rest/products/{$item->item_item}?format=json");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                
-                $response2 = json_decode(curl_exec($ch));                
-                
+
+                $response2 = json_decode(curl_exec($ch));
+
                 $p->detail = new SoapProductDetail();
                 $p->detail->textDescription = $response2->product->description;
                 $p->detail->packageHeight = $response2->product->height;
@@ -102,6 +101,8 @@ class ErpProductSyncService {
 
                 $products[] = $p;
             }
+
+            curl_close($ch);
 
             try {
                 $this->_soapClient->updateProducts(array('products' => $products));
@@ -114,8 +115,6 @@ class ErpProductSyncService {
 
             $output->writeln("Loaded {$batchSize} items, total {$batch}");
         } while (!empty($result));
-        
-        curl_close($ch);
     }
 
 }
