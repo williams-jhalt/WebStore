@@ -139,7 +139,7 @@ class SoapService {
 
             $dbProduct->setProductType($productType);
 
-            $dbDetail = new ProductDetail();
+            $dbDetail = $dbProduct->getProductDetail();
 
             $dbDetail->setColor($p->detail->color);
             $dbDetail->setHtmlDescription($p->detail->htmlDescription);
