@@ -16,9 +16,11 @@ use AppBundle\Entity\SalesOrder;
 use AppBundle\Entity\SalesOrderItem;
 use AppBundle\Entity\Shipment;
 use AppBundle\Entity\ShipmentItem;
+use AppBundle\Soap\SoapManufacturer;
 use AppBundle\Soap\SoapProduct;
 use AppBundle\Soap\SoapProductAttachment;
 use AppBundle\Soap\SoapProductDetail;
+use AppBundle\Soap\SoapProductType;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
@@ -41,44 +43,125 @@ class SoapService {
      * @return wrapper $product @className=\AppBundle\Soap\SoapProduct
      */
     public function getProduct($sku) {
+        
+        $product = new SoapProduct();
 
         $prod = $this->_em->getRepository('AppBundle:Product')->findOneBy(array('sku' => $sku));
 
-        $product = new SoapProduct();
+        if ($prod !== null) {
 
-        $product->sku = $prod->getSku();
-        $product->name = $prod->getName();
-        $product->price = $prod->getPrice();
-        $product->stockQuantity = $prod->getStockQuantity();
-        $product->releaseDate = $prod->getReleaseDate()->format('Y-m-d');
-        $product->manufacturerCode = $prod->getManufacturer()->getCode();
-        $product->productTypeCode = $prod->getProductType()->getCode();
-        $product->barcode = $prod->getBarcode();
+            $product = new SoapProduct();
 
-        $product->attachments = array();
+            $product->sku = $prod->getSku();
+            $product->name = $prod->getName();
+            $product->price = $prod->getPrice();
+            $product->stockQuantity = $prod->getStockQuantity();
+            $product->releaseDate = $prod->getReleaseDate()->format('Y-m-d');
 
-        foreach ($prod->getProductAttachments() as $att) {
-            $attachment = new SoapProductAttachment();
-            $attachment->path = $att->getPath();
-            $attachment->explicit = $att->getExplicit();
-            $attachment->primaryAttachment = $att->getPrimaryAttachment();
-            $product->attachments[] = $attachment;
+            $product->manufacturer = new SoapManufacturer();
+            $product->manufacturer->code = $prod->getManufacturer()->getCode();
+            $product->manufacturer->name = $prod->getManufacturer()->getName();
+
+            $product->productType = new SoapProductType();
+            $product->productType->code = $prod->getProductType()->getCode();
+            $product->productType->name = $prod->getProductType()->getName();
+
+            $product->barcode = $prod->getBarcode();
+
+            $product->attachments = array();
+
+            foreach ($prod->getProductAttachments() as $att) {
+                $attachment = new SoapProductAttachment();
+                $attachment->path = $att->getPath();
+                $attachment->explicit = $att->getExplicit();
+                $attachment->primaryAttachment = $att->getPrimaryAttachment();
+                $product->attachments[] = $attachment;
+            }
+
+            $product->detail = new SoapProductDetail();
+            $product->detail->color = $prod->getProductDetail()->getColor();
+            $product->detail->htmlDescription = $prod->getProductDetail()->getHtmlDescription();
+            $product->detail->material = $prod->getProductDetail()->getMaterial();
+            $product->detail->packageHeight = $prod->getProductDetail()->getPackageHeight();
+            $product->detail->packageLength = $prod->getProductDetail()->getPackageLength();
+            $product->detail->packageWeight = $prod->getProductDetail()->getPackageWeight();
+            $product->detail->packageWidth = $prod->getProductDetail()->getPackageWidth();
+            $product->detail->productHeight = $prod->getProductDetail()->getProductHeight();
+            $product->detail->productLenght = $prod->getProductDetail()->getProductLength();
+            $product->detail->productWeight = $prod->getProductDetail()->getProductWeight();
+            $product->detail->productWidth = $prod->getProductDetail()->getProductWidth();
+            
         }
 
-        $product->detail = new SoapProductDetail();
-        $product->detail->color = $prod->getProductDetail()->getColor();
-        $product->detail->htmlDescription = $prod->getProductDetail()->getHtmlDescription();
-        $product->detail->material = $prod->getProductDetail()->getMaterial();
-        $product->detail->packageHeight = $prod->getProductDetail()->getPackageHeight();
-        $product->detail->packageLength = $prod->getProductDetail()->getPackageLength();
-        $product->detail->packageWeight = $prod->getProductDetail()->getPackageWeight();
-        $product->detail->packageWidth = $prod->getProductDetail()->getPackageWidth();
-        $product->detail->productHeight = $prod->getProductDetail()->getProductHeight();
-        $product->detail->productLenght = $prod->getProductDetail()->getProductLength();
-        $product->detail->productWeight = $prod->getProductDetail()->getProductWeight();
-        $product->detail->productWidth = $prod->getProductDetail()->getProductWidth();
-
         return $product;
+    }
+
+    /**
+     * @WebMethod
+     * 
+     * @param string[] $skus
+     * 
+     * @return wrapper[] $products @className=\AppBundle\Soap\SoapProduct
+     */
+    public function findProducts($skus) {
+
+        $products = array();
+
+        foreach ($skus as $s) {
+
+            if (is_array($s)) {
+                return $this->findProducts($s);
+            }
+            
+            $product = $this->getProduct($s);
+            if ($product->sku !== null) {
+                $products[] = $product;
+            }
+        }
+
+        return $products;
+    }
+
+    /**
+     * @WebMethod
+     * 
+     * @return wrapper[] $manufacturers @className=\AppBundle\Soap\SoapManufacturer
+     */
+    public function findAllManufacturers() {
+
+        $m = $this->_em->getRepository('AppBundle:Manufacturer')->findAll();
+
+        $manufacturers = array();
+
+        foreach ($m as $t) {
+            $manufacturer = new SoapManufacturer();
+            $manufacturer->code = $t->getCode();
+            $manufacturer->name = $t->getName();
+            $manufacturers[] = $manufacturer;
+        }
+
+        return $manufacturers;
+    }
+
+    /**
+     * @WebMethod
+     * 
+     * @return wrapper[] $productTypes @className=\AppBundle\Soap\SoapProductType
+     */
+    public function findAllProductTypes() {
+
+        $pt = $this->_em->getRepository('AppBundle:ProductType')->findAll();
+
+        $productTypes = array();
+
+        foreach ($pt as $t) {
+            $productType = new SoapProductType();
+            $productType->code = $t->getCode();
+            $productType->name = $t->getName();
+            $productTypes[] = $productType;
+        }
+
+        return $productTypes;
     }
 
     /**
@@ -115,24 +198,24 @@ class SoapService {
                 $dbProduct->setReleaseDate($releaseDate);
             }
 
-            $manufacturer = $this->_em->getRepository('AppBundle:Manufacturer')->findOneByCode($p->manufacturerCode);
+            $manufacturer = $this->_em->getRepository('AppBundle:Manufacturer')->findOneByCode($p->manufacturer->code);
 
             if ($manufacturer === null) {
                 $manufacturer = new Manufacturer();
-                $manufacturer->setCode($p->manufacturerCode);
-                $manufacturer->setName($p->manufacturerCode);
+                $manufacturer->setCode($p->manufacturer->code);
+                $manufacturer->setName($p->manufacturer->name);
                 $this->_em->persist($manufacturer);
                 $this->_em->flush($manufacturer);
             }
 
             $dbProduct->setManufacturer($manufacturer);
 
-            $productType = $this->_em->getRepository('AppBundle:ProductType')->findOneByCode($p->productTypeCode);
+            $productType = $this->_em->getRepository('AppBundle:ProductType')->findOneByCode($p->productType->code);
 
             if ($productType === null) {
                 $productType = new ProductType();
-                $productType->setCode($p->productTypeCode);
-                $productType->setName($p->productTypeCode);
+                $productType->setCode($p->productType->code);
+                $productType->setName($p->productType->name);
                 $this->_em->persist($productType);
                 $this->_em->flush($productType);
             }
@@ -156,7 +239,7 @@ class SoapService {
 
             $dbProduct->setProductDetail($dbDetail);
 
-            if (is_array($p->attachments->attachment)) {
+            if (isset($p->attachments->attachment) && is_array($p->attachments->attachment)) {
                 $attachments = $p->attachments->attachment;
             } else {
                 $attachments = $p->attachments;

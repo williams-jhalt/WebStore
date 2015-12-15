@@ -25,14 +25,14 @@ class SoapProduct {
     public $stockQuantity;
 
     /**
-     * @type string
+     * @type wrapper $manufacturer @className=\AppBundle\Soap\SoapManufacturer
      */
-    public $manufacturerCode;
+    public $manufacturer;
 
     /**
-     * @type string
+     * @type wrapper $productType @className=\AppBundle\Soap\SoapProductType
      */
-    public $productTypeCode;
+    public $productType;
     
     /**
      * @type string
@@ -53,5 +53,12 @@ class SoapProduct {
      * @type wrapper $detail @className=\AppBundle\Soap\SoapProductDetail
      */
     public $detail;
+    
+    public function __construct() {
+        $this->manufacturer = new SoapManufacturer();
+        $this->productType = new SoapProductType();
+        $this->attachments = array();
+        $this->detail = new SoapProductDetail();
+    }
 
 }

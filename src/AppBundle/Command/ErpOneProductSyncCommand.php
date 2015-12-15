@@ -19,7 +19,8 @@ class ErpOneProductSyncCommand extends ContainerAwareCommand {
         $service = $this->getContainer()->get('app.product_sync_service');
         $output->write("Beginning erp product refresh...\n");
         try {
-            $service->loadFromErp($output);
+//            $service->loadFromErp($output);
+            $service->loadFromWholesale($output);
         } catch (Exception $e) {
             echo $e;
             $output->writeln("There was an error refreshing the product status");

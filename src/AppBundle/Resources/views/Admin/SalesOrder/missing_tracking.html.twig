@@ -1,0 +1,32 @@
+{% extends 'AppBundle:Admin:layout.html.twig' %}
+
+{% block admin_body %}
+
+    <h1>Orders Missing Tracking</h1>
+
+    <table class="table table-bordered table-striped" width="100%">
+        <thead>
+            <tr>
+                <th>Order Number</th>
+                <th>Order Date</th>
+                <th>Weborder Number</th>
+                <th>Customer PO</th>
+                <th>Customer Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                
+                <tr>
+                    <td>{{ order.orderNumber }}</td>
+                    <td>{{ order.orderDate|date('m/d/Y') }}</td>
+                    <td>{{ order.externalOrderNumber }}</td>
+                    <td>{{ order.customerPO }}</td>
+                    <td>{{ order.customerNumber }}</td>
+                </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
