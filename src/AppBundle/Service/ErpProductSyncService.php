@@ -65,7 +65,7 @@ class ErpProductSyncService {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array("Range: $offset-$next"));
             curl_setopt($ch, CURLOPT_URL, $this->_wholesaleUrl . "/products?format=json");
             $response = json_decode(curl_exec($ch));
-            
+
             if (!isset($response->products)) {
                 break;
             }
@@ -175,8 +175,7 @@ class ErpProductSyncService {
         curl_close($ch);
     }
 
-    public
-            function loadFromErp(OutputInterface $output) {
+    public function loadFromErp(OutputInterface $output) {
 
         $query = "FOR EACH item NO-LOCK WHERE "
                 . "item.company_it = '{$this->_erp->getCompany()}' AND item.web_item = yes, "
