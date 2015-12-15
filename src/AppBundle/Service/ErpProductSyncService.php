@@ -44,9 +44,9 @@ class ErpProductSyncService {
 
     public function loadFromWholesale(OutputInterface $output) {
 
-        $ch = curl_init();
-
         $headers = get_headers($this->_wholesaleUrl . "/products?format=json", 1);
+
+        $ch = curl_init();
 
         $matches = array();
 
@@ -65,6 +65,10 @@ class ErpProductSyncService {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array("Range: $offset-$next"));
             curl_setopt($ch, CURLOPT_URL, $this->_wholesaleUrl . "/products?format=json");
             $response = json_decode(curl_exec($ch));
+            
+            if (!isset($response->products)) {
+                break;
+            }
 
             foreach ($response->products as $product) {
                 $productData[$product->sku] = array(
