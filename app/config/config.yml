@@ -98,8 +98,8 @@ braincrafted_bootstrap:
     output_dir: assets/bootstrap
     assets_dir: %kernel.root_dir%/../web/assets/vendor/bootstrap
     jquery_path: %kernel.root_dir%/../web/assets/vendor/jquery/dist/jquery.js
-    less_filter: lessphp
     fonts_dir: %kernel.root_dir%/../web/assets/bootstrap/fonts
+    css_preprocessor: lessphp
             
 #snc_redis:
 #    clients:
